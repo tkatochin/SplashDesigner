@@ -2,9 +2,9 @@
 
 更新日: 2026-07-27
 
-現在の段階: Issue-0006完了（入館UXと浴室基本構図まで実装済み）
+現在の段階: Issue-0007およびIssue-0015完了（入館音声・浴室環境音・隠し歓迎音声まで実装済み）
 
-次の作業: Issue-0007（暖簾音と浴室環境音）
+次の作業: Issue-0008（写真の読込と作品内への配置）
 
 ## 1. この資料の目的
 
@@ -456,10 +456,13 @@ index.html
 - 人の目線で満水の浴槽を見下ろす基本構図
 - 手前の2段床と手すり
 - 状態を保持・伝播するリザバー型水面
+- 最初の暖簾操作による音声アンロック
+- 暖簾の布音、浴室環境音、遠くの桶音
+- 勢いよく暖簾を払った場合の隠し歓迎音声
+- 音源クレジット表示
 
 未実装または未完了:
 
-- 実音声素材と浴室環境音
 - 写真読込と人物配置
 - 写真・人物・水面へのSplash操作
 - 温度計によるシングル切り替え
@@ -467,7 +470,6 @@ index.html
 - MADMAX打たせ水の一連演出
 - 動画録画・書き出し
 - 共有導線
-- 暖簾の隠し歓迎音声
 
 ## 18. Roadmap
 
@@ -525,38 +527,20 @@ index.html
 
 ## 21. 次回の作業開始手順
 
-Issue-0007aとして、まず次のファイルを全文確認してください。
+リポジトリ直下の`AGENTS.md`に従い、最初に次の3ファイルを全文確認してください。
 
-1. `ARCHITECTURE.md`
-2. `README.md`
-3. `main.js`
-4. `src/core/Engine.js`
-5. `src/core/Scene.js`
-6. `src/core/SceneManager.js`
-7. `src/core/Camera.js`
-8. `src/scenes/EntranceScene.js`
-9. `src/renderers/NorenRenderer.js`
-10. `src/renderers/PoolRenderer.js`
-11. `src/input/DragController.js`
-12. `src/input/DragSpring.js`
-13. `src/audio/AudioManager.js`
-14. `src/scenes/EntranceAudioBootstrap.js`
-15. `src/scenes/SoundEffectManager.js`
-16. 音声素材ディレクトリの実在状況
+1. `HANDOVER_TO_CODEX.md`
+2. `ARCHITECTURE.md`
+3. `README.md`
 
-その後、コードを変更せずに次を報告してください。
-
-- 音声クラスの参照関係
-- 暖簾操作から`AudioContext`をアンロックする経路
-- 現在実在する音声素材
-- 暖簾音と浴室環境音を追加する最小変更範囲
-- 自動再生制約、失敗時フォールバック、完了条件
+次にGit状態と最新コミット、現在の実行経路を確認し、Issue-0008の解析から開始してください。
 
 ## 22. 現在のステータス
 
-- Issue-0001〜0006: 完了
-- Issue-0007〜0015: 未着手
+- Issue-0001〜0007: 完了
+- Issue-0008〜0014: 未着手
+- Issue-0015: 完了
 - Issue-0016: 資料整備を一部進行中
 - Ver1.0: **未完成**
 
-次に開始するのは **Issue-0007a（解析）** です。解析段階ではコードを変更しません。
+次に開始するのは **Issue-0008a（解析）** です。解析段階ではコードを変更しません。
