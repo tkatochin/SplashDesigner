@@ -1,4 +1,4 @@
-import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006c";
+import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {

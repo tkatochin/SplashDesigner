@@ -5,7 +5,8 @@ export class ReservoirSurface {
     this.velocity=new Float32Array(cols*rows);
     this.next=new Float32Array(cols*rows);
     this.seeded=false;
-    this.elapsed=0;
+    this.ambientElapsed=0;
+    this.nextAmbientDelay=this.#ambientDelay();
   }
   disturb(x,y,power=0.6){
     const cx=Math.floor(x*(this.cols-1));
@@ -18,12 +19,18 @@ export class ReservoirSurface {
     }
   }
   update(dt){
-    this.elapsed+=dt;
+    this.ambientElapsed+=dt;
     if(!this.seeded){this.disturb(.3,.45,.22);this.disturb(.72,.62,-.18);this.seeded=true;}
-    if(this.elapsed>900){
-      this.elapsed=0;
-      const phase=performance.now()*.00023;
-      this.disturb(.5+Math.sin(phase)*.34,.25+Math.cos(phase*.73)*.12,.035);
+    if(this.ambientElapsed>=this.nextAmbientDelay){
+      this.ambientElapsed=0;
+      this.nextAmbientDelay=this.#ambientDelay();
+      const touchCount=1+Math.floor(Math.random()*3);
+      for(let touch=0;touch<touchCount;touch++){
+        const x=.12+Math.random()*.76;
+        const y=.14+Math.random()*.72;
+        const power=.018+Math.random()*.022;
+        this.disturb(x,y,power);
+      }
     }
     const steps=Math.min(2,Math.max(1,Math.round(dt/16.7)));
     for(let step=0;step<steps;step++){
@@ -42,4 +49,5 @@ export class ReservoirSurface {
     const iy=Math.max(0,Math.min(this.rows-1,Math.floor(y*(this.rows-1))));
     return this.state[iy*this.cols+ix];
   }
+  #ambientDelay(){return 1100+Math.random()*2100;}
 }

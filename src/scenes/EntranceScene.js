@@ -4,7 +4,7 @@ import { Camera } from "../core/Camera.js?v=0006c";
 import { DragController } from "../input/DragController.js?v=0007a";
 import { DragSpring } from "../input/DragSpring.js";
 import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0007a";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0006v";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0006w";
 import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0007a";
 
 export class EntranceScene extends Scene {
