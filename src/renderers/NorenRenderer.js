@@ -13,7 +13,7 @@ export class NorenRenderer {
     this.textureKey="";
     this.art=new Image();
     this.art.onload=()=>{this.textureKey="";};
-    this.art.src=new URL("../../img/noren_art.png",import.meta.url).href;
+    this.art.src=new URL("../../assets/img/noren_art.png",import.meta.url).href;
   }
 
   update(dt,scene,width,height) {
