@@ -13,7 +13,6 @@ export class OverflowEffect {
   }
 
   trigger({strength=1,origin={u:.5,v:.5}}={}){
-    if(this.active)return false;
     this.active=true;
     this.elapsed=0;
     this.strength=Math.max(.55,Math.min(1.35,strength));

@@ -8,6 +8,7 @@ export class AudioManager {
     this.unlocked = false;
     this.sounds = new Map();
     this.fades = new Map();
+    this.segmentTimers = new Map();
     this.unlocking = null;
   }
 
@@ -73,10 +74,40 @@ export class AudioManager {
     }
   }
 
+  async playSegment(key,start=0,end=Infinity,options={}){
+    const sound=this.sounds.get(key);
+    if(!sound||!this.unlocked)return false;
+    const {audio,defaultVolume}=sound;
+    this.#cancelFade(key);
+    this.#clearSegmentTimer(key);
+    audio.pause();
+    audio.currentTime=Math.max(0,start);
+    audio.loop=false;
+    audio.volume=Math.max(0,Math.min(1,options.volume??defaultVolume));
+    try{
+      await audio.play();
+      if(Number.isFinite(end)&&end>start){
+        const stop=()=>{
+          if(audio.currentTime>=end-.04)this.stop(key);
+        };
+        audio.addEventListener("timeupdate",stop);
+        const timer=window.setTimeout(()=>{
+          audio.removeEventListener("timeupdate",stop);
+          this.stop(key);
+        },(end-start)*1000+120);
+        this.segmentTimers.set(key,{timer,stop});
+      }
+      return true;
+    }catch{
+      return false;
+    }
+  }
+
   stop(key) {
     const sound = this.sounds.get(key);
     if (!sound) return;
     this.#cancelFade(key);
+    this.#clearSegmentTimer(key);
     sound.audio.pause();
     sound.audio.currentTime = 0;
   }
@@ -120,6 +151,14 @@ export class AudioManager {
     const frame = this.fades.get(key);
     if (frame != null) cancelAnimationFrame(frame);
     this.fades.delete(key);
+  }
+
+  #clearSegmentTimer(key){
+    const segment=this.segmentTimers.get(key);
+    if(!segment)return;
+    window.clearTimeout(segment.timer);
+    this.sounds.get(key)?.audio.removeEventListener("timeupdate",segment.stop);
+    this.segmentTimers.delete(key);
   }
 
   vibrate(ms=20){

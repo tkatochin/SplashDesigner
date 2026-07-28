@@ -1,0 +1,9 @@
+[build]
+  publish = "."
+
+# GitHub Pages is production. Netlify is reserved for pull-request previews.
+[context.production]
+  ignore = "exit 0"
+
+[context.deploy-preview]
+  ignore = "exit 1"

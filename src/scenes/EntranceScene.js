@@ -5,8 +5,8 @@ import { DragController } from "../input/DragController.js?v=0007b";
 import { WaterHoldController } from "../input/WaterHoldController.js?v=0017e";
 import { DragSpring } from "../input/DragSpring.js";
 import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0007b";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0017c";
-import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0007b";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0017f";
+import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0007c";
 
 export class EntranceScene extends Scene {
   constructor(engine){
@@ -32,9 +32,11 @@ export class EntranceScene extends Scene {
     const canvas=this.engine.renderer.canvas;
     this.drag=new DragController(canvas);
     this.waterHold=new WaterHoldController(canvas,{
-      isEnabled:()=>this.state==="revealed"&&!this.pool.overflow.active,
+      isEnabled:()=>this.state==="revealed",
       hitTest:(x,y)=>this.pool.waterPointAt(x,y,this.engine.width,this.engine.height),
-      onTrigger:point=>this.pool.triggerOverflow({origin:{u:point.u,v:point.v}})
+      onTrigger:point=>{
+        if(this.pool.triggerOverflow({origin:{u:point.u,v:point.v}}))this.playOverflowAudio?.();
+      }
     });
     this.spring.snap(0);
     this.state="idle";
@@ -61,7 +63,7 @@ export class EntranceScene extends Scene {
     this.noren.update(dt,this,this.engine.width,this.engine.height);
     this.pool.update(dt);
     this.waterHold.update(dt);
-    if(this.state==="revealed"&&this.drag.dragging&&!this.waterHold.triggered&&!this.pool.overflow.active){
+    if(this.state==="revealed"&&this.drag.dragging&&!this.waterHold.triggered){
       const x=this.drag.pointerX*this.engine.width;
       const y=this.drag.pointerY*this.engine.height;
       const power=this.waterHold.active ? .022 : .045;

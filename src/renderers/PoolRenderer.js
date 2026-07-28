@@ -1,16 +1,20 @@
 import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
-import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017c";
-import { OverflowRenderer } from "./OverflowRenderer.js?v=0017c";
+import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017d";
+import { OverflowRenderer } from "./OverflowRenderer.js?v=0017e";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
   constructor(){
     this.surface=new ReservoirSurface();
-    this.overflow=new OverflowEffect();
+    this.overflows=[];
     this.overflowRenderer=new OverflowRenderer();
   }
 
-  update(dt){this.surface.update(dt);this.overflow.update(dt);}
+  update(dt){
+    this.surface.update(dt);
+    for(const overflow of this.overflows)overflow.update(dt);
+    this.overflows=this.overflows.filter(overflow=>overflow.active);
+  }
 
   waterPointAt(x,y,width,height){
     const water=this.geometry(width,height).water;
@@ -29,7 +33,10 @@ export class PoolRenderer {
   }
 
   triggerOverflow({strength=1,origin={u:.5,v:.5}}={}){
-    if(!this.overflow.trigger({strength,origin}))return false;
+    const overflow=new OverflowEffect();
+    overflow.trigger({strength,origin});
+    this.overflows.push(overflow);
+    if(this.overflows.length>3)this.overflows.shift();
     for(let index=0;index<7;index++){
       const u=.08+index*.14;
       this.surface.disturb(u,.3+Math.abs(.5-u)*.42,index%2?-.13:.16);
@@ -45,7 +52,10 @@ export class PoolRenderer {
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
     this.#steps(ctx,width,height,g);
-    this.overflowRenderer.render(ctx,g,width,height,this.overflow,performance.now());
+    const time=performance.now();
+    for(const overflow of this.overflows){
+      this.overflowRenderer.render(ctx,g,width,height,overflow,time);
+    }
     this.#handrail(ctx,width,height,g);
   }
 

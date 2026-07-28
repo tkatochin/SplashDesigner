@@ -15,16 +15,36 @@ export class OverflowRenderer {
 
   #rimFilm(ctx,g,amount){
     if(amount<=0)return;
-    const {outer:o,water:w}=g;
-    ctx.fillStyle=`rgba(69,196,224,${Math.min(.42,amount*.3)})`;
+    const {outer:o,water:w,sideWalls:s}=g;
+    const wallLeftNear=this.#pointAtY(s.leftCorner,s.leftNear,o.nearL.y);
+    const wallRightNear=this.#pointAtY(s.rightCorner,s.rightNear,o.nearR.y);
+    const gradient=ctx.createLinearGradient(0,w.backL.y,0,o.nearL.y);
+    gradient.addColorStop(0,`rgba(178,242,250,${Math.min(.58,amount*.46)})`);
+    gradient.addColorStop(.45,`rgba(39,181,214,${Math.min(.62,amount*.5)})`);
+    gradient.addColorStop(1,`rgba(4,107,157,${Math.min(.54,amount*.42)})`);
+    ctx.fillStyle=gradient;
     this.#quad(ctx,o.backL,o.backR,w.backR,w.backL);ctx.fill();
     this.#quad(ctx,o.backL,w.backL,w.nearL,o.nearL);ctx.fill();
     this.#quad(ctx,w.backR,o.backR,o.nearR,w.nearR);ctx.fill();
-    const gradient=ctx.createLinearGradient(0,w.nearL.y,0,o.nearL.y);
-    gradient.addColorStop(0,`rgba(174,244,255,${Math.min(.64,amount*.5)})`);
-    gradient.addColorStop(.25,`rgba(26,170,210,${Math.min(.58,amount*.42)})`);
-    gradient.addColorStop(1,`rgba(3,103,151,${Math.min(.4,amount*.28)})`);
-    ctx.fillStyle=gradient;this.#quad(ctx,w.nearL,w.nearR,o.nearR,o.nearL);ctx.fill();
+    this.#quad(ctx,w.nearL,w.nearR,o.nearR,o.nearL);ctx.fill();
+    // Continue the side sheets across the surrounding stone all the way to
+    // the visible wall/floor seams; the bath's outer rim stops short of them.
+    this.#quad(ctx,s.leftCorner,o.backL,o.nearL,wallLeftNear);ctx.fill();
+    this.#quad(ctx,o.backR,s.rightCorner,wallRightNear,o.nearR);ctx.fill();
+
+    // A continuous foamy lip makes it clear that water reaches every side,
+    // rather than leaving the side rims looking only partially wet.
+    ctx.lineJoin="round";ctx.lineCap="round";
+    ctx.strokeStyle=`rgba(215,251,255,${Math.min(.82,amount*.7)})`;
+    ctx.lineWidth=3.2;
+    ctx.beginPath();
+    ctx.moveTo(w.backL.x,w.backL.y);ctx.lineTo(w.backR.x,w.backR.y);
+    ctx.lineTo(w.nearR.x,w.nearR.y);ctx.lineTo(w.nearL.x,w.nearL.y);ctx.closePath();ctx.stroke();
+    ctx.strokeStyle=`rgba(114,225,241,${Math.min(.68,amount*.56)})`;
+    ctx.lineWidth=4.5;
+    ctx.beginPath();
+    ctx.moveTo(s.leftCorner.x,s.leftCorner.y);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);
+    ctx.lineTo(wallRightNear.x,wallRightNear.y);ctx.lineTo(wallLeftNear.x,wallLeftNear.y);ctx.closePath();ctx.stroke();
   }
 
   #cascade(ctx,x,y,width,height,amount,effect,time){
@@ -66,4 +86,5 @@ export class OverflowRenderer {
   }
 
   #quad(ctx,a,b,c,d){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();}
+  #pointAtY(a,b,y){const t=(y-a.y)/(b.y-a.y);return{x:a.x+(b.x-a.x)*t,y};}
 }

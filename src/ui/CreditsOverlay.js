@@ -1,7 +1,8 @@
 const CREDIT_ENTRIES = [
   { caption: "OtoLogic", url: "https://otologic.jp/" },
-  { caption: "arunangshubanerjee", url: "https://www.pexels.com/@arunangshu" },
+  { caption: "arunangshubanerjee@pixabay", url: "https://pixabay.com/sound-effects/household-loopable-bathing-sound-gentle-water-movement-and-splashing-ambience-336621/" },
   { caption: "ノタの森", url: "http://notanomori.net/" },
+  { caption: "u_moo3yn7s9y@pixabay", url: "https://pixabay.com/ja/users/u_moo3yn7s9y-43362546/" },
 ];
 
 export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {
