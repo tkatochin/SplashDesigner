@@ -1,4 +1,4 @@
-import { AudioManager } from "../audio/AudioManager.js?v=0007d";
+import { AudioManager } from "../audio/AudioManager.js?v=0007e";
 
 /**
  * Patch 0013 additions for EntranceScene.

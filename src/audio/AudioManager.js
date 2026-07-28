@@ -49,17 +49,21 @@ export class AudioManager {
         source.buffer=silent;source.connect(this.context.destination);source.start(0);
       }catch{}
     }
+    // Never prime real media elements when Web Audio is available. Some iOS
+    // versions can audibly play them despite volume=0 after a reload.
     const fallbackPrimes=[];
-    for(const sound of this.sounds.values()){
-      const {audio}=sound;
-      audio.muted=false;
-      audio.volume=0;
-      fallbackPrimes.push(audio.play().then(()=>true).catch(()=>false));
+    if(!this.context){
+      for(const sound of this.sounds.values()){
+        const {audio}=sound;
+        audio.muted=true;
+        fallbackPrimes.push(audio.play().then(()=>true).catch(()=>false));
+      }
     }
 
     const [contextReady,...mediaReady]=await Promise.all([resume,...fallbackPrimes]);
     for(const sound of this.sounds.values()){
-      sound.audio.pause();sound.audio.currentTime=0;sound.audio.volume=sound.defaultVolume;
+      sound.audio.pause();sound.audio.currentTime=0;sound.audio.muted=false;
+      sound.audio.volume=sound.defaultVolume;
     }
 
     let decoded=0;
