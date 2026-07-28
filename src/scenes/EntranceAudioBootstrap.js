@@ -1,4 +1,4 @@
-import { AudioManager } from "../audio/AudioManager.js?v=0007c";
+import { AudioManager } from "../audio/AudioManager.js?v=0007d";
 
 /**
  * Patch 0013 additions for EntranceScene.
@@ -18,17 +18,41 @@ export function initializeAudio(scene){
   scene.overflowVoice=0;
 
   const canvas = scene.engine.renderer.canvas;
+  const startOverlay=document.getElementById("audio-start");
+  const startButton=document.getElementById("audio-start-button");
 
+  const removeUnlockListeners=()=>{
+    canvas.removeEventListener("touchend",unlockTouch);
+    canvas.removeEventListener("click",unlock);
+    canvas.removeEventListener("pointerup",unlockPointer);
+  };
   const unlock = async () => {
     const ready=await scene.audio.unlock();
-    if(ready){
-      canvas.removeEventListener("pointerup",unlock);
-    }
+    if(ready)removeUnlockListeners();
   };
+  const unlockTouch=()=>unlock();
+  const unlockPointer=event=>{if(event.pointerType!=="touch")unlock();};
 
-  // Mobile browser modes reliably grant media activation when the gesture completes.
-  // Keep the listener until an attempt succeeds so a rejected gesture can be retried.
-  canvas.addEventListener("pointerup",unlock);
+  // iOS grants Web Audio activation most reliably from the native touchend event.
+  canvas.addEventListener("touchend",unlockTouch,{passive:true});
+  canvas.addEventListener("click",unlock);
+  canvas.addEventListener("pointerup",unlockPointer);
+
+  if(startButton&&startOverlay){
+    startButton.addEventListener("click",async()=>{
+      startButton.disabled=true;
+      startButton.textContent="音を準備しています…";
+      const ready=await scene.audio.unlock();
+      if(!ready){
+        startButton.disabled=false;
+        startButton.textContent="もう一度タップ";
+        return;
+      }
+      removeUnlockListeners();
+      startOverlay.classList.add("is-leaving");
+      window.setTimeout(()=>{startOverlay.hidden=true;},230);
+    },{once:false});
+  }
 
   scene.playEntranceAudio=async(energetic=false)=>{
     await scene.audio.unlock();
