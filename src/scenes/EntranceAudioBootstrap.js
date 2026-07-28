@@ -1,4 +1,4 @@
-import { AudioManager } from "../audio/AudioManager.js?v=0007e";
+import { AudioManager } from "../audio/AudioManager.js?v=0007f";
 
 /**
  * Patch 0013 additions for EntranceScene.
@@ -16,6 +16,9 @@ export function initializeAudio(scene){
     scene.audio.register(`overflow-${voice}`,asset("u_moo3yn7s9y-big-splash-sound-202450.mp3"),{volume:.76});
   }
   scene.overflowVoice=0;
+  scene.audioPausedByVisibility=false;
+  scene.audioVisibilityResumePending=false;
+  scene.audioVisibilityGeneration=0;
 
   const canvas = scene.engine.renderer.canvas;
   const startOverlay=document.getElementById("audio-start");
@@ -37,6 +40,55 @@ export function initializeAudio(scene){
   canvas.addEventListener("touchend",unlockTouch,{passive:true});
   canvas.addEventListener("click",unlock);
   canvas.addEventListener("pointerup",unlockPointer);
+
+  const removeVisibilityRetry=()=>{
+    canvas.removeEventListener("touchend",retryVisibleAudio);
+    canvas.removeEventListener("click",retryVisibleAudio);
+    canvas.removeEventListener("pointerup",retryVisibleAudioPointer);
+  };
+  const resumeVisibleAudio=async()=>{
+    if(document.hidden||!scene.audioPausedByVisibility||scene.audioVisibilityResumePending)return;
+    const generation=scene.audioVisibilityGeneration;
+    scene.audioVisibilityResumePending=true;
+    const ready=await scene.audio.resume();
+    scene.audioVisibilityResumePending=false;
+    if(document.hidden||generation!==scene.audioVisibilityGeneration){
+      scene.audio.suspend();
+      return;
+    }
+    if(!ready){
+      canvas.addEventListener("touchend",retryVisibleAudio,{passive:true});
+      canvas.addEventListener("click",retryVisibleAudio);
+      canvas.addEventListener("pointerup",retryVisibleAudioPointer);
+      return;
+    }
+    removeVisibilityRetry();
+    scene.audioPausedByVisibility=false;
+    if(scene.bathAudioStarted){
+      scene.audio.fadeIn("bath",500);
+      scheduleBucket(scene);
+    }
+  };
+  const retryVisibleAudio=()=>resumeVisibleAudio();
+  const retryVisibleAudioPointer=event=>{if(event.pointerType!=="touch")resumeVisibleAudio();};
+  const onVisibilityChange=()=>{
+    scene.audioVisibilityGeneration+=1;
+    if(document.hidden){
+      window.clearTimeout(scene.bucketTimer);
+      scene.bucketTimer=0;
+      removeVisibilityRetry();
+      scene.audioPausedByVisibility=scene.audio.ready;
+      scene.audio.stopAll();
+      scene.audio.suspend();
+      return;
+    }
+    resumeVisibleAudio();
+  };
+  document.addEventListener("visibilitychange",onVisibilityChange);
+  scene.removeAudioVisibilityListener=()=>{
+    document.removeEventListener("visibilitychange",onVisibilityChange);
+    removeVisibilityRetry();
+  };
 
   if(startButton&&startOverlay){
     startButton.addEventListener("click",async()=>{
@@ -80,7 +132,7 @@ function scheduleBucket(scene,minDelay=18000,maxDelay=36000){
   window.clearTimeout(scene.bucketTimer);
   const delay=minDelay+Math.random()*(maxDelay-minDelay);
   scene.bucketTimer=window.setTimeout(async()=>{
-    if(!scene.active)return;
+    if(!scene.active||document.hidden)return;
     await scene.audio.play("bucket");
     scheduleBucket(scene);
   },delay);
