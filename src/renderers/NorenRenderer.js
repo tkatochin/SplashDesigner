@@ -26,8 +26,10 @@ export class NorenRenderer {
     const rect=scene.engine.renderer.canvas.getBoundingClientRect();
     const px=scene.drag.pointerX*width;
     const py=scene.drag.pointerY*height;
-    this.left.update(dt,scene.openAmount,scene.drag.dragging&&scene.drag.side<0,px,py);
-    this.right.update(dt,scene.openAmount,scene.drag.dragging&&scene.drag.side>0,px,py);
+    const side=scene.state==="idle"?scene.drag.side:scene.entranceSide;
+    const gesture=scene.state==="idle"?scene.drag.gesture:scene.entranceGesture;
+    this.left.update(dt,side<0?scene.openAmount:0,scene.drag.dragging&&side<0,px,py,gesture);
+    this.right.update(dt,side>0?scene.openAmount:0,scene.drag.dragging&&side>0,px,py,gesture);
   }
 
   render(ctx, scene, width, height) {
@@ -106,4 +108,4 @@ export class NorenRenderer {
     ctx.transform(a,b,c,d,e,f);ctx.drawImage(this.texture,0,0);ctx.restore();
   }
 }
-import { ClothPanel } from "../effects/ClothPanel.js?v=0006c";
+import { ClothPanel } from "../effects/ClothPanel.js?v=0006d";

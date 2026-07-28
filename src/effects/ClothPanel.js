@@ -23,7 +23,7 @@ export class ClothPanel {
     }
   }
 
-  update(dt,pull,active,pointerX,pointerY){
+  update(dt,pull,active,pointerX,pointerY,gesture="swipe"){
     if(!this.points.length) return;
     const step=Math.min(dt/16.67,2);
     const rows=this.points.length-1;
@@ -35,8 +35,10 @@ export class ClothPanel {
         const vy=(p.y-p.py)*0.86;
         p.px=p.x;p.py=p.y;
         const depth=row/rows;
-        const edge=this.side<0?1-col/cols:col/cols;
-        const gather=pull*pull*(0.3+0.7*depth)*(0.55+0.45*edge);
+        const swipeEdge=this.side<0?1-col/cols:col/cols;
+        const innerEdge=this.side<0?col/cols:1-col/cols;
+        const edgeWeight=gesture==="tap" ? .12+.88*innerEdge : .55+.45*swipeEdge;
+        const gather=pull*pull*(0.3+0.7*depth)*edgeWeight;
         const targetX=p.homeX+this.side*gather*190;
         const breeze=Math.sin(performance.now()*0.0017+row*0.42+col*0.3)*0.35*depth*(1-pull);
         p.x+=vx+(targetX-p.x)*0.075*step+breeze;

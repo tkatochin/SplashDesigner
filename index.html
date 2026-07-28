@@ -6,7 +6,11 @@
   <title>Splash Designer</title>
   <style>
     html,body{margin:0;height:100%;background:#111;overflow:hidden}
-    canvas{display:block;touch-action:none}
+    canvas{display:block;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+    .audio-start{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(8,12,12,.2);transition:opacity .22s ease;touch-action:manipulation}
+    .audio-start[hidden]{display:none}
+    .audio-start.is-leaving{opacity:0;pointer-events:none}
+    .audio-start button{border:1px solid rgba(255,255,255,.62);border-radius:999px;padding:12px 25px;background:rgba(22,30,29,.76);color:#fff;font:600 15px/1.2 system-ui,sans-serif;letter-spacing:.08em;box-shadow:0 5px 22px rgba(0,0,0,.32);backdrop-filter:blur(5px);-webkit-tap-highlight-color:transparent;cursor:pointer}
     .site-credit{position:fixed;right:14px;bottom:10px;z-index:10;color:rgba(235,238,236,.82);font:12px/1.4 system-ui,sans-serif;text-shadow:0 1px 3px #000;user-select:none}
     .site-credit em{font-style:italic}
     .site-credit button{border:0;padding:2px 3px;background:none;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
@@ -21,6 +25,9 @@
   </style>
 </head>
 <body>
-  <script type="module" src="./main.js?v=0007a"></script>
+  <div class="audio-start" id="audio-start">
+    <button type="button" id="audio-start-button">タップして入る</button>
+  </div>
+  <script type="module" src="./main.js?v=0017p"></script>
 </body>
 </html>
