@@ -1,4 +1,4 @@
-import { AudioManager } from "../audio/AudioManager.js";
+import { AudioManager } from "../audio/AudioManager.js?v=0007b";
 
 /**
  * Patch 0013 additions for EntranceScene.
@@ -16,11 +16,15 @@ export function initializeAudio(scene){
   const canvas = scene.engine.renderer.canvas;
 
   const unlock = async () => {
-    await scene.audio.unlock();
-    canvas.removeEventListener("pointerdown", unlock);
+    const ready=await scene.audio.unlock();
+    if(ready){
+      canvas.removeEventListener("pointerup",unlock);
+    }
   };
 
-  canvas.addEventListener("pointerdown", unlock, { once:true });
+  // Mobile browser modes reliably grant media activation when the gesture completes.
+  // Keep the listener until an attempt succeeds so a rejected gesture can be retried.
+  canvas.addEventListener("pointerup",unlock);
 
   scene.playEntranceAudio=async(energetic=false)=>{
     await scene.audio.unlock();

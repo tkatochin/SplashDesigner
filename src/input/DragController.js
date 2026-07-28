@@ -15,6 +15,7 @@ export class DragController {
     this.travel=0;
     this.maxVelocity=0;
     this.energetic=false;
+    this.gesture="pending";
     this.lastX=0;
     this.lastTime=0;
 
@@ -29,6 +30,7 @@ export class DragController {
       this.dragging=true;
       this.startX=e.clientX;
       this.side=this.pointerX<0.5?-1:1;
+      this.gesture="pending";
       this.committed=false;
       this.travel=0;
       this.maxVelocity=0;
@@ -45,22 +47,29 @@ export class DragController {
       this.maxVelocity=Math.max(this.maxVelocity,Math.abs(e.clientX-this.lastX)/elapsed);
       this.lastX=e.clientX;
       this.lastTime=e.timeStamp;
-      this.travel=Math.max(this.travel,Math.abs(e.clientX-this.startX));
-      const outward=(e.clientX-this.startX)*this.side;
+      const horizontal=e.clientX-this.startX;
+      this.travel=Math.max(this.travel,Math.abs(horizontal));
+      if(Math.abs(horizontal)>=10){
+        this.side=horizontal<0?-1:1;
+        this.gesture="swipe";
+      }
       const distance=Math.max(96,canvas.getBoundingClientRect().width*0.28);
-      this.progress=Math.min(1,Math.max(0,outward/distance));
+      this.progress=Math.min(1,Math.abs(horizontal)/distance);
     });
 
     const end=()=>{
       this.dragging=false;
       const tapped=this.travel<10&&this.pointerY<=.7;
       if(tapped){
-        this.progress=1;
+        this.progress=.55;
+        this.gesture="tap";
         this.committed=true;
       }else if(this.progress<0.58){
         this.progress=0;
+        this.gesture="swipe";
       }else{
         this.progress=1;
+        this.gesture="swipe";
         this.committed=true;
       }
       this.energetic=!tapped&&this.committed&&
@@ -77,5 +86,6 @@ export class DragController {
     this.committed=false;
     this.maxVelocity=0;
     this.energetic=false;
+    this.gesture="pending";
   }
 }

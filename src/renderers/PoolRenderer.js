@@ -1,25 +1,55 @@
 import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
+import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017c";
+import { OverflowRenderer } from "./OverflowRenderer.js?v=0017c";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
   constructor(){
     this.surface=new ReservoirSurface();
+    this.overflow=new OverflowEffect();
+    this.overflowRenderer=new OverflowRenderer();
   }
 
-  update(dt){this.surface.update(dt);}
+  update(dt){this.surface.update(dt);this.overflow.update(dt);}
+
+  waterPointAt(x,y,width,height){
+    const water=this.geometry(width,height).water;
+    const v=(y-water.backL.y)/(water.nearL.y-water.backL.y);
+    if(v<0||v>1)return null;
+    const left=this.#mix(water.backL,water.nearL,v);
+    const right=this.#mix(water.backR,water.nearR,v);
+    const u=(x-left.x)/(right.x-left.x);
+    return u>=0&&u<=1?{u,v}:null;
+  }
+
+  disturbAt(x,y,width,height,power=.045){
+    const point=this.waterPointAt(x,y,width,height);
+    if(point)this.surface.disturb(point.u,point.v,power);
+    return point;
+  }
+
+  triggerOverflow({strength=1,origin={u:.5,v:.5}}={}){
+    if(!this.overflow.trigger({strength,origin}))return false;
+    for(let index=0;index<7;index++){
+      const u=.08+index*.14;
+      this.surface.disturb(u,.3+Math.abs(.5-u)*.42,index%2?-.13:.16);
+    }
+    return true;
+  }
 
   render(ctx,width,height){
-    const g=this.#geometry(width,height);
+    const g=this.geometry(width,height);
     this.#wall(ctx,width,height,g);
     this.#rimsBackAndSides(ctx,g);
     this.#water(ctx,g,height);
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
     this.#steps(ctx,width,height,g);
+    this.overflowRenderer.render(ctx,g,width,height,this.overflow,performance.now());
     this.#handrail(ctx,width,height,g);
   }
 
-  #geometry(w,h){
+  geometry(w,h){
     const wallBottom=h*.52;
     const vanishing={x:w*.5,y:h*.26};
     const outerNearY=h*.80;
@@ -58,7 +88,8 @@ export class PoolRenderer {
         nearR:waterNearR,
         nearL:waterNearL
       },
-      stepTop:stepTopY
+      stepTop:stepTopY,
+      steps:{top:stepTopY,treadTop:h*.80,riser2Top:h*.88,floorTop:h*.92}
     };
   }
 
@@ -161,10 +192,7 @@ export class PoolRenderer {
   }
 
   #steps(ctx,w,h,g){
-    const top=g.stepTop;
-    const treadTop=h*.80;
-    const riser2Top=h*.88;
-    const floorTop=h*.92;
+    const {top,treadTop,riser2Top,floorTop}=g.steps;
     ctx.fillStyle=this.#stoneGradient(ctx,g);
     ctx.fillRect(0,treadTop,w,riser2Top-treadTop);
     ctx.fillRect(0,floorTop,w,h-floorTop);

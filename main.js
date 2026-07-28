@@ -1,6 +1,6 @@
 import { Engine } from "./src/core/Engine.js?v=0006c";
 import { SceneManager } from "./src/core/SceneManager.js";
-import { EntranceScene } from "./src/scenes/EntranceScene.js?v=0007a";
+import { EntranceScene } from "./src/scenes/EntranceScene.js?v=0017g";
 import { mountCreditsOverlay } from "./src/ui/CreditsOverlay.js?v=0007a";
 
 const manager = new SceneManager();

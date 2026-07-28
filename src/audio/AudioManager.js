@@ -22,36 +22,39 @@ export class AudioManager {
   }
 
   async unlock() {
-    if (this.unlocked) return;
+    if (this.unlocked) return true;
     if (this.unlocking) return this.unlocking;
-    this.unlocking = this.#unlock();
+    this.unlocking = this.#unlock().finally(() => {
+      if (!this.unlocked) this.unlocking = null;
+    });
     return this.unlocking;
   }
 
   async #unlock() {
     const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) {
-      this.unlocked = true;
-      return;
+    if(Ctx)this.context ??= new Ctx();
+
+    // Start every gated operation synchronously while transient user activation exists.
+    // In particular, resume WebAudio before an HTMLMediaElement play can consume it.
+    const resume = this.context?.state === "suspended"
+      ? this.context.resume().then(()=>true).catch(()=>false)
+      : Promise.resolve(Boolean(this.context));
+    const primes=[];
+    for(const sound of this.sounds.values()){
+      const {audio}=sound;
+      audio.muted=true;
+      primes.push(audio.play().then(()=>true).catch(()=>false));
     }
 
-    this.context = new Ctx();
-    const firstSound=this.sounds.values().next().value;
-    let prime=Promise.resolve();
-    if(firstSound){
-      firstSound.audio.muted=true;
-      prime=firstSound.audio.play().catch(()=>{});
+    const [contextReady,...mediaReady]=await Promise.all([resume,...primes]);
+    for(const sound of this.sounds.values()){
+      const {audio}=sound;
+      audio.pause();
+      audio.currentTime=0;
+      audio.muted=false;
     }
-    if (this.context.state === "suspended") {
-      await this.context.resume();
-    }
-    await prime;
-    if(firstSound){
-      firstSound.audio.pause();
-      firstSound.audio.currentTime=0;
-      firstSound.audio.muted=false;
-    }
-    this.unlocked = true;
+    this.unlocked=primes.length>0 ? mediaReady.some(Boolean) : contextReady||!Ctx;
+    return this.unlocked;
   }
 
   async play(key, options = {}) {
