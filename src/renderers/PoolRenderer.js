@@ -1,7 +1,8 @@
 import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
-import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017d";
-import { OverflowRenderer } from "./OverflowRenderer.js?v=0017e";
+import { OverflowEffect } from "../effects/OverflowEffect.js?v=0023u";
+import { OverflowRenderer } from "./OverflowRenderer.js?v=0023u";
 import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020d";
+import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -10,6 +11,7 @@ export class PoolRenderer {
     this.overflows=[];
     this.overflowRenderer=new OverflowRenderer();
     this.reflectionRenderer=new WaterReflectionRenderer();
+    this.drainRenderer=new DrainGrateRenderer();
   }
 
   update(dt){
@@ -48,8 +50,14 @@ export class PoolRenderer {
 
   render(ctx,width,height){
     const g=this.geometry(width,height);
+    const leftStructure=this.#leftStructure(g,width);
+    g.leftOpening={
+      ...leftStructure,
+      sillLeftY:this.#projectYAtX({x:leftStructure.pillarLeft,y:g.water.backL.y},g.vanishing,0)
+    };
     this.#wall(ctx,width,height,g);
     this.#rimsBackAndSides(ctx,g);
+    this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
@@ -58,6 +66,9 @@ export class PoolRenderer {
     for(const overflow of this.overflows){
       this.overflowRenderer.render(ctx,g,width,height,overflow,time);
     }
+    const drainAmount=Math.min(1,this.overflows.reduce((sum,overflow)=>sum+overflow.levels().rim,0));
+    this.drainRenderer.renderOpenings(ctx,g,drainAmount);
+    this.#leftPillar(ctx,width,height,g);
     this.#handrail(ctx,width,height,g);
   }
 
@@ -118,14 +129,47 @@ export class PoolRenderer {
     }
     ctx.fillStyle=this.#stoneGradient(ctx,g);ctx.fillRect(0,g.wallBottom,w,h-g.wallBottom);
     const s=g.sideWalls;
+    this.#leftWindow(ctx,w,h,g);
     const sideShade=ctx.createLinearGradient(0,0,w,0);
     sideShade.addColorStop(0,"#858b8a");sideShade.addColorStop(.5,"#c4c2bb");sideShade.addColorStop(1,"#858b8a");
     ctx.fillStyle=sideShade;
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(s.leftCorner.x,0);ctx.lineTo(s.leftCorner.x,s.leftCorner.y);ctx.lineTo(s.leftNear.x,s.leftNear.y);ctx.lineTo(0,h);ctx.closePath();ctx.fill();
     ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.lineTo(w,h);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(70,76,76,.4)";ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(s.leftCorner.x,0);ctx.lineTo(s.leftCorner.x,s.leftCorner.y);ctx.lineTo(s.leftNear.x,s.leftNear.y);ctx.stroke();
     ctx.beginPath();ctx.moveTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.stroke();
+  }
+
+  #leftWindow(ctx,w,h,g){
+    const {backLeft,sillLeftY}=g.leftOpening;
+    const light=ctx.createLinearGradient(0,0,Math.max(1,backLeft),0);
+    light.addColorStop(0,"#fff4cf");light.addColorStop(.46,"#edf5ed");light.addColorStop(1,"#c9dce1");
+    ctx.fillStyle=light;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(backLeft,0);ctx.lineTo(backLeft,g.wallBottom);
+    ctx.lineTo(0,sillLeftY);ctx.closePath();ctx.fill();
+  }
+
+  #leftPillar(ctx,w,h,g){
+    const {pillarLeft,pillarRight,backRight}=g.leftOpening;
+    const frontY=g.water.backL.y;
+
+    // Flat faces, rather than a cylindrical gradient, make the projection read as a square pillar.
+    ctx.fillStyle="#b7b5ad";
+    ctx.fillRect(pillarLeft,0,pillarRight-pillarLeft,frontY);
+    ctx.fillStyle="#858a86";
+    this.#quad(ctx,
+      {x:pillarRight,y:0},{x:backRight,y:0},
+      {x:backRight,y:g.wallBottom},{x:pillarRight,y:frontY}
+    );ctx.fill();
+    ctx.strokeStyle="rgba(62,69,68,.52)";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(pillarRight,0);ctx.lineTo(pillarRight,frontY);ctx.stroke();
+    ctx.strokeStyle="rgba(58,64,63,.46)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(pillarLeft,frontY);ctx.lineTo(pillarRight,frontY);ctx.stroke();
+
+    const frameWidth=Math.max(5,w*.012);
+    ctx.lineCap="square";
+    ctx.strokeStyle="rgba(83,91,90,.48)";ctx.lineWidth=frameWidth+2;
+    ctx.beginPath();ctx.moveTo(pillarLeft,0);ctx.lineTo(pillarLeft,frontY);ctx.stroke();
+    ctx.strokeStyle="#d9d8cf";ctx.lineWidth=frameWidth;
+    ctx.beginPath();ctx.moveTo(pillarLeft,0);ctx.lineTo(pillarLeft,frontY);ctx.stroke();
   }
 
   #rimsBackAndSides(ctx,g){
@@ -145,6 +189,9 @@ export class PoolRenderer {
     ctx.fillStyle=water;ctx.fillRect(0,w.backL.y,Math.max(w.nearR.x,w.backR.x),w.nearL.y-w.backL.y+h*.06);
 
     this.reflectionRenderer.render(ctx,p,width,h,this.surface);
+    const daylight=ctx.createLinearGradient(0,0,width*.55,0);
+    daylight.addColorStop(0,"rgba(255,247,205,.18)");daylight.addColorStop(1,"rgba(255,247,205,0)");
+    ctx.fillStyle=daylight;ctx.fillRect(0,w.backL.y,width*.55,w.nearL.y-w.backL.y);
     const sheen=ctx.createLinearGradient(w.nearL.x,w.nearL.y,w.backR.x,w.backR.y);
     sheen.addColorStop(0,"rgba(255,255,255,.04)");sheen.addColorStop(.48,"rgba(255,255,255,.24)");sheen.addColorStop(.58,"rgba(255,255,255,.03)");
     ctx.fillStyle=sheen;ctx.fillRect(0,w.backL.y,Math.max(w.nearR.x,w.backR.x),h);
@@ -172,11 +219,8 @@ export class PoolRenderer {
     }
     const sideYs=[water.backL.y,this.#mix(o.backL,o.nearL,.34).y,water.nearL.y];
     for(const y of sideYs){
-      const leftWall=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,y);
-      const leftInner=this.#pointAtY(water.backL,water.nearL,y);
       const rightWall=this.#pointAtY(g.sideWalls.rightCorner,g.sideWalls.rightNear,y);
       const rightInner=this.#pointAtY(water.backR,water.nearR,y);
-      ctx.beginPath();ctx.moveTo(leftWall.x,y);ctx.lineTo(leftInner.x,y);ctx.stroke();
       ctx.beginPath();ctx.moveTo(rightInner.x,y);ctx.lineTo(rightWall.x,y);ctx.stroke();
     }
   }
@@ -236,7 +280,25 @@ export class PoolRenderer {
   #quad(ctx,a,b,c,d){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();}
   #mix(a,b,t){return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};}
   #pointAtY(a,b,y){return this.#mix(a,b,(y-a.y)/(b.y-a.y));}
+  #leftStructure(g,w){
+    const backY=g.water.backL.y;
+    const drainLeft=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,backY);
+    const pillarRight=drainLeft.x;
+    const backRight=this.#projectX({x:pillarRight,y:backY},g.vanishing,g.wallBottom);
+    const rimBack=this.#pointAtY(g.outer.backL,g.outer.nearL,backY);
+    const drainRight=this.#mix(rimBack,g.water.backL,.72);
+    const grateWidth=Math.max(1,drainRight.x-drainLeft.x);
+    const pillarLeft=Math.max(0,pillarRight-grateWidth);
+    const backLeft=this.#projectX({x:pillarLeft,y:backY},g.vanishing,g.wallBottom);
+    return {
+      pillarLeft,
+      pillarRight:Math.max(0,pillarRight),
+      backLeft,
+      backRight
+    };
+  }
   #projectX(point,vanishing,y){return vanishing.x+(point.x-vanishing.x)*(y-vanishing.y)/(point.y-vanishing.y);}
+  #projectYAtX(point,vanishing,x){return vanishing.y+(point.y-vanishing.y)*(x-vanishing.x)/(point.x-vanishing.x);}
   #stoneGradient(ctx,g){
     const gradient=ctx.createLinearGradient(g.outer.nearL.x,0,g.outer.nearR.x,0);
     gradient.addColorStop(0,"#777b74");gradient.addColorStop(.48,"#4a504d");gradient.addColorStop(1,"#656963");
