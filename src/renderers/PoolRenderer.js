@@ -137,9 +137,8 @@ export class PoolRenderer {
   }
 
   #leftPillar(ctx,w,h,g){
-    const {pillarLeft,pillarRight}=this.#leftStructure(g,w);
+    const {pillarLeft,pillarRight,sideDepth}=this.#leftStructure(g,w);
     const frontY=g.water.backL.y;
-    const sideDepth=Math.max(7,w*.025);
 
     // A bright sill/reveal continues from the square column to the unseen window.
     const sill=ctx.createLinearGradient(0,g.wallBottom,0,frontY);
@@ -274,11 +273,13 @@ export class PoolRenderer {
   #leftStructure(g,w){
     const backY=g.water.backL.y;
     const drainLeft=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,backY);
-    const rimBack=this.#pointAtY(g.outer.backL,g.outer.nearL,backY);
-    const drainRight=this.#mix(rimBack,g.water.backL,.72);
+    const sideDepth=Math.max(7,w*.02);
+    const pillarWidth=Math.max(26,w*.075);
+    const pillarRight=drainLeft.x-sideDepth;
     return {
-      pillarLeft:Math.max(0,drainLeft.x),
-      pillarRight:Math.min(w,drainRight.x+w*.02)
+      pillarLeft:Math.max(0,pillarRight-pillarWidth),
+      pillarRight:Math.max(0,pillarRight),
+      sideDepth
     };
   }
   #projectX(point,vanishing,y){return vanishing.x+(point.x-vanishing.x)*(y-vanishing.y)/(point.y-vanishing.y);}
