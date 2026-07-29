@@ -112,7 +112,7 @@ export function initializeAudio(scene){
       if(startOverlay.dataset.state!=="ready")return;
       startOverlay.dataset.state="preparing";
       startOverlay.disabled=true;
-      startLabel.textContent="Getting ready...";
+      startLabel.textContent="";
       const ready=await scene.audio.unlock();
       if(!ready){
         startOverlay.dataset.state="ready";
