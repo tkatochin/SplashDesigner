@@ -8,7 +8,7 @@ export class OverflowRenderer {
     this.#horizontalFlow(ctx,0,geometry.steps.treadTop,width,geometry.steps.riser2Top-geometry.steps.treadTop,levels.tread,.34);
     this.#cascade(ctx,0,geometry.steps.top,width,geometry.steps.treadTop-geometry.steps.top,levels.firstFall,effect,time);
     this.#cascade(ctx,0,geometry.steps.riser2Top,width,geometry.steps.floorTop-geometry.steps.riser2Top,levels.secondFall,effect,time);
-    this.#wetFloor(ctx,width,height,geometry.steps.floorTop,levels,effect,time);
+    this.#wetFloor(ctx,width,height,geometry.steps.floorTop,levels);
     ctx.restore();
   }
 
@@ -71,7 +71,7 @@ export class OverflowRenderer {
     ctx.fillStyle=gradient;ctx.fillRect(x,y,width,height);
   }
 
-  #wetFloor(ctx,width,height,floorTop,levels,effect,time){
+  #wetFloor(ctx,width,height,floorTop,levels){
     if(levels.wet<=0||levels.floorReach<=0)return;
     const depth=Math.max(1,height-floorTop);
     const frontY=floorTop+depth*levels.floorReach;
@@ -87,20 +87,11 @@ export class OverflowRenderer {
     ctx.closePath();ctx.clip();
 
     const film=ctx.createLinearGradient(0,rearY,0,Math.max(rearY+1,frontY));
-    film.addColorStop(0,`rgba(93,202,224,${Math.min(.38,levels.wet*.31)})`);
-    film.addColorStop(.7,`rgba(31,137,171,${Math.min(.3,levels.wet*.23)})`);
-    film.addColorStop(1,`rgba(17,100,132,${Math.min(.18,levels.wet*.13)})`);
+    film.addColorStop(0,"rgba(93,202,224,0)");
+    film.addColorStop(.16,`rgba(93,202,224,${Math.min(.32,levels.wet*.26)})`);
+    film.addColorStop(.72,`rgba(31,137,171,${Math.min(.25,levels.wet*.19)})`);
+    film.addColorStop(1,"rgba(17,100,132,0)");
     ctx.fillStyle=film;ctx.fillRect(0,rearY,width,frontY-rearY+wave);
-
-    ctx.lineCap="round";
-    for(let index=0;index<12;index++){
-      const strand=effect.strands[(index*2)%effect.strands.length];
-      const x=(index+.45)*width/12;
-      const sway=Math.sin(time*.004+strand.phase)*width*.006;
-      ctx.strokeStyle=`rgba(191,237,242,${Math.min(.24,levels.wet*(.08+strand.width*.08))})`;
-      ctx.lineWidth=Math.max(.8,width*.0012*strand.width);
-      ctx.beginPath();ctx.moveTo(x,rearY);ctx.bezierCurveTo(x+sway,frontY*.35+rearY*.65,x-sway,frontY*.72+rearY*.28,x+sway*.35,frontY);ctx.stroke();
-    }
     ctx.restore();
   }
 
