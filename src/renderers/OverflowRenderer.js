@@ -15,36 +15,26 @@ export class OverflowRenderer {
 
   #rimFilm(ctx,g,amount){
     if(amount<=0)return;
-    const {outer:o,water:w,sideWalls:s}=g;
-    const wallRightNear=this.#pointAtY(s.rightCorner,s.rightNear,o.nearR.y);
-    const drainOuterBack=this.#pointAtY(s.leftCorner,s.leftNear,w.backL.y);
+    const {water:w,sideWalls:s}=g;
+    const wallRightNear=this.#pointAtY(s.rightCorner,s.rightNear,w.nearR.y);
     const drainOuterNear=this.#pointAtY(s.leftCorner,s.leftNear,w.nearL.y);
-    const gradient=ctx.createLinearGradient(0,w.backL.y,0,o.nearL.y);
+    const gradient=ctx.createLinearGradient(0,w.backL.y,0,w.nearL.y);
     gradient.addColorStop(0,`rgba(178,242,250,${Math.min(.58,amount*.46)})`);
     gradient.addColorStop(.45,`rgba(39,181,214,${Math.min(.62,amount*.5)})`);
     gradient.addColorStop(1,`rgba(4,107,157,${Math.min(.54,amount*.42)})`);
     ctx.fillStyle=gradient;
-    this.#quad(ctx,o.backL,o.backR,w.backR,w.backL);ctx.fill();
-    this.#quad(ctx,o.backL,w.backL,w.nearL,o.nearL);ctx.fill();
-    this.#quad(ctx,w.backR,o.backR,o.nearR,w.nearR);ctx.fill();
-    this.#quad(ctx,w.nearL,w.nearR,o.nearR,o.nearL);ctx.fill();
-    // Continue the side sheets across the surrounding stone all the way to
-    // the visible wall/floor seams; the bath's outer rim stops short of them.
-    ctx.fillStyle=gradient;
-    // One continuous seven-corner sheet joins the window-side floor to the
-    // original bath/rim film. Its notch follows the pillar base, its upper-left
-    // edge follows the window perspective, and its inner edge follows the grate.
+    // One seven-corner sheet covers the bath and both surrounding sides once.
+    // The upper-left notch wraps around the pillar; its back corner is the
+    // lower-right corner of the pillar's side face, not the grate's back edge.
     ctx.beginPath();
     ctx.moveTo(0,g.leftOpening.sillLeftY);
     ctx.lineTo(g.leftOpening.pillarLeft,w.backL.y);
-    ctx.lineTo(drainOuterBack.x,w.backL.y);
-    ctx.lineTo(w.backL.x,w.backL.y);
-    ctx.lineTo(w.nearL.x,w.nearL.y);
+    ctx.lineTo(g.leftOpening.pillarRight,w.backL.y);
+    ctx.lineTo(g.leftOpening.backRight,g.wallBottom);
+    ctx.lineTo(s.rightCorner.x,g.wallBottom);
+    ctx.lineTo(wallRightNear.x,w.nearL.y);
     ctx.lineTo(drainOuterNear.x,w.nearL.y);
-    ctx.lineTo(0,w.nearL.y);
     ctx.closePath();ctx.fill();
-    ctx.fillStyle=gradient;
-    this.#quad(ctx,o.backR,s.rightCorner,wallRightNear,o.nearR);ctx.fill();
 
     // A continuous foamy lip makes it clear that water reaches every side,
     // rather than leaving the side rims looking only partially wet.
