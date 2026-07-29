@@ -158,15 +158,14 @@ export class PoolRenderer {
     ctx.strokeStyle="rgba(62,69,68,.52)";ctx.lineWidth=1.4;
     ctx.beginPath();ctx.moveTo(pillarRight,0);ctx.lineTo(pillarRight,frontY);ctx.stroke();
     ctx.strokeStyle="rgba(58,64,63,.46)";ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(0,frontY);ctx.lineTo(pillarRight,frontY);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pillarLeft,frontY);ctx.lineTo(pillarRight,frontY);ctx.stroke();
 
-    const sillLeftY=this.#projectYAtX({x:pillarLeft,y:frontY},g.vanishing,0);
     const frameWidth=Math.max(5,w*.012);
     ctx.lineCap="square";
     ctx.strokeStyle="rgba(83,91,90,.48)";ctx.lineWidth=frameWidth+2;
-    ctx.beginPath();ctx.moveTo(pillarLeft,0);ctx.lineTo(pillarLeft,frontY);ctx.lineTo(0,sillLeftY);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pillarLeft,0);ctx.lineTo(pillarLeft,frontY);ctx.stroke();
     ctx.strokeStyle="#d9d8cf";ctx.lineWidth=frameWidth;
-    ctx.beginPath();ctx.moveTo(pillarLeft,0);ctx.lineTo(pillarLeft,frontY);ctx.lineTo(0,sillLeftY);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pillarLeft,0);ctx.lineTo(pillarLeft,frontY);ctx.stroke();
   }
 
   #rimsBackAndSides(ctx,g){
