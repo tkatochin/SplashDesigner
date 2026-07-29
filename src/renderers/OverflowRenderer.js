@@ -32,8 +32,8 @@ export class OverflowRenderer {
     // the visible wall/floor seams; the bath's outer rim stops short of them.
     const drainFlow=ctx.createLinearGradient((o.backL.x+o.nearL.x)*.5,0,0,0);
     drainFlow.addColorStop(0,`rgba(39,181,214,${Math.min(.62,amount*.5)})`);
-    drainFlow.addColorStop(.68,`rgba(18,139,178,${Math.min(.34,amount*.27)})`);
-    drainFlow.addColorStop(1,"rgba(18,139,178,0)");
+    drainFlow.addColorStop(.68,`rgba(18,139,178,${Math.min(.4,amount*.32)})`);
+    drainFlow.addColorStop(1,`rgba(18,139,178,${Math.min(.3,amount*.24)})`);
     ctx.fillStyle=drainFlow;
     this.#quad(ctx,drainOuterBack,w.backL,w.nearL,drainOuterNear);ctx.fill();
     // Past the grate, a thin sheet spreads across the open left-side floor in

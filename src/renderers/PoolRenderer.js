@@ -1,6 +1,6 @@
 import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
 import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017d";
-import { OverflowRenderer } from "./OverflowRenderer.js?v=0023l";
+import { OverflowRenderer } from "./OverflowRenderer.js?v=0023m";
 import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020d";
 import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
 
@@ -154,7 +154,7 @@ export class PoolRenderer {
     // Flat faces, rather than a cylindrical gradient, make the projection read as a square pillar.
     ctx.fillStyle="#b7b5ad";
     ctx.fillRect(pillarLeft,0,pillarRight-pillarLeft,frontY);
-    ctx.fillStyle="#a1a39e";
+    ctx.fillStyle="#858a86";
     this.#quad(ctx,
       {x:pillarRight,y:0},{x:backRight,y:0},
       {x:backRight,y:g.wallBottom},{x:pillarRight,y:frontY}
