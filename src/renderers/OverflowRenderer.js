@@ -16,8 +16,9 @@ export class OverflowRenderer {
   #rimFilm(ctx,g,amount){
     if(amount<=0)return;
     const {outer:o,water:w,sideWalls:s}=g;
-    const wallLeftNear=this.#pointAtY(s.leftCorner,s.leftNear,o.nearL.y);
     const wallRightNear=this.#pointAtY(s.rightCorner,s.rightNear,o.nearR.y);
+    const drainOuterBack=this.#pointAtY(s.leftCorner,s.leftNear,w.backL.y);
+    const drainOuterNear=this.#pointAtY(s.leftCorner,s.leftNear,w.nearL.y);
     const gradient=ctx.createLinearGradient(0,w.backL.y,0,o.nearL.y);
     gradient.addColorStop(0,`rgba(178,242,250,${Math.min(.58,amount*.46)})`);
     gradient.addColorStop(.45,`rgba(39,181,214,${Math.min(.62,amount*.5)})`);
@@ -29,11 +30,15 @@ export class OverflowRenderer {
     this.#quad(ctx,w.nearL,w.nearR,o.nearR,o.nearL);ctx.fill();
     // Continue the side sheets across the surrounding stone all the way to
     // the visible wall/floor seams; the bath's outer rim stops short of them.
-    const drainFlow=ctx.createLinearGradient((o.backL.x+o.nearL.x)*.5,0,(s.leftCorner.x+wallLeftNear.x)*.5,0);
+    const drainFlow=ctx.createLinearGradient((o.backL.x+o.nearL.x)*.5,0,0,0);
     drainFlow.addColorStop(0,`rgba(39,181,214,${Math.min(.62,amount*.5)})`);
-    drainFlow.addColorStop(.62,`rgba(18,139,178,${Math.min(.38,amount*.3)})`);
-    drainFlow.addColorStop(1,"rgba(4,63,78,0)");
-    ctx.fillStyle=drainFlow;this.#quad(ctx,s.leftCorner,o.backL,o.nearL,wallLeftNear);ctx.fill();
+    drainFlow.addColorStop(.68,`rgba(18,139,178,${Math.min(.34,amount*.27)})`);
+    drainFlow.addColorStop(1,"rgba(18,139,178,0)");
+    ctx.fillStyle=drainFlow;
+    this.#quad(ctx,drainOuterBack,w.backL,w.nearL,drainOuterNear);ctx.fill();
+    // Past the grate, a thin sheet spreads across the open left-side floor in
+    // front of the pillar before fading and draining through the dark gaps.
+    this.#quad(ctx,{x:0,y:w.backL.y},drainOuterBack,drainOuterNear,{x:0,y:w.nearL.y});ctx.fill();
     ctx.fillStyle=gradient;
     this.#quad(ctx,o.backR,s.rightCorner,wallRightNear,o.nearR);ctx.fill();
 
@@ -45,11 +50,6 @@ export class OverflowRenderer {
     ctx.beginPath();
     ctx.moveTo(w.backL.x,w.backL.y);ctx.lineTo(w.backR.x,w.backR.y);
     ctx.lineTo(w.nearR.x,w.nearR.y);ctx.lineTo(w.nearL.x,w.nearL.y);ctx.closePath();ctx.stroke();
-    ctx.strokeStyle=`rgba(114,225,241,${Math.min(.68,amount*.56)})`;
-    ctx.lineWidth=4.5;
-    ctx.beginPath();
-    ctx.moveTo(s.leftCorner.x,s.leftCorner.y);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);
-    ctx.lineTo(wallRightNear.x,wallRightNear.y);ctx.lineTo(wallLeftNear.x,wallLeftNear.y);ctx.closePath();ctx.stroke();
   }
 
   #cascade(ctx,x,y,width,height,amount,effect,time){
