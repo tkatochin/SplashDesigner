@@ -2,7 +2,10 @@
 export class ThermometerRenderer {
   geometry(width,height){
     const radius=Math.max(20,Math.min(34,Math.min(width,height)*.055));
-    return{x:width*.5,y:Math.max(38,height*.075),radius};
+    const wallBottom=height*.52;
+    const tileHeight=Math.max(38,height*.075);
+    const firstGroutAboveFloor=Math.floor((wallBottom-.001)/tileHeight)*tileHeight;
+    return{x:width*.5,y:firstGroutAboveFloor,radius};
   }
 
   hitTest(px,py,width,height){
