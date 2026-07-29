@@ -137,7 +137,7 @@ export class PoolRenderer {
   }
 
   #leftPillar(ctx,w,h,g){
-    const {pillarLeft,pillarRight,sideDepth}=this.#leftStructure(g,w);
+    const {pillarLeft,pillarRight,backRight}=this.#leftStructure(g,w);
     const frontY=g.water.backL.y;
 
     // A bright sill/reveal continues from the square column to the unseen window.
@@ -151,8 +151,8 @@ export class PoolRenderer {
     ctx.fillRect(pillarLeft,0,pillarRight-pillarLeft,frontY);
     ctx.fillStyle="#858a86";
     this.#quad(ctx,
-      {x:pillarRight,y:0},{x:pillarRight+sideDepth,y:0},
-      {x:pillarRight+sideDepth,y:g.wallBottom},{x:pillarRight,y:frontY}
+      {x:pillarRight,y:0},{x:backRight,y:0},
+      {x:backRight,y:g.wallBottom},{x:pillarRight,y:frontY}
     );ctx.fill();
     ctx.strokeStyle="rgba(62,69,68,.52)";ctx.lineWidth=1.4;
     ctx.beginPath();ctx.moveTo(pillarRight,0);ctx.lineTo(pillarRight,frontY);ctx.stroke();
@@ -273,13 +273,13 @@ export class PoolRenderer {
   #leftStructure(g,w){
     const backY=g.water.backL.y;
     const drainLeft=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,backY);
-    const sideDepth=Math.max(7,w*.02);
     const pillarWidth=Math.max(26,w*.075);
-    const pillarRight=drainLeft.x-sideDepth;
+    const pillarRight=drainLeft.x;
+    const backRight=this.#projectX({x:pillarRight,y:backY},g.vanishing,g.wallBottom);
     return {
       pillarLeft:Math.max(0,pillarRight-pillarWidth),
       pillarRight:Math.max(0,pillarRight),
-      sideDepth
+      backRight
     };
   }
   #projectX(point,vanishing,y){return vanishing.x+(point.x-vanishing.x)*(y-vanishing.y)/(point.y-vanishing.y);}
