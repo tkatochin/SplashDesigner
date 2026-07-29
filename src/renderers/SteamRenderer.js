@@ -2,11 +2,17 @@
 export class SteamRenderer {
   constructor(){
     this.boost=0;
-    this.wisps=Array.from({length:22},(_,index)=>({
-      u:(index+.35)/22,
-      phase:(index*2.399)%1,
-      sway:.55+((index*17)%9)/10,
-      size:.7+((index*13)%7)/10
+    this.wisps=Array.from({length:42},()=>({
+      u:Math.random(),
+      v:.04+Math.random()*.9,
+      phase:Math.random(),
+      activation:Math.random(),
+      speed:.55+Math.random()*.9,
+      sway:.35+Math.random()*1.3,
+      width:.38+Math.random()*1.55,
+      height:.55+Math.random()*1.75,
+      opacity:.45+Math.random()*.75,
+      rotation:(Math.random()-.5)*.55
     }));
   }
 
@@ -20,18 +26,26 @@ export class SteamRenderer {
     const rise=height*(baseLevel>.6?.25:.19);
     ctx.save();ctx.globalCompositeOperation="screen";
     for(const wisp of this.wisps){
-      const cycle=(time*.000055*(.8+wisp.sway)+wisp.phase)%1;
-      if(cycle>Math.min(1,level*.92))continue;
-      const x=water.backL.x+(water.backR.x-water.backL.x)*wisp.u+Math.sin(time*.0007+wisp.phase*9)*width*.012*wisp.sway;
-      const y=water.backL.y-cycle*rise;
-      const radius=Math.max(8,width*.018*wisp.size*(.7+cycle*.8));
-      const alpha=(1-cycle)*Math.min(.2,.065+level*.09);
+      if(wisp.activation>Math.min(1,level*.92))continue;
+      const cycle=(time*.00005*wisp.speed+wisp.phase)%1;
+      const left=this.#mix(water.backL,water.nearL,wisp.v);
+      const right=this.#mix(water.backR,water.nearR,wisp.v);
+      const sourceX=left.x+(right.x-left.x)*wisp.u;
+      const sourceY=left.y;
+      const x=sourceX+Math.sin(time*.00065*wisp.speed+wisp.phase*11)*width*.014*wisp.sway;
+      const y=sourceY-cycle*rise*(.65+wisp.height*.25);
+      const radius=Math.max(7,width*.015*(.65+cycle*.85));
+      const life=Math.sin(Math.PI*cycle);
+      const alpha=life*Math.min(.22,(.045+level*.085)*wisp.opacity);
       const fog=ctx.createRadialGradient(x,y,0,x,y,radius);
       fog.addColorStop(0,`rgba(245,247,232,${alpha})`);
       fog.addColorStop(.55,`rgba(226,236,224,${alpha*.55})`);
       fog.addColorStop(1,"rgba(220,230,220,0)");
-      ctx.fillStyle=fog;ctx.beginPath();ctx.ellipse(x,y,radius,radius*1.65,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=fog;ctx.beginPath();
+      ctx.ellipse(x,y,radius*wisp.width,radius*wisp.height,wisp.rotation,0,Math.PI*2);ctx.fill();
     }
     ctx.restore();
   }
+
+  #mix(a,b,t){return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};}
 }
