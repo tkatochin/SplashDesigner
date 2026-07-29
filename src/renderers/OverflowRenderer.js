@@ -38,7 +38,13 @@ export class OverflowRenderer {
     this.#quad(ctx,drainOuterBack,w.backL,w.nearL,drainOuterNear);ctx.fill();
     // Past the grate, a thin sheet spreads across the open left-side floor in
     // front of the pillar before fading and draining through the dark gaps.
-    this.#quad(ctx,{x:0,y:g.leftOpening.sillLeftY},drainOuterBack,drainOuterNear,{x:0,y:w.nearL.y});ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(0,g.leftOpening.sillLeftY);
+    ctx.lineTo(g.leftOpening.pillarLeft,w.backL.y);
+    ctx.lineTo(drainOuterBack,w.backL.y);
+    ctx.lineTo(drainOuterNear,w.nearL.y);
+    ctx.lineTo(0,w.nearL.y);
+    ctx.closePath();ctx.fill();
     ctx.fillStyle=gradient;
     this.#quad(ctx,o.backR,s.rightCorner,wallRightNear,o.nearR);ctx.fill();
 

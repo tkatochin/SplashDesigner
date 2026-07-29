@@ -1,8 +1,8 @@
 import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
 import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017d";
-import { OverflowRenderer } from "./OverflowRenderer.js?v=0023j";
+import { OverflowRenderer } from "./OverflowRenderer.js?v=0023l";
 import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020d";
-import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023k";
+import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -154,7 +154,7 @@ export class PoolRenderer {
     // Flat faces, rather than a cylindrical gradient, make the projection read as a square pillar.
     ctx.fillStyle="#b7b5ad";
     ctx.fillRect(pillarLeft,0,pillarRight-pillarLeft,frontY);
-    ctx.fillStyle="#858a86";
+    ctx.fillStyle="#a1a39e";
     this.#quad(ctx,
       {x:pillarRight,y:0},{x:backRight,y:0},
       {x:backRight,y:g.wallBottom},{x:pillarRight,y:frontY}
@@ -286,7 +286,7 @@ export class PoolRenderer {
     const pillarRight=drainLeft.x;
     const backRight=this.#projectX({x:pillarRight,y:backY},g.vanishing,g.wallBottom);
     const rimBack=this.#pointAtY(g.outer.backL,g.outer.nearL,backY);
-    const drainRight=g.water.backL;
+    const drainRight=this.#mix(rimBack,g.water.backL,.72);
     const grateWidth=Math.max(1,drainRight.x-drainLeft.x);
     const pillarLeft=Math.max(0,pillarRight-grateWidth);
     const backLeft=this.#projectX({x:pillarLeft,y:backY},g.vanishing,g.wallBottom);
