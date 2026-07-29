@@ -3,9 +3,10 @@ import { Scene } from "../core/Scene.js";
 import { Camera } from "../core/Camera.js?v=0006c";
 import { DragController } from "../input/DragController.js?v=0007b";
 import { WaterHoldController } from "../input/WaterHoldController.js?v=0017e";
+import { ThermometerController } from "../input/ThermometerController.js?v=0010a";
 import { DragSpring } from "../input/DragSpring.js";
 import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022c";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0017v";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0010c";
 import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0022b";
 
 export class EntranceScene extends Scene {
@@ -14,6 +15,7 @@ export class EntranceScene extends Scene {
     this.camera=new Camera();
     this.drag=null;
     this.waterHold=null;
+    this.thermometerControl=null;
     this.spring=new DragSpring();
     this.noren=new NorenRenderer();
     this.pool=new PoolRenderer();
@@ -37,6 +39,12 @@ export class EntranceScene extends Scene {
       onTrigger:point=>{
         if(this.pool.triggerOverflow({origin:{u:point.u,v:point.v}}))this.playOverflowAudio?.();
       }
+    });
+    this.thermometerControl=new ThermometerController(canvas,{
+      isEnabled:()=>this.state==="revealed",
+      hitTest:(x,y)=>this.pool.thermometerHitTest(x,y,this.engine.width,this.engine.height),
+      onTap:()=>this.pool.cycleTemperature(),
+      onSwipe:()=>this.pool.toggleThermometerDisplay()
     });
     this.spring.snap(0);
     this.state="idle";
@@ -85,6 +93,7 @@ export class EntranceScene extends Scene {
     window.clearTimeout(this.bucketTimer);
     this.removeAudioVisibilityListener?.();
     this.waterHold?.destroy();
+    this.thermometerControl?.destroy();
     this.audio?.fadeOut("bath",400);
   }
 

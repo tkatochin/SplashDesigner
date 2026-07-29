@@ -312,7 +312,7 @@ Completion
 
 ## Issue-0010 — Water Thermometer
 
-Status: **仕様確定・0010a解析中**
+Status: **0010c実装済み・プレビュー確認待ち**
 
 Purpose: 奥壁の丸形温度計そのものを操作し、水風呂、シングル水風呂、風呂、熱湯を循環切り替えする。
 
@@ -352,9 +352,19 @@ Implementation analysis
 -   湯気は水面より手前、柱・手すり等との前後関係を保つ専用Rendererとして`PoolRenderer`から描画する
 -   Issue-0009の速度別Splashは未実装のため、Issue-0010では湯気増加メソッドを用意し、Issue-0009で実イベントへ接続する
 
-Open interaction detail for Issue-0010b
+Confirmed interaction detail
 
--   アナログ盤面へ切り替えた後、再スワイプでデジタルへ戻すか、アナログのまま温度タップ循環を続けるかを確定する
+-   スワイプはデジタル／アナログ盤面のトグルとし、どちらの盤面でもタップによる温度循環を継続する
+
+Implementation map
+
+-   `src/devices/WaterTemperature.js`: 4温度状態、20秒タイマー、±0.2℃揺らぎ、盤面モード
+-   `src/renderers/ThermometerRenderer.js`: 奥壁の丸形デジタル／アナログ盤面と円形ヒット領域
+-   `src/input/ThermometerController.js`: タップと任意方向スワイプの判別
+-   `src/renderers/SteamRenderer.js`: 温水・熱湯の基礎湯気とSplash時の一時増加
+-   `src/renderers/PoolRenderer.js`: 温度状態、温度計、湯気、水面入力の統合
+-   `src/scenes/EntranceScene.js`: 入館後だけ有効な温度計入力の生成と破棄
+-   旧矩形試作`src/devices/WaterThermometer.js`は削除し、未使用`DeviceLayer`から参照を除去
 
 ## Issue-0011 — Infrared Sensor and Vibra
 

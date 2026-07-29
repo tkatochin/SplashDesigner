@@ -3,6 +3,9 @@ import { OverflowEffect } from "../effects/OverflowEffect.js?v=0023u";
 import { OverflowRenderer } from "./OverflowRenderer.js?v=0017v";
 import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020d";
 import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
+import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
+import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010a";
+import { SteamRenderer } from "./SteamRenderer.js?v=0010a";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -12,10 +15,15 @@ export class PoolRenderer {
     this.overflowRenderer=new OverflowRenderer();
     this.reflectionRenderer=new WaterReflectionRenderer();
     this.drainRenderer=new DrainGrateRenderer();
+    this.temperature=new WaterTemperature();
+    this.thermometerRenderer=new ThermometerRenderer();
+    this.steamRenderer=new SteamRenderer();
   }
 
   update(dt){
     this.surface.update(dt);
+    this.temperature.update(dt);
+    this.steamRenderer.update(dt);
     for(const overflow of this.overflows)overflow.update(dt);
     this.overflows=this.overflows.filter(overflow=>overflow.active);
   }
@@ -32,9 +40,17 @@ export class PoolRenderer {
 
   disturbAt(x,y,width,height,power=.045){
     const point=this.waterPointAt(x,y,width,height);
-    if(point)this.surface.disturb(point.u,point.v,power);
+    if(point){
+      this.surface.disturb(point.u,point.v,power);
+      if(this.temperature.steamLevel>0&&power>=.04)this.steamRenderer.splash(power/.045);
+    }
     return point;
   }
+
+  thermometerHitTest(x,y,width,height){return this.thermometerRenderer.hitTest(x,y,width,height);}
+  cycleTemperature(){this.temperature.cycle();}
+  toggleThermometerDisplay(){this.temperature.toggleDisplay();}
+  boostSteam(strength=1){if(this.temperature.steamLevel>0)this.steamRenderer.splash(strength);}
 
   triggerOverflow({strength=1,origin={u:.5,v:.5}}={}){
     const overflow=new OverflowEffect();
@@ -56,6 +72,7 @@ export class PoolRenderer {
       sillLeftY:this.#projectYAtX({x:leftStructure.pillarLeft,y:g.water.backL.y},g.vanishing,0)
     };
     this.#wall(ctx,width,height,g);
+    this.thermometerRenderer.render(ctx,width,height,this.temperature);
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
@@ -68,6 +85,7 @@ export class PoolRenderer {
     }
     const drainAmount=Math.min(1,this.overflows.reduce((sum,overflow)=>sum+overflow.levels().rim,0));
     this.drainRenderer.renderOpenings(ctx,g,drainAmount);
+    this.steamRenderer.render(ctx,g,width,height,this.temperature.steamLevel,time);
     this.#leftPillar(ctx,width,height,g);
     this.#handrail(ctx,width,height,g);
   }
