@@ -15,6 +15,7 @@ export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {
 
   const dialog = document.createElement("dialog");
   dialog.className = "credits-dialog";
+  dialog.tabIndex = -1;
   const title = document.createElement("h2");
   title.className = "credits-title";
   title.textContent = "Credit";
@@ -62,6 +63,7 @@ export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {
   let stopRoll=()=>{};
   const open=()=>{
     dialog.showModal();
+    dialog.focus({preventScroll:true});
     requestAnimationFrame(()=>{stopRoll=startCreditRoll(viewport);});
   };
   const stopForInteraction=()=>stopRoll();
