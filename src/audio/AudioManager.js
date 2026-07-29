@@ -31,11 +31,22 @@ export class AudioManager {
     return this.unlocking;
   }
 
-  async resume(){
+  async resume({recover=false,timeout=1200}={}){
     if(!this.context)return this.unlocked;
-    if(this.context.state==="running")return true;
+    if(this.context.state==="running"&&!recover)return true;
     try{
-      await this.context.resume();
+      if(recover){
+        // iOS may leave resume() pending forever after returning from another app.
+        // Reassert suspension first, then let the native audio session settle.
+        this.context.suspend().catch(()=>{});
+        await new Promise(resolve=>window.setTimeout(resolve,200));
+      }
+      const resumed=this.context.resume().then(()=>true).catch(()=>false);
+      const settled=await Promise.race([
+        resumed,
+        new Promise(resolve=>window.setTimeout(()=>resolve(false),timeout))
+      ]);
+      if(!settled)return false;
       return this.context.state==="running";
     }catch{return false;}
   }

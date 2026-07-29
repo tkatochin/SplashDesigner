@@ -1,4 +1,4 @@
-import { AudioManager } from "../audio/AudioManager.js?v=0007f";
+import { AudioManager } from "../audio/AudioManager.js?v=0019a";
 
 /**
  * Patch 0013 additions for EntranceScene.
@@ -19,6 +19,8 @@ export function initializeAudio(scene){
   scene.audioPausedByVisibility=false;
   scene.audioVisibilityResumePending=false;
   scene.audioVisibilityGeneration=0;
+  scene.audioVisibilityRetryCount=0;
+  scene.audioVisibilityRetryTimer=0;
 
   const canvas = scene.engine.renderer.canvas;
   const startOverlay=document.getElementById("audio-start");
@@ -49,8 +51,9 @@ export function initializeAudio(scene){
   const resumeVisibleAudio=async()=>{
     if(document.hidden||!scene.audioPausedByVisibility||scene.audioVisibilityResumePending)return;
     const generation=scene.audioVisibilityGeneration;
+    scene.audioVisibilityRetryCount+=1;
     scene.audioVisibilityResumePending=true;
-    const ready=await scene.audio.resume();
+    const ready=await scene.audio.resume({recover:true});
     scene.audioVisibilityResumePending=false;
     if(document.hidden||generation!==scene.audioVisibilityGeneration){
       scene.audio.suspend();
@@ -60,10 +63,15 @@ export function initializeAudio(scene){
       canvas.addEventListener("touchend",retryVisibleAudio,{passive:true});
       canvas.addEventListener("click",retryVisibleAudio);
       canvas.addEventListener("pointerup",retryVisibleAudioPointer);
+      if(scene.audioVisibilityRetryCount<3){
+        window.clearTimeout(scene.audioVisibilityRetryTimer);
+        scene.audioVisibilityRetryTimer=window.setTimeout(resumeVisibleAudio,500*scene.audioVisibilityRetryCount);
+      }
       return;
     }
     removeVisibilityRetry();
     scene.audioPausedByVisibility=false;
+    scene.audioVisibilityRetryCount=0;
     if(scene.bathAudioStarted){
       scene.audio.fadeIn("bath",500);
       scheduleBucket(scene);
@@ -75,6 +83,7 @@ export function initializeAudio(scene){
     scene.audioVisibilityGeneration+=1;
     if(document.hidden){
       window.clearTimeout(scene.bucketTimer);
+      window.clearTimeout(scene.audioVisibilityRetryTimer);
       scene.bucketTimer=0;
       removeVisibilityRetry();
       scene.audioPausedByVisibility=scene.audio.ready;
@@ -82,11 +91,13 @@ export function initializeAudio(scene){
       scene.audio.suspend();
       return;
     }
+    scene.audioVisibilityRetryCount=0;
     resumeVisibleAudio();
   };
   document.addEventListener("visibilitychange",onVisibilityChange);
   scene.removeAudioVisibilityListener=()=>{
     document.removeEventListener("visibilitychange",onVisibilityChange);
+    window.clearTimeout(scene.audioVisibilityRetryTimer);
     removeVisibilityRetry();
   };
 
