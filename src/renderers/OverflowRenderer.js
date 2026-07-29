@@ -38,12 +38,24 @@ export class OverflowRenderer {
     this.#quad(ctx,drainOuterBack,w.backL,w.nearL,drainOuterNear);ctx.fill();
     // Past the grate, a thin sheet spreads across the open left-side floor in
     // front of the pillar before fading and draining through the dark gaps.
+    // Split the open-side sheet at the pillar and grate boundaries. The grate's
+    // outer edge exits the viewport near the foreground; treating all of these
+    // points as one concave polygon left a visibly dry triangular wedge.
     ctx.beginPath();
     ctx.moveTo(0,g.leftOpening.sillLeftY);
     ctx.lineTo(g.leftOpening.pillarLeft,w.backL.y);
-    ctx.lineTo(drainOuterBack,w.backL.y);
-    ctx.lineTo(drainOuterNear,w.nearL.y);
+    ctx.lineTo(drainOuterNear.x,w.nearL.y);
     ctx.lineTo(0,w.nearL.y);
+    ctx.closePath();ctx.fill();
+
+    const cornerFlow=ctx.createLinearGradient(drainOuterBack.x,w.backL.y,drainOuterNear.x,w.nearL.y);
+    cornerFlow.addColorStop(0,`rgba(62,199,224,${Math.min(.62,amount*.52)})`);
+    cornerFlow.addColorStop(1,`rgba(18,139,178,${Math.min(.44,amount*.36)})`);
+    ctx.fillStyle=cornerFlow;
+    ctx.beginPath();
+    ctx.moveTo(g.leftOpening.pillarLeft,w.backL.y);
+    ctx.lineTo(drainOuterBack.x,w.backL.y);
+    ctx.lineTo(drainOuterNear.x,w.nearL.y);
     ctx.closePath();ctx.fill();
     ctx.fillStyle=gradient;
     this.#quad(ctx,o.backR,s.rightCorner,wallRightNear,o.nearR);ctx.fill();
