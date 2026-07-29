@@ -124,16 +124,31 @@ export class PoolRenderer {
     }
     ctx.fillStyle=this.#stoneGradient(ctx,g);ctx.fillRect(0,g.wallBottom,w,h-g.wallBottom);
     const s=g.sideWalls;
-    const {pillarLeft}=this.#leftStructure(g,w);
-    const daylight=ctx.createLinearGradient(0,0,pillarLeft,0);
-    daylight.addColorStop(0,"#fff9df");daylight.addColorStop(.52,"#edf3ee");daylight.addColorStop(1,"#d4dfdd");
-    ctx.fillStyle=daylight;ctx.fillRect(0,0,pillarLeft,g.wallBottom);
+    this.#leftWindow(ctx,w,h,g);
     const sideShade=ctx.createLinearGradient(0,0,w,0);
     sideShade.addColorStop(0,"#858b8a");sideShade.addColorStop(.5,"#c4c2bb");sideShade.addColorStop(1,"#858b8a");
     ctx.fillStyle=sideShade;
     ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.lineTo(w,h);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(70,76,76,.4)";ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.stroke();
+  }
+
+  #leftWindow(ctx,w,h,g){
+    const {pillarLeft,backLeft}=this.#leftStructure(g,w);
+    const nearX=this.#projectX({x:pillarLeft,y:g.water.backL.y},g.vanishing,h);
+    const light=ctx.createLinearGradient(0,0,Math.max(1,backLeft),0);
+    light.addColorStop(0,"#fff8d9");light.addColorStop(.5,"#eef5ec");light.addColorStop(1,"#cedcdd");
+    ctx.fillStyle=light;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(backLeft,0);ctx.lineTo(backLeft,g.wallBottom);
+    ctx.lineTo(nearX,h);ctx.lineTo(0,h);ctx.closePath();ctx.fill();
+
+    ctx.strokeStyle="rgba(116,132,132,.34)";ctx.lineWidth=1.2;
+    for(const y of [h*.18,h*.34]){
+      const edgeX=y<=g.wallBottom?backLeft:this.#projectX({x:pillarLeft,y:g.water.backL.y},g.vanishing,y);
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(edgeX,y);ctx.stroke();
+    }
+    ctx.strokeStyle="rgba(255,255,239,.68)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(backLeft,0);ctx.lineTo(backLeft,g.wallBottom);ctx.lineTo(nearX,h);ctx.stroke();
   }
 
   #leftPillar(ctx,w,h,g){
@@ -273,12 +288,17 @@ export class PoolRenderer {
   #leftStructure(g,w){
     const backY=g.water.backL.y;
     const drainLeft=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,backY);
-    const pillarWidth=Math.max(26,w*.075);
     const pillarRight=drainLeft.x;
     const backRight=this.#projectX({x:pillarRight,y:backY},g.vanishing,g.wallBottom);
+    const rimBack=this.#pointAtY(g.outer.backL,g.outer.nearL,backY);
+    const drainRight=this.#mix(rimBack,g.water.backL,.72);
+    const grateWidth=Math.max(1,drainRight.x-drainLeft.x);
+    const pillarLeft=Math.max(0,pillarRight-grateWidth);
+    const backLeft=this.#projectX({x:pillarLeft,y:backY},g.vanishing,g.wallBottom);
     return {
-      pillarLeft:Math.max(0,pillarRight-pillarWidth),
+      pillarLeft,
       pillarRight:Math.max(0,pillarRight),
+      backLeft,
       backRight
     };
   }
