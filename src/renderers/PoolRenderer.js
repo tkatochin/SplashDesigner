@@ -1,7 +1,7 @@
 import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
 import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017d";
 import { OverflowRenderer } from "./OverflowRenderer.js?v=0017e";
-import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020b";
+import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020c";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -141,7 +141,7 @@ export class PoolRenderer {
     const w=p.water;
     ctx.save();this.#quad(ctx,w.backL,w.backR,w.nearR,w.nearL);ctx.clip();
     const water=ctx.createLinearGradient(0,w.backL.y,0,w.nearL.y);
-    water.addColorStop(0,"#23b8d7");water.addColorStop(.5,"#078fc2");water.addColorStop(1,"#026997");
+    water.addColorStop(0,"#249db7");water.addColorStop(.5,"#087fa8");water.addColorStop(1,"#045f82");
     ctx.fillStyle=water;ctx.fillRect(0,w.backL.y,Math.max(w.nearR.x,w.backR.x),w.nearL.y-w.backL.y+h*.06);
 
     this.reflectionRenderer.render(ctx,p,width,h,this.surface);

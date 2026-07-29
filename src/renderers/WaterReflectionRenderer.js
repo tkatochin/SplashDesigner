@@ -16,7 +16,7 @@ export class WaterReflectionRenderer {
       const v0=reach*row/rows,v1=reach*(row+1)/rows;
       const y0=this.#mix(water.backL,water.nearL,v0).y;
       const y1=this.#mix(water.backL,water.nearL,v1).y;
-      const alpha=.34*Math.pow(1-(v0+v1)/(2*reach),1.25);
+      const alpha=.58*Math.pow(1-(v0+v1)/(2*reach),1.15);
       const sourceY=texture.height*row/rows;
       const sourceH=texture.height/rows+1;
       const v=(v0+v1)*.5;
@@ -65,7 +65,7 @@ export class WaterReflectionRenderer {
     reflection.translate(0,reflectionHeight);reflection.scale(1,-1);
     reflection.drawImage(wall,0,0);
     reflection.setTransform(1,0,0,1,0,0);
-    reflection.fillStyle="rgba(0,74,99,.34)";reflection.fillRect(0,0,pixelWidth,reflectionHeight);
+    reflection.fillStyle="rgba(0,66,88,.16)";reflection.fillRect(0,0,pixelWidth,reflectionHeight);
   }
 
   #glints(ctx,water,height,surface,time){
