@@ -1,12 +1,13 @@
-import { Engine } from "./src/core/Engine.js?v=0006c";
+import { Engine } from "./src/core/Engine.js?v=0022a";
 import { SceneManager } from "./src/core/SceneManager.js";
-import { EntranceScene } from "./src/scenes/EntranceScene.js?v=0020d";
+import { EntranceScene } from "./src/scenes/EntranceScene.js?v=0022b";
 import { mountCreditsOverlay } from "./src/ui/CreditsOverlay.js?v=0007e";
 
 const manager = new SceneManager();
 const engine = new Engine(manager);
 mountCreditsOverlay();
 
-manager.change(new EntranceScene(engine));
+const entrance = new EntranceScene(engine);
+manager.change(entrance);
 
-engine.start();
+engine.start(()=>entrance.markEntranceReady?.());

@@ -24,7 +24,7 @@ export function initializeAudio(scene){
 
   const canvas = scene.engine.renderer.canvas;
   const startOverlay=document.getElementById("audio-start");
-  const startButton=document.getElementById("audio-start-button");
+  const startLabel=document.getElementById("audio-start-label");
 
   const removeUnlockListeners=()=>{
     canvas.removeEventListener("touchend",unlockTouch);
@@ -101,20 +101,29 @@ export function initializeAudio(scene){
     removeVisibilityRetry();
   };
 
-  if(startButton&&startOverlay){
-    startButton.addEventListener("click",async()=>{
-      startButton.disabled=true;
-      startButton.textContent="音を準備しています…";
+  if(startOverlay&&startLabel){
+    scene.markEntranceReady=()=>{
+      if(startOverlay.dataset.state!=="loading")return;
+      startOverlay.dataset.state="ready";
+      startOverlay.disabled=false;
+      startLabel.textContent="Tap to start";
+    };
+    startOverlay.addEventListener("click",async()=>{
+      if(startOverlay.dataset.state!=="ready")return;
+      startOverlay.dataset.state="preparing";
+      startOverlay.disabled=true;
+      startLabel.textContent="";
       const ready=await scene.audio.unlock();
       if(!ready){
-        startButton.disabled=false;
-        startButton.textContent="もう一度タップ";
+        startOverlay.dataset.state="ready";
+        startOverlay.disabled=false;
+        startLabel.textContent="Tap to start";
         return;
       }
       removeUnlockListeners();
       startOverlay.classList.add("is-leaving");
       window.setTimeout(()=>{startOverlay.hidden=true;},230);
-    },{once:false});
+    });
   }
 
   scene.playEntranceAudio=async(energetic=false)=>{

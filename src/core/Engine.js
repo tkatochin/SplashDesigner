@@ -29,7 +29,8 @@ export class Engine {
     this.canvas.height=Math.round(height*ratio);
     this.ctx.setTransform(ratio,0,0,ratio,0,0);
   }
-  start(){
+  start(onFirstRender){
+    let firstRenderPending=true;
     const loop=(t)=>{
       const dt=t-this._last;
       this._last=t;
@@ -37,6 +38,10 @@ export class Engine {
       this.ctx.setTransform(this.pixelRatio,0,0,this.pixelRatio,0,0);
       this.ctx.clearRect(0,0,this.width,this.height);
       if(this.sceneManager.render)this.sceneManager.render(this.ctx);
+      if(firstRenderPending){
+        firstRenderPending=false;
+        requestAnimationFrame(()=>onFirstRender?.());
+      }
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);

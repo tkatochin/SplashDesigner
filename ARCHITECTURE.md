@@ -569,6 +569,29 @@ Note
 
 - 小規模な表示改善として会話内で仕様確認しながら実装したため、a/b/cを分けずに完了した例外Issue。
 
+## Issue-0022 — Pre-Entrance Guide
+
+Status: **完了**
+
+Purpose: 初期描画と音声解除の待ち時間を、誤操作を招かない簡潔な入場案内として提示する。
+
+Scope
+
+- 初回Canvas描画が反映されるまでの`Loading...`
+- 描画完了後だけ現れる、点滅する`Tap to start`
+- iPhoneの音声解除条件を満たす全画面の実button
+- 開始前のOthersを含む全背面操作の遮断
+- 丸枠のない、画面幅に応じて拡大する文字表示
+- タップ後は中間文言を出さず、音声準備完了まで内部で操作を遮断
+
+Completion
+
+- 描画前に`Tap to start`が表示されない
+- 点滅するのは操作待ちの`Tap to start`だけ
+- 画面のどこをタップしても開始できる
+- タップ後に一瞬だけ別の準備文言が表示されない
+- iPhone Safariで従来どおり音声を解除できる
+
 ## Dependency Order
 
 ```text
