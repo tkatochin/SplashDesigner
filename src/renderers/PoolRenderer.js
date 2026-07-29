@@ -135,31 +135,17 @@ export class PoolRenderer {
 
   #leftWindow(ctx,w,h,g){
     const {pillarLeft,backLeft}=this.#leftStructure(g,w);
-    const nearX=this.#projectX({x:pillarLeft,y:g.water.backL.y},g.vanishing,h);
+    const sillLeftY=this.#projectYAtX({x:pillarLeft,y:g.water.backL.y},g.vanishing,0);
     const light=ctx.createLinearGradient(0,0,Math.max(1,backLeft),0);
-    light.addColorStop(0,"#fff8d9");light.addColorStop(.5,"#eef5ec");light.addColorStop(1,"#cedcdd");
+    light.addColorStop(0,"#fff4cf");light.addColorStop(.46,"#edf5ed");light.addColorStop(1,"#c9dce1");
     ctx.fillStyle=light;
     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(backLeft,0);ctx.lineTo(backLeft,g.wallBottom);
-    ctx.lineTo(nearX,h);ctx.lineTo(0,h);ctx.closePath();ctx.fill();
-
-    ctx.strokeStyle="rgba(116,132,132,.34)";ctx.lineWidth=1.2;
-    for(const y of [h*.18,h*.34]){
-      const edgeX=y<=g.wallBottom?backLeft:this.#projectX({x:pillarLeft,y:g.water.backL.y},g.vanishing,y);
-      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(edgeX,y);ctx.stroke();
-    }
-    ctx.strokeStyle="rgba(255,255,239,.68)";ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(backLeft,0);ctx.lineTo(backLeft,g.wallBottom);ctx.lineTo(nearX,h);ctx.stroke();
+    ctx.lineTo(0,sillLeftY);ctx.closePath();ctx.fill();
   }
 
   #leftPillar(ctx,w,h,g){
     const {pillarLeft,pillarRight,backRight}=this.#leftStructure(g,w);
     const frontY=g.water.backL.y;
-
-    // A bright sill/reveal continues from the square column to the unseen window.
-    const sill=ctx.createLinearGradient(0,g.wallBottom,0,frontY);
-    sill.addColorStop(0,"#f2eee0");sill.addColorStop(1,"#c9cbc4");
-    ctx.fillStyle=sill;
-    this.#quad(ctx,{x:0,y:g.wallBottom},{x:pillarLeft,y:g.wallBottom},{x:pillarLeft,y:frontY},{x:0,y:frontY});ctx.fill();
 
     // Flat faces, rather than a cylindrical gradient, make the projection read as a square pillar.
     ctx.fillStyle="#b7b5ad";
@@ -173,8 +159,14 @@ export class PoolRenderer {
     ctx.beginPath();ctx.moveTo(pillarRight,0);ctx.lineTo(pillarRight,frontY);ctx.stroke();
     ctx.strokeStyle="rgba(58,64,63,.46)";ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(0,frontY);ctx.lineTo(pillarRight,frontY);ctx.stroke();
-    ctx.strokeStyle="rgba(255,252,232,.46)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(0,g.wallBottom+1);ctx.lineTo(pillarLeft,g.wallBottom+1);ctx.stroke();
+
+    const sillLeftY=this.#projectYAtX({x:pillarLeft,y:frontY},g.vanishing,0);
+    const frameWidth=Math.max(5,w*.012);
+    ctx.lineCap="square";
+    ctx.strokeStyle="rgba(83,91,90,.48)";ctx.lineWidth=frameWidth+2;
+    ctx.beginPath();ctx.moveTo(pillarLeft,0);ctx.lineTo(pillarLeft,frontY);ctx.lineTo(0,sillLeftY);ctx.stroke();
+    ctx.strokeStyle="#d9d8cf";ctx.lineWidth=frameWidth;
+    ctx.beginPath();ctx.moveTo(pillarLeft,0);ctx.lineTo(pillarLeft,frontY);ctx.lineTo(0,sillLeftY);ctx.stroke();
   }
 
   #rimsBackAndSides(ctx,g){
@@ -303,6 +295,7 @@ export class PoolRenderer {
     };
   }
   #projectX(point,vanishing,y){return vanishing.x+(point.x-vanishing.x)*(y-vanishing.y)/(point.y-vanishing.y);}
+  #projectYAtX(point,vanishing,x){return vanishing.y+(point.y-vanishing.y)*(x-vanishing.x)/(point.x-vanishing.x);}
   #stoneGradient(ctx,g){
     const gradient=ctx.createLinearGradient(g.outer.nearL.x,0,g.outer.nearR.x,0);
     gradient.addColorStop(0,"#777b74");gradient.addColorStop(.48,"#4a504d");gradient.addColorStop(1,"#656963");
