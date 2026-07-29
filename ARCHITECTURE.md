@@ -517,6 +517,23 @@ Completion
 - 音声を使う他アプリやMusicから戻っても復帰する
 - 繰り返し切り替えても音声と桶タイマーが多重化しない
 
+## Issue-0018 — iPhone Safari Landscape Viewport
+
+Status: **保留（作品の完成間際に再検討）**
+
+Purpose: iPhone Safariを横置きした際、URLバーやタブバーにより浴槽上半分しか見えない表示領域を改善する。
+
+Notes
+
+- WebページからSafariを任意に完全なフルスクリーンへ移行できるとは限らないため、実装時点のiOS Safari仕様を再確認する。
+- 横置き対応は現時点の最優先課題ではなく、他の主要Issueが完了した段階で着手する。
+
+Implementation candidates
+
+- `index.html`のviewport・PWA関連設定
+- `src/core/Engine.js`のvisual viewport追従
+- `src/scenes/EntranceScene.js`と`PoolRenderer`の横長画角調整
+
 ## Issue-0020 — Back-Wall Water Reflection
 
 Status: **完了**
@@ -591,6 +608,43 @@ Completion
 - 画面のどこをタップしても開始できる
 - タップ後に一瞬だけ別の準備文言が表示されない
 - iPhone Safariで従来どおり音声を解除できる
+
+## Issue-0023 — Left Window and Drain Grate
+
+Status: **実装・ユーザー確認済み（PR #6マージ待ち）**
+
+Purpose: 左壁の閉塞感をなくし、採光窓、四角柱、浴槽脇の排水グレーチングを備えた開放的な左側空間へ変更する。
+
+Scope
+
+- 左壁を撤去し、右壁の向かいに一点透視へ沿う明るい窓面を配置
+- 奥壁左端に、浴槽奥ヘリより手前へ張り出す四角柱を配置
+- 柱右端から浴槽左側へ、水際と平行に続く排水グレーチングを配置
+- グレーチング右側には細い浴槽ヘリを残す
+- 左側オーバーフローをグレーチング上と窓下の床面へ流し、黒い隙間へ吸い込ませる
+- オーバーフロー水膜を、柱の切り欠きを持つ単一の7角形として描画
+
+Perspective constraints
+
+- 窓下端、柱右側面、グレーチング左端は共通の消失点へ収束させる
+- 水膜の奥側左頂点は柱前面右下ではなく、柱右側面の右下へ合わせる
+- 柱前面下端から窓下端まで塗り残しを作らない
+- グレーチング左右で異なる水膜を重ねず、同じグラデーションで一度だけ濡らす
+
+Implementation map
+
+- `src/renderers/PoolRenderer.js`: 窓・柱・浴槽形状・描画順・Issue-0023用共有座標
+- `src/renderers/DrainGrateRenderer.js`: グレーチング本体、スラット、吸水する黒い隙間
+- `src/renderers/OverflowRenderer.js`: 7角形の左側水膜とグレーチングへ向かう流路
+- `src/scenes/EntranceScene.js`、`main.js`、`index.html`: 静的配信用キャッシュ更新
+
+Completion
+
+- 左壁が窓へ置き換わり、柱とグレーチングが一点透視に沿って見える
+- グレーチング上側・下側が浴槽の奥端・手前端へ揃う
+- 左側の水が柱前面と窓下端まで届き、乾いた三角領域を残さない
+- オーバーフロー時に浴槽、ヘリ、グレーチング周辺が同じ水膜色で連続して濡れる
+- ユーザーがNetlifyの横長表示を含めて形状と流路を確認済み
 
 ## Dependency Order
 
