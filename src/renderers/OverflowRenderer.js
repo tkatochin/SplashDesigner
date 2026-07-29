@@ -29,7 +29,12 @@ export class OverflowRenderer {
     this.#quad(ctx,w.nearL,w.nearR,o.nearR,o.nearL);ctx.fill();
     // Continue the side sheets across the surrounding stone all the way to
     // the visible wall/floor seams; the bath's outer rim stops short of them.
-    this.#quad(ctx,s.leftCorner,o.backL,o.nearL,wallLeftNear);ctx.fill();
+    const drainFlow=ctx.createLinearGradient((o.backL.x+o.nearL.x)*.5,0,(s.leftCorner.x+wallLeftNear.x)*.5,0);
+    drainFlow.addColorStop(0,`rgba(39,181,214,${Math.min(.62,amount*.5)})`);
+    drainFlow.addColorStop(.62,`rgba(18,139,178,${Math.min(.38,amount*.3)})`);
+    drainFlow.addColorStop(1,"rgba(4,63,78,0)");
+    ctx.fillStyle=drainFlow;this.#quad(ctx,s.leftCorner,o.backL,o.nearL,wallLeftNear);ctx.fill();
+    ctx.fillStyle=gradient;
     this.#quad(ctx,o.backR,s.rightCorner,wallRightNear,o.nearR);ctx.fill();
 
     // A continuous foamy lip makes it clear that water reaches every side,
