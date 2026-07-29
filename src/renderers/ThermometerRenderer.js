@@ -43,11 +43,11 @@ export class ThermometerRenderer {
     ctx.fillStyle="#ecebe2";ctx.beginPath();ctx.arc(0,0,g.radius*.71,0,Math.PI*2);ctx.fill();
 
     ctx.lineCap="butt";
-    ctx.lineWidth=g.radius*.11;
+    ctx.lineWidth=g.radius*.2;
     ctx.strokeStyle="rgba(45,119,184,.72)";ctx.beginPath();
-    ctx.arc(0,0,g.radius*.49,this.#temperatureAngle(15),this.#temperatureAngle(20));ctx.stroke();
+    ctx.arc(0,0,g.radius*.53,this.#temperatureAngle(15),this.#temperatureAngle(20));ctx.stroke();
     ctx.strokeStyle="rgba(196,48,42,.74)";ctx.beginPath();
-    ctx.arc(0,0,g.radius*.49,this.#temperatureAngle(38),this.#temperatureAngle(42));ctx.stroke();
+    ctx.arc(0,0,g.radius*.53,this.#temperatureAngle(38),this.#temperatureAngle(42));ctx.stroke();
 
     const ticks=[0,5,10,15,20];
     for(let temperature=22;temperature<=80;temperature+=2)ticks.push(temperature);
@@ -61,15 +61,15 @@ export class ThermometerRenderer {
       ctx.lineTo(Math.cos(angle)*outer,Math.sin(angle)*outer);ctx.stroke();
     }
 
-    ctx.fillStyle="#3b3e3b";ctx.font=`700 ${Math.max(6,g.radius*.19)}px sans-serif`;
+    ctx.fillStyle="rgba(59,62,59,.68)";ctx.font=`600 ${Math.max(3,g.radius*.1)}px sans-serif`;
     ctx.textAlign="center";ctx.textBaseline="middle";
     for(const temperature of [0,20,40,50,60,70,80]){
       const angle=this.#temperatureAngle(temperature);
       const radius=g.radius*.34;
       ctx.fillText(String(temperature),Math.cos(angle)*radius,Math.sin(angle)*radius);
     }
-    ctx.font=`600 ${Math.max(6,g.radius*.18)}px sans-serif`;
-    ctx.fillText("°C",0,g.radius*.35);
+    ctx.font=`600 ${Math.max(4,g.radius*.13)}px sans-serif`;
+    ctx.fillText("℃",0,g.radius*.4);
 
     const angle=this.#temperatureAngle(value);
     ctx.strokeStyle="#343836";ctx.lineWidth=Math.max(2,g.radius*.075);ctx.lineCap="round";
@@ -81,12 +81,13 @@ export class ThermometerRenderer {
 
   #temperatureAngle(value){
     const clamped=Math.max(0,Math.min(80,value));
-    const spans=[.75,.82,.9,1,1.08,1.16,1.23,1.3];
-    const total=spans.reduce((sum,span)=>sum+span,0);
+    // Compass anchors: 0=SSW, 50=NNW, 60=NNE, 80=SSE.
+    // Per-10-degree spans grow decisively toward the hot end.
+    const start=Math.PI*5/8;
+    const spans=[15,21,27,33,39,45,60,75].map(degrees=>degrees*Math.PI/180);
     const section=Math.min(7,Math.floor(clamped/10));
-    let weighted=0;
-    for(let index=0;index<section;index++)weighted+=spans[index];
-    weighted+=spans[section]*((clamped-section*10)/10);
-    return Math.PI*.75+Math.PI*1.5*(weighted/total);
+    let angle=start;
+    for(let index=0;index<section;index++)angle+=spans[index];
+    return angle+spans[section]*((clamped-section*10)/10);
   }
 }
