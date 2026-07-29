@@ -55,8 +55,8 @@ export class ThermometerRenderer {
       const angle=this.#temperatureAngle(temperature);
       const major=temperature%10===0;
       const inner=g.radius*(major?.43:.52),outer=g.radius*.63;
-      ctx.strokeStyle=major?"#303331":"rgba(48,52,50,.76)";
-      ctx.lineWidth=major?Math.max(1.8,g.radius*.065):Math.max(.8,g.radius*.03);
+      ctx.strokeStyle=major?"#272a28":"rgba(113,118,114,.55)";
+      ctx.lineWidth=Math.max(.7,g.radius*.026);
       ctx.beginPath();ctx.moveTo(Math.cos(angle)*inner,Math.sin(angle)*inner);
       ctx.lineTo(Math.cos(angle)*outer,Math.sin(angle)*outer);ctx.stroke();
     }
