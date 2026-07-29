@@ -19,12 +19,14 @@ export class ThermometerRenderer {
     ctx.shadowColor="rgba(23,28,27,.42)";ctx.shadowBlur=g.radius*.22;ctx.shadowOffsetY=g.radius*.1;
     ctx.fillStyle="#8b908c";ctx.beginPath();ctx.arc(g.x,g.y,g.radius,0,Math.PI*2);ctx.fill();
     ctx.shadowColor="transparent";
-    ctx.fillStyle="#c8cbc3";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.88,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#111512";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.75,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="rgba(255,255,232,.42)";ctx.lineWidth=Math.max(1,g.radius*.035);
-    ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.7,Math.PI*1.08,Math.PI*1.72);ctx.stroke();
     if(temperature.display==="analog")this.#analog(ctx,g,temperature.value);
-    else this.#digital(ctx,g,temperature.value);
+    else{
+      ctx.fillStyle="#c8cbc3";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.88,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#111512";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.75,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle="rgba(255,255,232,.42)";ctx.lineWidth=Math.max(1,g.radius*.035);
+      ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.7,Math.PI*1.08,Math.PI*1.72);ctx.stroke();
+      this.#digital(ctx,g,temperature.value);
+    }
     ctx.restore();
   }
 
@@ -40,21 +42,21 @@ export class ThermometerRenderer {
 
   #analog(ctx,g,value){
     ctx.save();ctx.translate(g.x,g.y);
-    ctx.fillStyle="#ecebe2";ctx.beginPath();ctx.arc(0,0,g.radius*.71,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#ecebe2";ctx.beginPath();ctx.arc(0,0,Math.max(1,g.radius-1),0,Math.PI*2);ctx.fill();
 
     ctx.lineCap="butt";
-    ctx.lineWidth=g.radius*.2;
+    ctx.lineWidth=g.radius*.22;
     ctx.strokeStyle="rgba(45,119,184,.72)";ctx.beginPath();
-    ctx.arc(0,0,g.radius*.53,this.#temperatureAngle(15),this.#temperatureAngle(20));ctx.stroke();
+    ctx.arc(0,0,g.radius*.75,this.#temperatureAngle(15),this.#temperatureAngle(20));ctx.stroke();
     ctx.strokeStyle="rgba(196,48,42,.74)";ctx.beginPath();
-    ctx.arc(0,0,g.radius*.53,this.#temperatureAngle(38),this.#temperatureAngle(42));ctx.stroke();
+    ctx.arc(0,0,g.radius*.75,this.#temperatureAngle(38),this.#temperatureAngle(42));ctx.stroke();
 
     const ticks=[0,5,10,15,20];
     for(let temperature=22;temperature<=80;temperature+=2)ticks.push(temperature);
     for(const temperature of ticks){
       const angle=this.#temperatureAngle(temperature);
       const major=temperature%10===0;
-      const inner=g.radius*(major?.43:.52),outer=g.radius*.63;
+      const inner=g.radius*(major?.64:.75),outer=g.radius*.86;
       ctx.strokeStyle=major?"#272a28":"rgba(113,118,114,.55)";
       ctx.lineWidth=Math.max(.7,g.radius*.026);
       ctx.beginPath();ctx.moveTo(Math.cos(angle)*inner,Math.sin(angle)*inner);
@@ -65,16 +67,16 @@ export class ThermometerRenderer {
     ctx.textAlign="center";ctx.textBaseline="middle";
     for(const temperature of [0,20,40,50,60,70,80]){
       const angle=this.#temperatureAngle(temperature);
-      const radius=g.radius*.34;
+      const radius=g.radius*.5;
       ctx.fillText(String(temperature),Math.cos(angle)*radius,Math.sin(angle)*radius);
     }
     ctx.font=`600 ${Math.max(4,g.radius*.13)}px sans-serif`;
-    ctx.fillText("℃",0,g.radius*.4);
+    ctx.fillText("℃",0,g.radius*.55);
 
     const angle=this.#temperatureAngle(value);
     ctx.strokeStyle="#343836";ctx.lineWidth=Math.max(2,g.radius*.075);ctx.lineCap="round";
     ctx.beginPath();ctx.moveTo(-Math.cos(angle)*g.radius*.08,-Math.sin(angle)*g.radius*.08);
-    ctx.lineTo(Math.cos(angle)*g.radius*.48,Math.sin(angle)*g.radius*.48);ctx.stroke();
+    ctx.lineTo(Math.cos(angle)*g.radius*.69,Math.sin(angle)*g.radius*.69);ctx.stroke();
     ctx.fillStyle="#4d514e";ctx.beginPath();ctx.arc(0,0,g.radius*.1,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
