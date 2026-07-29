@@ -5,7 +5,7 @@ import { DragController } from "../input/DragController.js?v=0007b";
 import { WaterHoldController } from "../input/WaterHoldController.js?v=0017e";
 import { DragSpring } from "../input/DragSpring.js";
 import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0007b";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0023n";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0023o";
 import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0022b";
 
 export class EntranceScene extends Scene {
