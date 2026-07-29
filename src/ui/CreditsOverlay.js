@@ -15,9 +15,19 @@ export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {
 
   const dialog = document.createElement("dialog");
   dialog.className = "credits-dialog";
+  dialog.tabIndex = -1;
+  const title = document.createElement("h2");
+  title.className = "credits-title";
+  title.textContent = "Credit";
   const panel = document.createElement("div");
   panel.className = "credits-panel";
-  panel.innerHTML = "<h2>Credits</h2>";
+  const viewport = document.createElement("div");
+  viewport.className = "credits-viewport";
+  const roll = document.createElement("div");
+  roll.className = "credits-roll";
+  const section = document.createElement("section");
+  const heading = document.createElement("h3");
+  heading.textContent = "SE・BGM";
 
   const list = document.createElement("ul");
   for (const entry of unique) {
@@ -35,17 +45,57 @@ export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {
     list.appendChild(item);
   }
 
-  const close = document.createElement("button");
-  close.className = "credits-close";
-  close.type = "button";
-  close.textContent = "Close";
-  close.addEventListener("click", () => dialog.close());
   dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   });
 
-  panel.append(list, close);
-  dialog.appendChild(panel);
+  section.append(heading,list);
+  const thanksSection=document.createElement("section");
+  const thanksHeading=document.createElement("h3");
+  thanksHeading.textContent="SPECIAL THANKS";
+  const thanksList=document.createElement("ul");
+  const thanksItem=document.createElement("li");
+  thanksItem.textContent="ChatGPT / Codex";
+  thanksList.appendChild(thanksItem);
+  thanksSection.append(thanksHeading,thanksList);
+  roll.append(section,thanksSection);
+  viewport.appendChild(roll);
+  panel.appendChild(viewport);
+  dialog.append(title,panel);
   document.body.append(credit, dialog);
-  credit.querySelector("button").addEventListener("click", () => dialog.showModal());
+  let stopRoll=()=>{};
+  const open=()=>{
+    dialog.showModal();
+    dialog.focus({preventScroll:true});
+    requestAnimationFrame(()=>{stopRoll=startCreditRoll(viewport);});
+  };
+  const stopForInteraction=()=>stopRoll();
+  viewport.addEventListener("pointerdown",stopForInteraction,{passive:true});
+  viewport.addEventListener("wheel",stopForInteraction,{passive:true});
+  dialog.addEventListener("close",()=>stopRoll());
+  credit.querySelector("button").addEventListener("click",open);
+}
+
+function startCreditRoll(viewport){
+  let frame=0,timer=0,cancelled=false,lastTime=0;
+  viewport.scrollTop=0;
+  const maxScroll=viewport.scrollHeight-viewport.clientHeight;
+  if(maxScroll<=1)return()=>{};
+
+  const tick=time=>{
+    if(cancelled)return;
+    if(!lastTime)lastTime=time;
+    viewport.scrollTop=Math.min(maxScroll,viewport.scrollTop+(time-lastTime)*.018);
+    lastTime=time;
+    if(viewport.scrollTop>=maxScroll-.5){
+      timer=window.setTimeout(()=>{
+        viewport.scrollTop=0;lastTime=0;
+        timer=window.setTimeout(()=>{frame=requestAnimationFrame(tick);},1000);
+      },1800);
+      return;
+    }
+    frame=requestAnimationFrame(tick);
+  };
+  timer=window.setTimeout(()=>{frame=requestAnimationFrame(tick);},1400);
+  return()=>{cancelled=true;cancelAnimationFrame(frame);window.clearTimeout(timer);};
 }
