@@ -611,6 +611,7 @@ Completion
 - 画面のどこをタップしても開始できる
 - タップ後に一瞬だけ別の準備文言が表示されない
 - iPhone Safariで従来どおり音声を解除できる
+- ブラウザが`Loading...`を最初に表示した後で暖簾中央画像をロード・デコードし、完成したCanvasの初回描画後だけ`Tap to start`へ進む
 
 ## Issue-0023 — Left Window and Drain Grate
 

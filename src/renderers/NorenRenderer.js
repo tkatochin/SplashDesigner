@@ -12,7 +12,13 @@ export class NorenRenderer {
     this.texture=document.createElement("canvas");
     this.textureKey="";
     this.art=new Image();
-    this.art.onload=()=>{this.textureKey="";};
+    this.ready=new Promise(resolve=>{
+      this.art.onload=async()=>{
+        try{await this.art.decode?.();}catch{}
+        this.textureKey="";resolve(true);
+      };
+      this.art.onerror=()=>resolve(false);
+    });
     this.art.src=new URL("../../assets/img/noren_art.png",import.meta.url).href;
   }
 
