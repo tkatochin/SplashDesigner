@@ -7,9 +7,8 @@ export class OverflowRenderer {
     this.#rimFilm(ctx,geometry,levels.rim);
     this.#horizontalFlow(ctx,0,geometry.steps.treadTop,width,geometry.steps.riser2Top-geometry.steps.treadTop,levels.tread,.34);
     this.#cascade(ctx,0,geometry.steps.top,width,geometry.steps.treadTop-geometry.steps.top,levels.firstFall,effect,time);
-    this.#horizontalFlow(ctx,0,geometry.steps.floorTop,width,height-geometry.steps.floorTop,levels.bottomFlow,.48);
     this.#cascade(ctx,0,geometry.steps.riser2Top,width,geometry.steps.floorTop-geometry.steps.riser2Top,levels.secondFall,effect,time);
-    this.#wetFloor(ctx,width,height,geometry.steps.floorTop,levels.wet,effect.origin.u);
+    this.#wetFloor(ctx,width,height,geometry.steps.floorTop,levels,effect,time);
     ctx.restore();
   }
 
@@ -72,16 +71,37 @@ export class OverflowRenderer {
     ctx.fillStyle=gradient;ctx.fillRect(x,y,width,height);
   }
 
-  #wetFloor(ctx,width,height,floorTop,amount,originU){
-    if(amount<=0)return;
-    const centerX=width*(.35+originU*.3);
-    const gradient=ctx.createRadialGradient(centerX,floorTop,width*.04,centerX,floorTop,width*.72);
-    gradient.addColorStop(0,`rgba(52,157,187,${Math.min(.34,amount*.28)})`);
-    gradient.addColorStop(.62,`rgba(31,109,132,${Math.min(.24,amount*.18)})`);
-    gradient.addColorStop(1,"rgba(18,75,91,0)");
-    ctx.fillStyle=gradient;ctx.fillRect(0,floorTop,width,height-floorTop);
-    ctx.strokeStyle=`rgba(206,242,244,${Math.min(.25,amount*.2)})`;
-    ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(width*.16,floorTop+2);ctx.quadraticCurveTo(centerX,height*.965,width*.84,height*.985);ctx.stroke();
+  #wetFloor(ctx,width,height,floorTop,levels,effect,time){
+    if(levels.wet<=0||levels.floorReach<=0)return;
+    const depth=Math.max(1,height-floorTop);
+    const frontY=floorTop+depth*levels.floorReach;
+    const rearY=floorTop+depth*.88*levels.floorDrain;
+    if(rearY>=frontY)return;
+    const wave=Math.min(depth*.08,4);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0,rearY);ctx.lineTo(width,rearY);ctx.lineTo(width,frontY);
+    ctx.bezierCurveTo(width*.78,frontY+wave,width*.62,frontY-wave,width*.5,frontY);
+    ctx.bezierCurveTo(width*.36,frontY+wave,width*.18,frontY-wave,0,frontY);
+    ctx.closePath();ctx.clip();
+
+    const film=ctx.createLinearGradient(0,rearY,0,Math.max(rearY+1,frontY));
+    film.addColorStop(0,`rgba(93,202,224,${Math.min(.38,levels.wet*.31)})`);
+    film.addColorStop(.7,`rgba(31,137,171,${Math.min(.3,levels.wet*.23)})`);
+    film.addColorStop(1,`rgba(17,100,132,${Math.min(.18,levels.wet*.13)})`);
+    ctx.fillStyle=film;ctx.fillRect(0,rearY,width,frontY-rearY+wave);
+
+    ctx.lineCap="round";
+    for(let index=0;index<12;index++){
+      const strand=effect.strands[(index*2)%effect.strands.length];
+      const x=(index+.45)*width/12;
+      const sway=Math.sin(time*.004+strand.phase)*width*.006;
+      ctx.strokeStyle=`rgba(191,237,242,${Math.min(.24,levels.wet*(.08+strand.width*.08))})`;
+      ctx.lineWidth=Math.max(.8,width*.0012*strand.width);
+      ctx.beginPath();ctx.moveTo(x,rearY);ctx.bezierCurveTo(x+sway,frontY*.35+rearY*.65,x-sway,frontY*.72+rearY*.28,x+sway*.35,frontY);ctx.stroke();
+    }
+    ctx.restore();
   }
 
   #quad(ctx,a,b,c,d){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();}

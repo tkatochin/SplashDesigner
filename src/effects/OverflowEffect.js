@@ -40,6 +40,8 @@ export class OverflowEffect {
       tread:this.#pulse(t,580,900,3450,4500),
       secondFall:this.#pulse(t,820,1150,3750,4700),
       bottomFlow:this.#pulse(t,1000,1450,3900,5350),
+      floorReach:smooth((t-1000)/1200),
+      floorDrain:smooth((t-5000)/2200),
       wet:smooth((t-900)/650)*(1-smooth((t-5000)/2500))
     };
   }
