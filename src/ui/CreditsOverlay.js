@@ -45,19 +45,22 @@ export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {
     list.appendChild(item);
   }
 
-  const close = document.createElement("button");
-  close.className = "credits-close";
-  close.type = "button";
-  close.textContent = "Close";
-  close.addEventListener("click", () => dialog.close());
   dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   });
 
   section.append(heading,list);
-  roll.appendChild(section);
+  const thanksSection=document.createElement("section");
+  const thanksHeading=document.createElement("h3");
+  thanksHeading.textContent="SPECIAL THANKS";
+  const thanksList=document.createElement("ul");
+  const thanksItem=document.createElement("li");
+  thanksItem.textContent="ChatGPT / Codex";
+  thanksList.appendChild(thanksItem);
+  thanksSection.append(thanksHeading,thanksList);
+  roll.append(section,thanksSection);
   viewport.appendChild(roll);
-  panel.append(viewport,close);
+  panel.appendChild(viewport);
   dialog.append(title,panel);
   document.body.append(credit, dialog);
   let stopRoll=()=>{};
