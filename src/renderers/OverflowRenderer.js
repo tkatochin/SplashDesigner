@@ -7,8 +7,8 @@ export class OverflowRenderer {
     this.#rimFilm(ctx,geometry,levels.rim);
     this.#horizontalFlow(ctx,0,geometry.steps.treadTop,width,geometry.steps.riser2Top-geometry.steps.treadTop,levels.tread,.34);
     this.#cascade(ctx,0,geometry.steps.top,width,geometry.steps.treadTop-geometry.steps.top,levels.firstFall,effect,time);
+    this.#horizontalFlow(ctx,0,geometry.steps.floorTop,width,height-geometry.steps.floorTop,levels.bottomFlow,.34);
     this.#cascade(ctx,0,geometry.steps.riser2Top,width,geometry.steps.floorTop-geometry.steps.riser2Top,levels.secondFall,effect,time);
-    this.#wetFloor(ctx,width,height,geometry.steps.floorTop,levels);
     ctx.restore();
   }
 
@@ -69,30 +69,6 @@ export class OverflowRenderer {
     gradient.addColorStop(.7,`rgba(20,146,188,${Math.min(opacity*.72,amount*opacity*.65)})`);
     gradient.addColorStop(1,"rgba(12,109,157,0)");
     ctx.fillStyle=gradient;ctx.fillRect(x,y,width,height);
-  }
-
-  #wetFloor(ctx,width,height,floorTop,levels){
-    if(levels.wet<=0||levels.floorReach<=0)return;
-    const depth=Math.max(1,height-floorTop);
-    const frontY=floorTop+depth*levels.floorReach;
-    const rearY=floorTop+depth*.88*levels.floorDrain;
-    if(rearY>=frontY)return;
-    const wave=Math.min(depth*.08,4);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(0,rearY);ctx.lineTo(width,rearY);ctx.lineTo(width,frontY);
-    ctx.bezierCurveTo(width*.78,frontY+wave,width*.62,frontY-wave,width*.5,frontY);
-    ctx.bezierCurveTo(width*.36,frontY+wave,width*.18,frontY-wave,0,frontY);
-    ctx.closePath();ctx.clip();
-
-    const film=ctx.createLinearGradient(0,rearY,0,Math.max(rearY+1,frontY));
-    film.addColorStop(0,"rgba(93,202,224,0)");
-    film.addColorStop(.16,`rgba(93,202,224,${Math.min(.32,levels.wet*.26)})`);
-    film.addColorStop(.72,`rgba(31,137,171,${Math.min(.25,levels.wet*.19)})`);
-    film.addColorStop(1,"rgba(17,100,132,0)");
-    ctx.fillStyle=film;ctx.fillRect(0,rearY,width,frontY-rearY+wave);
-    ctx.restore();
   }
 
   #quad(ctx,a,b,c,d){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();}
