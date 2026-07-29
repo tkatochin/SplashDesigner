@@ -53,6 +53,7 @@ export class PoolRenderer {
     this.#wall(ctx,width,height,g);
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
+    this.#leftPillar(ctx,width,height,g);
     this.#water(ctx,g,width,height);
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
@@ -124,21 +125,43 @@ export class PoolRenderer {
     ctx.fillStyle=this.#stoneGradient(ctx,g);ctx.fillRect(0,g.wallBottom,w,h-g.wallBottom);
     const s=g.sideWalls;
     const pillarLeft=Math.max(0,s.leftCorner.x-w*.035);
-    const pillarRight=Math.min(w,g.outer.backL.x+w*.035);
     const daylight=ctx.createLinearGradient(0,0,pillarLeft,0);
     daylight.addColorStop(0,"#fff9df");daylight.addColorStop(.52,"#edf3ee");daylight.addColorStop(1,"#d4dfdd");
     ctx.fillStyle=daylight;ctx.fillRect(0,0,pillarLeft,g.wallBottom);
-    const pillar=ctx.createLinearGradient(pillarLeft,0,pillarRight,0);
-    pillar.addColorStop(0,"#8e918b");pillar.addColorStop(.32,"#c7c4ba");pillar.addColorStop(1,"#8c8e88");
-    ctx.fillStyle=pillar;ctx.fillRect(pillarLeft,0,pillarRight-pillarLeft,g.wallBottom);
-    ctx.strokeStyle="rgba(63,69,68,.46)";ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(pillarRight,0);ctx.lineTo(pillarRight,g.wallBottom);ctx.stroke();
     const sideShade=ctx.createLinearGradient(0,0,w,0);
     sideShade.addColorStop(0,"#858b8a");sideShade.addColorStop(.5,"#c4c2bb");sideShade.addColorStop(1,"#858b8a");
     ctx.fillStyle=sideShade;
     ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.lineTo(w,h);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(70,76,76,.4)";ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.stroke();
+  }
+
+  #leftPillar(ctx,w,h,g){
+    const pillarLeft=Math.max(0,g.sideWalls.leftCorner.x-w*.035);
+    const pillarRight=Math.min(w,g.outer.backL.x+w*.035);
+    const frontY=g.water.backL.y;
+    const sideDepth=Math.max(7,w*.025);
+
+    // A bright sill/reveal continues from the square column to the unseen window.
+    const sill=ctx.createLinearGradient(0,g.wallBottom,0,frontY);
+    sill.addColorStop(0,"#f2eee0");sill.addColorStop(1,"#c9cbc4");
+    ctx.fillStyle=sill;
+    this.#quad(ctx,{x:0,y:g.wallBottom},{x:pillarLeft,y:g.wallBottom},{x:pillarLeft,y:frontY},{x:0,y:frontY});ctx.fill();
+
+    // Flat faces, rather than a cylindrical gradient, make the projection read as a square pillar.
+    ctx.fillStyle="#b7b5ad";
+    ctx.fillRect(pillarLeft,0,pillarRight-pillarLeft,frontY);
+    ctx.fillStyle="#858a86";
+    this.#quad(ctx,
+      {x:pillarRight,y:0},{x:pillarRight+sideDepth,y:0},
+      {x:pillarRight+sideDepth,y:g.wallBottom},{x:pillarRight,y:frontY}
+    );ctx.fill();
+    ctx.strokeStyle="rgba(62,69,68,.52)";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(pillarRight,0);ctx.lineTo(pillarRight,frontY);ctx.stroke();
+    ctx.strokeStyle="rgba(58,64,63,.46)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(0,frontY);ctx.lineTo(pillarRight,frontY);ctx.stroke();
+    ctx.strokeStyle="rgba(255,252,232,.46)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,g.wallBottom+1);ctx.lineTo(pillarLeft,g.wallBottom+1);ctx.stroke();
   }
 
   #rimsBackAndSides(ctx,g){
