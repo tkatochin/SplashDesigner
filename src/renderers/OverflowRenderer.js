@@ -15,9 +15,10 @@ export class OverflowRenderer {
   #rimFilm(ctx,g,amount){
     if(amount<=0)return;
     const {water:w,sideWalls:s}=g;
-    const wallRightNear=this.#pointAtY(s.rightCorner,s.rightNear,w.nearR.y);
-    const drainOuterNear=this.#pointAtY(s.leftCorner,s.leftNear,w.nearL.y);
-    const gradient=ctx.createLinearGradient(0,w.backL.y,0,w.nearL.y);
+    const frontRimBottomY=g.steps.top;
+    const wallRightNear=this.#pointAtY(s.rightCorner,s.rightNear,frontRimBottomY);
+    const drainOuterNear=this.#pointAtY(s.leftCorner,s.leftNear,frontRimBottomY);
+    const gradient=ctx.createLinearGradient(0,w.backL.y,0,frontRimBottomY);
     gradient.addColorStop(0,`rgba(178,242,250,${Math.min(.58,amount*.46)})`);
     gradient.addColorStop(.45,`rgba(39,181,214,${Math.min(.62,amount*.5)})`);
     gradient.addColorStop(1,`rgba(4,107,157,${Math.min(.54,amount*.42)})`);
@@ -31,8 +32,8 @@ export class OverflowRenderer {
     ctx.lineTo(g.leftOpening.pillarRight,w.backL.y);
     ctx.lineTo(g.leftOpening.backRight,g.wallBottom);
     ctx.lineTo(s.rightCorner.x,g.wallBottom);
-    ctx.lineTo(wallRightNear.x,w.nearL.y);
-    ctx.lineTo(drainOuterNear.x,w.nearL.y);
+    ctx.lineTo(wallRightNear.x,frontRimBottomY);
+    ctx.lineTo(drainOuterNear.x,frontRimBottomY);
     ctx.closePath();ctx.fill();
 
     // A continuous foamy lip makes it clear that water reaches every side,
