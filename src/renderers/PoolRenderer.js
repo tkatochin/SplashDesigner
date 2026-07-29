@@ -1,6 +1,7 @@
 import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
 import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017d";
 import { OverflowRenderer } from "./OverflowRenderer.js?v=0017e";
+import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020a";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -8,6 +9,7 @@ export class PoolRenderer {
     this.surface=new ReservoirSurface();
     this.overflows=[];
     this.overflowRenderer=new OverflowRenderer();
+    this.reflectionRenderer=new WaterReflectionRenderer();
   }
 
   update(dt){
@@ -48,7 +50,7 @@ export class PoolRenderer {
     const g=this.geometry(width,height);
     this.#wall(ctx,width,height,g);
     this.#rimsBackAndSides(ctx,g);
-    this.#water(ctx,g,height);
+    this.#water(ctx,g,width,height);
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
     this.#steps(ctx,width,height,g);
@@ -135,36 +137,14 @@ export class PoolRenderer {
 
   }
 
-  #water(ctx,p,h){
+  #water(ctx,p,width,h){
     const w=p.water;
     ctx.save();this.#quad(ctx,w.backL,w.backR,w.nearR,w.nearL);ctx.clip();
     const water=ctx.createLinearGradient(0,w.backL.y,0,w.nearL.y);
     water.addColorStop(0,"#23b8d7");water.addColorStop(.5,"#078fc2");water.addColorStop(1,"#026997");
     ctx.fillStyle=water;ctx.fillRect(0,w.backL.y,Math.max(w.nearR.x,w.backR.x),w.nearL.y-w.backL.y+h*.06);
 
-    // Submerged blue tiles make the depth readable through the full bath.
-    ctx.strokeStyle="rgba(15,88,122,.38)";ctx.lineWidth=1;
-    for(let row=1;row<9;row++){
-      const v=row/9;
-      const left=this.#mix(w.backL,w.nearL,v),right=this.#mix(w.backR,w.nearR,v);
-      ctx.beginPath();ctx.moveTo(left.x,left.y);ctx.lineTo(right.x,right.y);ctx.stroke();
-    }
-    for(let col=1;col<13;col++){
-      const u=col/13;
-      const back=this.#mix(w.backL,w.backR,u),near=this.#mix(w.nearL,w.nearR,u);
-      ctx.beginPath();ctx.moveTo(back.x,back.y);ctx.lineTo(near.x,near.y);ctx.stroke();
-    }
-
-    for(let row=1;row<18;row++){
-      const v=row/18,left=this.#mix(w.backL,w.nearL,v),right=this.#mix(w.backR,w.nearR,v);
-      ctx.beginPath();
-      for(let col=0;col<=44;col++){
-        const u=col/44,point=this.#mix(left,right,u);
-        const wave=this.surface.value(u,v)*Math.min(20,h*.025);
-        if(col===0)ctx.moveTo(point.x,point.y+wave);else ctx.lineTo(point.x,point.y+wave);
-      }
-      ctx.strokeStyle=`rgba(208,250,255,${.07+v*.17})`;ctx.lineWidth=1.35;ctx.stroke();
-    }
+    this.reflectionRenderer.render(ctx,p,width,h,this.surface);
     const sheen=ctx.createLinearGradient(w.nearL.x,w.nearL.y,w.backR.x,w.backR.y);
     sheen.addColorStop(0,"rgba(255,255,255,.04)");sheen.addColorStop(.48,"rgba(255,255,255,.24)");sheen.addColorStop(.58,"rgba(255,255,255,.03)");
     ctx.fillStyle=sheen;ctx.fillRect(0,w.backL.y,Math.max(w.nearR.x,w.backR.x),h);
