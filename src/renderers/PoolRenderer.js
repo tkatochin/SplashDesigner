@@ -58,7 +58,6 @@ export class PoolRenderer {
     this.#wall(ctx,width,height,g);
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
-    this.#leftPillarBody(ctx,width,height,g);
     this.#water(ctx,g,width,height);
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
@@ -69,7 +68,7 @@ export class PoolRenderer {
     }
     const drainAmount=Math.min(1,this.overflows.reduce((sum,overflow)=>sum+overflow.levels().rim,0));
     this.drainRenderer.renderOpenings(ctx,g,drainAmount);
-    this.#leftWindowFrame(ctx,width,g);
+    this.#leftPillar(ctx,width,height,g);
     this.#handrail(ctx,width,height,g);
   }
 
@@ -148,7 +147,7 @@ export class PoolRenderer {
     ctx.lineTo(0,sillLeftY);ctx.closePath();ctx.fill();
   }
 
-  #leftPillarBody(ctx,w,h,g){
+  #leftPillar(ctx,w,h,g){
     const {pillarLeft,pillarRight,backRight}=g.leftOpening;
     const frontY=g.water.backL.y;
 
@@ -165,11 +164,6 @@ export class PoolRenderer {
     ctx.strokeStyle="rgba(58,64,63,.46)";ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(pillarLeft,frontY);ctx.lineTo(pillarRight,frontY);ctx.stroke();
 
-  }
-
-  #leftWindowFrame(ctx,w,g){
-    const {pillarLeft}=g.leftOpening;
-    const frontY=g.water.backL.y;
     const frameWidth=Math.max(5,w*.012);
     ctx.lineCap="square";
     ctx.strokeStyle="rgba(83,91,90,.48)";ctx.lineWidth=frameWidth+2;

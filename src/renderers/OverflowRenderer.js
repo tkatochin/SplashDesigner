@@ -30,11 +30,7 @@ export class OverflowRenderer {
     this.#quad(ctx,w.nearL,w.nearR,o.nearR,o.nearL);ctx.fill();
     // Continue the side sheets across the surrounding stone all the way to
     // the visible wall/floor seams; the bath's outer rim stops short of them.
-    const drainFlow=ctx.createLinearGradient((o.backL.x+o.nearL.x)*.5,0,0,0);
-    drainFlow.addColorStop(0,`rgba(39,181,214,${Math.min(.62,amount*.5)})`);
-    drainFlow.addColorStop(.68,`rgba(18,139,178,${Math.min(.4,amount*.32)})`);
-    drainFlow.addColorStop(1,`rgba(18,139,178,${Math.min(.3,amount*.24)})`);
-    ctx.fillStyle=drainFlow;
+    ctx.fillStyle=gradient;
     // One continuous seven-corner sheet joins the window-side floor to the
     // original bath/rim film. Its notch follows the pillar base, its upper-left
     // edge follows the window perspective, and its inner edge follows the grate.
