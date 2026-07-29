@@ -6,8 +6,9 @@ export class WaterReflectionRenderer {
   }
 
   render(ctx,g,width,height,surface,time=performance.now()){
-    this.#ensureTexture(width,height,g.wallBottom);
-    const water=g.water,reach=.72,rows=14,cols=20;
+    const water=g.water,reach=.72,rows=26;
+    const reflectionHeight=(water.nearL.y-water.backL.y)*reach;
+    this.#ensureTexture(width,height,g.wallBottom,reflectionHeight);
     const texture=this.texture;
     ctx.save();
     ctx.globalCompositeOperation="source-over";
@@ -18,28 +19,22 @@ export class WaterReflectionRenderer {
       const alpha=.34*Math.pow(1-(v0+v1)/(2*reach),1.25);
       const sourceY=texture.height*row/rows;
       const sourceH=texture.height/rows+1;
-      for(let col=0;col<cols;col++){
-        const u0=col/cols,u1=(col+1)/cols,u=(u0+u1)*.5,v=(v0+v1)*.5;
-        const left=this.#mix(water.backL,water.nearL,v);
-        const right=this.#mix(water.backR,water.nearR,v);
-        const x0=left.x+(right.x-left.x)*u0;
-        const x1=left.x+(right.x-left.x)*u1;
-        const wave=surface.value(u,v);
-        const slope=surface.value(Math.min(1,u+.025),v)-surface.value(Math.max(0,u-.025),v);
-        const drift=Math.sin(time*.00032+u*8.3+v*5.1)*.45;
-        ctx.globalAlpha=alpha;
-        ctx.drawImage(
-          texture,texture.width*u0,sourceY,texture.width/cols+1,sourceH,
-          x0-slope*34+drift,y0+wave*Math.min(10,height*.012),x1-x0+1,y1-y0+1
-        );
-      }
+      const v=(v0+v1)*.5;
+      let wave=0;
+      for(const u of [.1,.3,.5,.7,.9])wave+=surface.value(u,v);
+      wave/=5;
+      const leftWave=surface.value(.25,v),rightWave=surface.value(.75,v);
+      const shiftX=(rightWave-leftWave)*9+Math.sin(time*.00025+v*5.1)*.18;
+      const shiftY=wave*Math.min(9,height*.011);
+      ctx.globalAlpha=alpha;
+      ctx.drawImage(texture,0,sourceY,texture.width,sourceH,shiftX,y0+shiftY,width,y1-y0+1);
     }
     ctx.restore();
     this.#glints(ctx,water,height,surface,time);
   }
 
-  #ensureTexture(width,height,wallBottom){
-    const reflectionHeight=Math.max(80,Math.round(Math.min(wallBottom*.62,height*.31)));
+  #ensureTexture(width,height,wallBottom,visibleHeight){
+    const reflectionHeight=Math.max(1,Math.round(visibleHeight));
     const pixelWidth=Math.max(1,Math.round(width));
     const key=`${pixelWidth}:${reflectionHeight}:${Math.round(wallBottom)}`;
     if(key===this.cacheKey)return;
