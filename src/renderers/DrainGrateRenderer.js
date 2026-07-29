@@ -30,12 +30,10 @@ export class DrainGrateRenderer {
   #shape(g){
     const backY=g.water.backL.y;
     const outerBack=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,backY);
-    const rimBack=this.#pointAtY(g.outer.backL,g.outer.nearL,backY);
-    const innerBack=this.#mix(rimBack,g.water.backL,.72);
+    const innerBack=g.water.backL;
     const nearY=g.water.nearL.y;
     const outerNear=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,nearY);
-    const rimNear=this.#pointAtY(g.outer.backL,g.outer.nearL,nearY);
-    const innerNear=this.#mix(rimNear,g.water.nearL,.72);
+    const innerNear=g.water.nearL;
     return {innerBack,innerNear,outerBack,outerNear,corners:[outerBack,innerBack,innerNear,outerNear]};
   }
 

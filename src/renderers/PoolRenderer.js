@@ -2,7 +2,7 @@ import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
 import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017d";
 import { OverflowRenderer } from "./OverflowRenderer.js?v=0023j";
 import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020d";
-import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023c";
+import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023k";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -50,10 +50,14 @@ export class PoolRenderer {
 
   render(ctx,width,height){
     const g=this.geometry(width,height);
+    const leftStructure=this.#leftStructure(g,width);
+    g.leftOpening={
+      ...leftStructure,
+      sillLeftY:this.#projectYAtX({x:leftStructure.pillarLeft,y:g.water.backL.y},g.vanishing,0)
+    };
     this.#wall(ctx,width,height,g);
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
-    this.#leftPillar(ctx,width,height,g);
     this.#water(ctx,g,width,height);
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
@@ -64,6 +68,7 @@ export class PoolRenderer {
     }
     const drainAmount=Math.min(1,this.overflows.reduce((sum,overflow)=>sum+overflow.levels().rim,0));
     this.drainRenderer.renderOpenings(ctx,g,drainAmount);
+    this.#leftPillar(ctx,width,height,g);
     this.#handrail(ctx,width,height,g);
   }
 
@@ -134,8 +139,7 @@ export class PoolRenderer {
   }
 
   #leftWindow(ctx,w,h,g){
-    const {pillarLeft,backLeft}=this.#leftStructure(g,w);
-    const sillLeftY=this.#projectYAtX({x:pillarLeft,y:g.water.backL.y},g.vanishing,0);
+    const {backLeft,sillLeftY}=g.leftOpening;
     const light=ctx.createLinearGradient(0,0,Math.max(1,backLeft),0);
     light.addColorStop(0,"#fff4cf");light.addColorStop(.46,"#edf5ed");light.addColorStop(1,"#c9dce1");
     ctx.fillStyle=light;
@@ -144,7 +148,7 @@ export class PoolRenderer {
   }
 
   #leftPillar(ctx,w,h,g){
-    const {pillarLeft,pillarRight,backRight}=this.#leftStructure(g,w);
+    const {pillarLeft,pillarRight,backRight}=g.leftOpening;
     const frontY=g.water.backL.y;
 
     // Flat faces, rather than a cylindrical gradient, make the projection read as a square pillar.
@@ -282,7 +286,7 @@ export class PoolRenderer {
     const pillarRight=drainLeft.x;
     const backRight=this.#projectX({x:pillarRight,y:backY},g.vanishing,g.wallBottom);
     const rimBack=this.#pointAtY(g.outer.backL,g.outer.nearL,backY);
-    const drainRight=this.#mix(rimBack,g.water.backL,.72);
+    const drainRight=g.water.backL;
     const grateWidth=Math.max(1,drainRight.x-drainLeft.x);
     const pillarLeft=Math.max(0,pillarRight-grateWidth);
     const backLeft=this.#projectX({x:pillarLeft,y:backY},g.vanishing,g.wallBottom);
