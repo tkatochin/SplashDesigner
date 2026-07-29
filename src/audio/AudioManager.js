@@ -23,12 +23,44 @@ export class AudioManager {
   }
 
   async unlock(){
-    if(this.unlocked)return true;
+    if(this.unlocked)return this.resume();
     if(this.unlocking)return this.unlocking;
     this.unlocking=this.#unlock().finally(()=>{
       if(!this.unlocked)this.unlocking=null;
     });
     return this.unlocking;
+  }
+
+  async resume({recover=false,timeout=1200}={}){
+    if(!this.context)return this.unlocked;
+    if(this.context.state==="running"&&!recover)return true;
+    try{
+      if(recover){
+        // iOS may leave resume() pending forever after returning from another app.
+        // Reassert suspension first, then let the native audio session settle.
+        this.context.suspend().catch(()=>{});
+        await new Promise(resolve=>window.setTimeout(resolve,200));
+      }
+      const resumed=this.context.resume().then(()=>true).catch(()=>false);
+      const settled=await Promise.race([
+        resumed,
+        new Promise(resolve=>window.setTimeout(()=>resolve(false),timeout))
+      ]);
+      if(!settled)return false;
+      return this.context.state==="running";
+    }catch{return false;}
+  }
+
+  async suspend(){
+    if(!this.context||this.context.state!=="running")return true;
+    try{
+      await this.context.suspend();
+      return this.context.state!=="running";
+    }catch{return false;}
+  }
+
+  stopAll(){
+    for(const key of this.sounds.keys())this.stop(key);
   }
 
   async #unlock(){
@@ -83,7 +115,7 @@ export class AudioManager {
 
   async play(key,options={}){
     const sound=this.sounds.get(key);
-    if(!sound||!this.unlocked)return false;
+    if(!sound||!this.unlocked||document.hidden)return false;
     const volume=this.#clamp(options.volume??sound.defaultVolume);
     const loop=options.loop??sound.loop;
     const restart=options.restart??true;
@@ -98,7 +130,7 @@ export class AudioManager {
 
   async playSegment(key,start=0,end=Infinity,options={}){
     const sound=this.sounds.get(key);
-    if(!sound||!this.unlocked)return false;
+    if(!sound||!this.unlocked||document.hidden)return false;
     const volume=this.#clamp(options.volume??sound.defaultVolume);
     this.#cancelFade(key);
     if(this.buffers.has(key)){
@@ -132,7 +164,7 @@ export class AudioManager {
 
   async fadeIn(key,duration=1200){
     const sound=this.sounds.get(key);
-    if(!sound)return false;
+    if(!sound||document.hidden)return false;
     const started=await this.play(key,{restart:false,volume:0});
     if(!started)return false;
     this.#fade(key,0,sound.defaultVolume,duration);
