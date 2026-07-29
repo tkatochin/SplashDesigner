@@ -6,7 +6,7 @@ export class WaterReflectionRenderer {
   }
 
   render(ctx,g,width,height,surface,time=performance.now()){
-    const water=g.water,reach=.72,rows=26;
+    const water=g.water,reach=1,rows=30;
     const reflectionHeight=(water.nearL.y-water.backL.y)*reach;
     this.#ensureTexture(width,height,g.wallBottom,reflectionHeight);
     const texture=this.texture;
@@ -16,7 +16,10 @@ export class WaterReflectionRenderer {
       const v0=reach*row/rows,v1=reach*(row+1)/rows;
       const y0=this.#mix(water.backL,water.nearL,v0).y;
       const y1=this.#mix(water.backL,water.nearL,v1).y;
-      const alpha=.58*Math.pow(1-(v0+v1)/(2*reach),1.15);
+      const middle=(v0+v1)*.5;
+      const baseAlpha=.58-.10*Math.min(1,middle/.66);
+      const fade=this.#smooth(Math.max(0,Math.min(1,(middle-.66)/.34)));
+      const alpha=baseAlpha*(1-fade);
       const sourceY=texture.height*row/rows;
       const sourceH=texture.height/rows+1;
       const v=(v0+v1)*.5;
@@ -85,4 +88,5 @@ export class WaterReflectionRenderer {
   }
 
   #mix(a,b,t){return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};}
+  #smooth(t){return t*t*(3-2*t);}
 }
