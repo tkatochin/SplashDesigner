@@ -2,7 +2,7 @@ import { ReservoirSurface } from "../effects/ReservoirSurface.js?v=0006d";
 import { OverflowEffect } from "../effects/OverflowEffect.js?v=0017d";
 import { OverflowRenderer } from "./OverflowRenderer.js?v=0017e";
 import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020d";
-import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023b";
+import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023c";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -124,7 +124,7 @@ export class PoolRenderer {
     }
     ctx.fillStyle=this.#stoneGradient(ctx,g);ctx.fillRect(0,g.wallBottom,w,h-g.wallBottom);
     const s=g.sideWalls;
-    const pillarLeft=Math.max(0,s.leftCorner.x-w*.035);
+    const {pillarLeft}=this.#leftStructure(g,w);
     const daylight=ctx.createLinearGradient(0,0,pillarLeft,0);
     daylight.addColorStop(0,"#fff9df");daylight.addColorStop(.52,"#edf3ee");daylight.addColorStop(1,"#d4dfdd");
     ctx.fillStyle=daylight;ctx.fillRect(0,0,pillarLeft,g.wallBottom);
@@ -137,8 +137,7 @@ export class PoolRenderer {
   }
 
   #leftPillar(ctx,w,h,g){
-    const pillarLeft=Math.max(0,g.sideWalls.leftCorner.x-w*.035);
-    const pillarRight=Math.min(w,g.outer.backL.x+w*.035);
+    const {pillarLeft,pillarRight}=this.#leftStructure(g,w);
     const frontY=g.water.backL.y;
     const sideDepth=Math.max(7,w*.025);
 
@@ -272,6 +271,16 @@ export class PoolRenderer {
   #quad(ctx,a,b,c,d){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();}
   #mix(a,b,t){return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};}
   #pointAtY(a,b,y){return this.#mix(a,b,(y-a.y)/(b.y-a.y));}
+  #leftStructure(g,w){
+    const backY=g.water.backL.y;
+    const drainLeft=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,backY);
+    const rimBack=this.#pointAtY(g.outer.backL,g.outer.nearL,backY);
+    const drainRight=this.#mix(rimBack,g.water.backL,.72);
+    return {
+      pillarLeft:Math.max(0,drainLeft.x),
+      pillarRight:Math.min(w,drainRight.x+w*.02)
+    };
+  }
   #projectX(point,vanishing,y){return vanishing.x+(point.x-vanishing.x)*(y-vanishing.y)/(point.y-vanishing.y);}
   #stoneGradient(ctx,g){
     const gradient=ctx.createLinearGradient(g.outer.nearL.x,0,g.outer.nearR.x,0);
