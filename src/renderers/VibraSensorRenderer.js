@@ -6,19 +6,21 @@ export class VibraSensorRenderer {
     const baseFrontR=this.#mix(g.water.backL,g.water.backR,center+half);
     const baseBackL=this.#projectToY(baseFrontL,g.vanishing,g.outer.backL.y);
     const baseBackR=this.#projectToY(baseFrontR,g.vanishing,g.outer.backR.y);
-    const blockHeight=Math.max(8,height*.023);
+    const leftDepth=Math.hypot(baseFrontL.x-baseBackL.x,baseFrontL.y-baseBackL.y);
+    const rightDepth=Math.hypot(baseFrontR.x-baseBackR.x,baseFrontR.y-baseBackR.y);
+    const blockHeight=(leftDepth+rightDepth)*.5;
     const frontDepth=baseFrontL.y-g.vanishing.y;
     const liftAtDepth=point=>({
       x:point.x,
       y:point.y-blockHeight*(point.y-g.vanishing.y)/frontDepth
     });
     const topBackL=liftAtDepth(baseBackL),topBackR=liftAtDepth(baseBackR);
-    const breakY=baseBackL.y+(baseFrontL.y-baseBackL.y)*.33;
+    const breakY=baseBackL.y+(baseFrontL.y-baseBackL.y)*.4;
     const breakBaseL=this.#projectToY(baseFrontL,g.vanishing,breakY);
     const breakBaseR=this.#projectToY(baseFrontR,g.vanishing,breakY);
     const topBreakL=liftAtDepth(breakBaseL),topBreakR=liftAtDepth(breakBaseR);
-    const topFrontL={x:baseFrontL.x,y:baseFrontL.y-blockHeight/3};
-    const topFrontR={x:baseFrontR.x,y:baseFrontR.y-blockHeight/3};
+    const topFrontL={x:baseFrontL.x,y:baseFrontL.y-blockHeight*.4};
+    const topFrontR={x:baseFrontR.x,y:baseFrontR.y-blockHeight*.4};
     const slope=[topBreakL,topBreakR,topFrontR,topFrontL];
     const plate=this.#insetOnSlope(slope,.17,.17,.18,.16);
     const slit=this.#insetOnSlope(plate,.13,.40,.13,.38);
