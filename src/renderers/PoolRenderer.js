@@ -6,6 +6,9 @@ import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
 import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
 import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010n";
 import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
+import { VibraSensor } from "../devices/VibraSensor.js?v=0011i";
+import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011l";
+import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011l";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -18,12 +21,20 @@ export class PoolRenderer {
     this.temperature=new WaterTemperature();
     this.thermometerRenderer=new ThermometerRenderer();
     this.steamRenderer=new SteamRenderer();
+    this.vibraSensor=new VibraSensor();
+    this.vibraSensorRenderer=new VibraSensorRenderer();
+    this.vibraBubbleRenderer=new VibraBubbleRenderer();
+    this.vibraFlowElapsed=0;
+    this.vibraFlowStrength=0;
   }
 
   update(dt){
     this.surface.update(dt);
     this.temperature.update(dt);
     this.steamRenderer.update(dt);
+    this.vibraSensor.update(dt);
+    this.vibraBubbleRenderer.update(dt,this.vibraSensor.active,this.vibraSensor.spread);
+    this.#updateVibraFlow(dt);
     for(const overflow of this.overflows)overflow.update(dt);
     this.overflows=this.overflows.filter(overflow=>overflow.active);
   }
@@ -51,6 +62,11 @@ export class PoolRenderer {
   cycleTemperature(){this.temperature.cycle();}
   toggleThermometerDisplay(){this.temperature.toggleDisplay();}
   boostSteam(strength=1){if(this.temperature.steamLevel>0)this.steamRenderer.splash(strength);}
+  vibraSensorHitTest(x,y,width,height){
+    const g=this.geometry(width,height);
+    return this.vibraSensorRenderer.hitTest(x,y,g,width,height);
+  }
+  startVibra(){return this.vibraSensor.start();}
 
   triggerOverflow({strength=1,origin={u:.5,v:.5}}={}){
     const overflow=new OverflowEffect();
@@ -76,8 +92,12 @@ export class PoolRenderer {
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
+    this.vibraBubbleRenderer.render(ctx,g,width);
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
+    // The equipment sits on the stone: drawing it after the grout lines hides
+    // the lines beneath its footprint instead of letting them pass through it.
+    this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,performance.now());
     this.#steps(ctx,width,height,g);
     const time=performance.now();
     for(const overflow of this.overflows){
@@ -148,12 +168,34 @@ export class PoolRenderer {
     ctx.fillStyle=this.#stoneGradient(ctx,g);ctx.fillRect(0,g.wallBottom,w,h-g.wallBottom);
     const s=g.sideWalls;
     this.#leftWindow(ctx,w,h,g);
-    const sideShade=ctx.createLinearGradient(0,0,w,0);
-    sideShade.addColorStop(0,"#858b8a");sideShade.addColorStop(.5,"#c4c2bb");sideShade.addColorStop(1,"#858b8a");
+    const sideShade=ctx.createLinearGradient(s.rightCorner.x,0,w,0);
+    sideShade.addColorStop(0,"#c9cac3");sideShade.addColorStop(.55,"#deddd5");sideShade.addColorStop(1,"#e7e3d8");
     ctx.fillStyle=sideShade;
     ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.lineTo(w,h);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(70,76,76,.4)";ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.stroke();
+    this.#rightWallStoneLines(ctx,w,h,g,tileH);
+  }
+
+  #rightWallStoneLines(ctx,w,h,g,tileH){
+    const s=g.sideWalls,cornerX=s.rightCorner.x,v=g.vanishing;
+    const courseYAtX=(backY,x)=>v.y+(backY-v.y)*(x-v.x)/(cornerX-v.x);
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(cornerX,0);ctx.lineTo(cornerX,s.rightCorner.y);
+    ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.lineTo(w,h);ctx.closePath();ctx.clip();
+    ctx.strokeStyle="rgba(91,99,101,.30)";ctx.lineWidth=1;
+    const courses=[];
+    for(let y=0;y<g.wallBottom+h*.16;y+=tileH)courses.push(y);
+    for(const y of courses){
+      ctx.beginPath();ctx.moveTo(cornerX,y);ctx.lineTo(w,courseYAtX(y,w));ctx.stroke();
+    }
+    for(let row=0;row<courses.length-1;row++){
+      const fraction=row%2?.43:.68;
+      const x=cornerX+(w-cornerX)*fraction;
+      const top=courseYAtX(courses[row],x),bottom=courseYAtX(courses[row+1],x);
+      ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();
+    }
+    ctx.restore();
   }
 
   #leftWindow(ctx,w,h,g){
@@ -293,6 +335,25 @@ export class PoolRenderer {
     ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(8,w*.010);ctx.stroke(path);
     ctx.strokeStyle="rgba(250,255,255,.88)";ctx.lineWidth=Math.max(1.5,w*.002);ctx.stroke(path);
     ctx.restore();
+  }
+
+  #updateVibraFlow(dt){
+    if(this.vibraSensor.active)this.vibraFlowStrength=1;
+    else this.vibraFlowStrength=Math.max(0,this.vibraFlowStrength-dt/6000);
+    if(this.vibraFlowStrength<=0){this.vibraFlowElapsed=0;return;}
+    this.vibraFlowElapsed+=dt;
+    let pulses=0;
+    while(this.vibraFlowElapsed>=24&&pulses<8){
+      this.vibraFlowElapsed-=24;pulses++;
+      const spread=this.vibraSensor.active?this.vibraSensor.spread:1;
+      const strength=this.vibraFlowStrength*this.vibraFlowStrength;
+      for(let source=0;source<3;source++){
+        const u=.5+(Math.random()-.5)*.94*spread;
+        const v=.5+(Math.random()-.5)*.9*spread;
+        const direction=Math.random()<.5?-1:1;
+        this.surface.disturb(u,v,direction*(.1+Math.random()*.08)*strength);
+      }
+    }
   }
 
   #quad(ctx,a,b,c,d){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();}

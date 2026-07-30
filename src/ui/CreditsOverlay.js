@@ -3,6 +3,7 @@ const CREDIT_ENTRIES = [
   { caption: "arunangshubanerjee@pixabay", url: "https://pixabay.com/sound-effects/household-loopable-bathing-sound-gentle-water-movement-and-splashing-ambience-336621/" },
   { caption: "ノタの森", url: "http://notanomori.net/" },
   { caption: "u_moo3yn7s9y@pixabay", url: "https://pixabay.com/ja/users/u_moo3yn7s9y-43362546/" },
+  { caption: "freesound community@pixabay", url: "https://pixabay.com/ja/users/freesound_community-46691455/" },
 ];
 
 export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {
@@ -16,9 +17,6 @@ export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {
   const dialog = document.createElement("dialog");
   dialog.className = "credits-dialog";
   dialog.tabIndex = -1;
-  const title = document.createElement("h2");
-  title.className = "credits-title";
-  title.textContent = "Credit";
   const panel = document.createElement("div");
   panel.className = "credits-panel";
   const viewport = document.createElement("div");
@@ -61,7 +59,7 @@ export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {
   roll.append(section,thanksSection);
   viewport.appendChild(roll);
   panel.appendChild(viewport);
-  dialog.append(title,panel);
+  dialog.append(panel);
   document.body.append(credit, dialog);
   let stopRoll=()=>{};
   const open=()=>{

@@ -1,13 +1,13 @@
-import VibraEffect from "./VibraEffect.js";
 import { Scene } from "../core/Scene.js";
 import { Camera } from "../core/Camera.js?v=0006c";
 import { DragController } from "../input/DragController.js?v=0007b";
 import { WaterHoldController } from "../input/WaterHoldController.js?v=0017e";
 import { ThermometerController } from "../input/ThermometerController.js?v=0010a";
+import { VibraSensorController } from "../input/VibraSensorController.js?v=0011c";
 import { DragSpring } from "../input/DragSpring.js";
 import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022c";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0010n";
-import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0022b";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0011l";
+import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0011h";
 
 export class EntranceScene extends Scene {
   constructor(engine){
@@ -16,6 +16,8 @@ export class EntranceScene extends Scene {
     this.drag=null;
     this.waterHold=null;
     this.thermometerControl=null;
+    this.vibraSensorControl=null;
+    this.vibraWasActive=false;
     this.spring=new DragSpring();
     this.noren=new NorenRenderer();
     this.pool=new PoolRenderer();
@@ -46,6 +48,13 @@ export class EntranceScene extends Scene {
       onTap:()=>this.pool.cycleTemperature(),
       onSwipe:()=>this.pool.toggleThermometerDisplay()
     });
+    this.vibraSensorControl=new VibraSensorController(canvas,{
+      isEnabled:()=>this.state==="revealed",
+      hitTest:(x,y)=>this.pool.vibraSensorHitTest(x,y,this.engine.width,this.engine.height),
+      onTrigger:()=>{
+        if(this.pool.startVibra())this.startVibraAudio?.();
+      }
+    });
     this.spring.snap(0);
     this.state="idle";
   }
@@ -70,6 +79,9 @@ export class EntranceScene extends Scene {
     this.norenAlpha=1-this.#smooth(this.#range(this.transition,.08,.55));
     this.noren.update(dt,this,this.engine.width,this.engine.height);
     this.pool.update(dt);
+    const vibraActive=this.pool.vibraSensor.active;
+    if(this.vibraWasActive&&!vibraActive)this.stopVibraAudio?.();
+    this.vibraWasActive=vibraActive;
     this.waterHold.update(dt);
     if(this.state==="revealed"&&this.drag.dragging&&!this.waterHold.triggered){
       const x=this.drag.pointerX*this.engine.width;
@@ -94,21 +106,11 @@ export class EntranceScene extends Scene {
     this.removeAudioVisibilityListener?.();
     this.waterHold?.destroy();
     this.thermometerControl?.destroy();
+    this.vibraSensorControl?.destroy();
+    this.stopVibraAudio?.();
     this.audio?.fadeOut("bath",400);
   }
 
   #range(value,start,end){return Math.max(0,Math.min(1,(value-start)/(end-start)));}
   #smooth(t){return t*t*(3-2*t);}
 }
-
-
-// ---- Patch0024 integration helpers ----
-EntranceScene.prototype.initVibraEffect ??= function(){
-  this.vibraEffect = new VibraEffect(this);
-};
-
-const __oldUpdate = EntranceScene.prototype.update;
-EntranceScene.prototype.update = function(time, delta){
-  if(__oldUpdate){ __oldUpdate.call(this, time, delta); }
-  this.vibraEffect?.update(time, delta);
-};
