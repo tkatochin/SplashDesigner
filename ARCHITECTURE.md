@@ -737,15 +737,17 @@ Completion
 
 ## Issue-0016 — Project State Documentation
 
+Status: **完了**
+
 Purpose: 長期開発を会話の記憶に依存させず、最新状態と設計判断をワークスペースへ残す。
 
 Scope
 
--   `PROJECT_STATE.md`: 現在Issue、完了Issue、起動方法、既知問題、次作業
--   `DESIGN_HISTORY.md`: 採用・却下した設計と理由
--   `ISSUE_HISTORY.md`: Issueごとの解析、変更ファイル、検証結果
--   `AI_RULES.md`: architecture-first、推測実装禁止、最小差分、a/b/c運用
--   各Issue完了時に更新する運用規則
+-   `README.md`: プロジェクト概要、起動方法、Issue一覧と進行状態
+-   `ARCHITECTURE.md`: 設計判断、Issueごとの仕様・変更範囲・検証結果
+-   `AGENTS.md`: architecture-first、推測実装禁止、最小差分、a/b/c運用、Git運用
+-   `HANDOVER_TO_CODEX.md`: 以前のスレッドで確定した引き継ぎ内容を保存する読み取り専用資料
+-   新規4資料へ分散させず、各Issueの追加・進行・完了時に上記の該当資料を同期する
 
 Out of scope
 
@@ -754,9 +756,9 @@ Out of scope
 
 Completion
 
--   4資料だけで現在地、次作業、主要判断を追跡できる
--   README、ARCHITECTURE、HANDOVERとの矛盾がない
--   更新責任と更新タイミングが明記されている
+-   既存4資料だけで現在地、次作業、主要判断、作業規則を追跡できる
+-   README、ARCHITECTURE、AGENTS、HANDOVERの役割が重複せず、内容に矛盾がない
+-   `AGENTS.md`に更新責任と更新タイミングが明記されている
 
 ## Issue-0017 — Long-Press Overflow
 
