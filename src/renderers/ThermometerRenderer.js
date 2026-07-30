@@ -13,21 +13,104 @@ export class ThermometerRenderer {
     return Math.hypot(px-g.x,py-g.y)<=g.radius*1.18;
   }
 
-  render(ctx,width,height,temperature){
+  render(ctx,width,height,temperature,pool){
     const g=this.geometry(width,height);
     ctx.save();
-    ctx.shadowColor="rgba(23,28,27,.42)";ctx.shadowBlur=g.radius*.22;ctx.shadowOffsetY=g.radius*.1;
-    ctx.fillStyle="#8b908c";ctx.beginPath();ctx.arc(g.x,g.y,g.radius,0,Math.PI*2);ctx.fill();
-    ctx.shadowColor="transparent";
-    if(temperature.display==="analog")this.#analog(ctx,g,temperature.value);
+    if(temperature.display==="analog"){
+      if(pool)this.#conduit(ctx,g,pool,height);
+      ctx.shadowColor="rgba(23,28,27,.42)";ctx.shadowBlur=g.radius*.22;ctx.shadowOffsetY=g.radius*.1;
+      ctx.fillStyle="#8b908c";ctx.beginPath();ctx.arc(g.x,g.y,g.radius,0,Math.PI*2);ctx.fill();
+      ctx.shadowColor="transparent";
+      this.#analog(ctx,g,temperature.value);
+    }
     else{
-      ctx.fillStyle="#c8cbc3";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.88,0,Math.PI*2);ctx.fill();
+      if(pool)this.#digitalColumn(ctx,g,pool,width,height);
       ctx.fillStyle="#111512";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.75,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="rgba(255,255,232,.42)";ctx.lineWidth=Math.max(1,g.radius*.035);
       ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.7,Math.PI*1.08,Math.PI*1.72);ctx.stroke();
       this.#digital(ctx,g,temperature.value);
     }
     ctx.restore();
+  }
+
+  #digitalColumn(ctx,g,pool,width,height){
+    const bottom=pool.water.backL.y;
+    const rimDepth=Math.max(1,pool.water.backL.y-pool.outer.backL.y);
+    const sideX=Math.max(3,g.radius*.15),sideY=Math.max(2,rimDepth*.18);
+
+    const wallShadow=ctx.createLinearGradient(g.x+g.radius,0,g.x+g.radius*1.85,0);
+    wallShadow.addColorStop(0,"rgba(25,31,31,.38)");wallShadow.addColorStop(1,"rgba(25,31,31,0)");
+    ctx.fillStyle=wallShadow;ctx.beginPath();
+    ctx.moveTo(g.x+g.radius,g.y-g.radius*.72);ctx.lineTo(g.x+g.radius*1.8,g.y-g.radius*.38);
+    ctx.lineTo(g.x+g.radius*1.55,bottom);ctx.lineTo(g.x+g.radius,bottom);ctx.closePath();ctx.fill();
+
+    const rimShadow=ctx.createLinearGradient(g.x+g.radius,bottom,g.x+g.radius+rimDepth,bottom-rimDepth*.28);
+    rimShadow.addColorStop(0,"rgba(23,30,30,.4)");rimShadow.addColorStop(1,"rgba(23,30,30,0)");
+    ctx.fillStyle=rimShadow;ctx.beginPath();ctx.moveTo(g.x-g.radius*.05,bottom);
+    ctx.lineTo(g.x+g.radius,bottom);ctx.lineTo(g.x+g.radius+rimDepth,bottom-rimDepth*.28);
+    ctx.lineTo(g.x+g.radius*.55,bottom-rimDepth*.08);ctx.closePath();ctx.fill();
+
+    ctx.fillStyle="#68726f";ctx.beginPath();
+    ctx.moveTo(g.x,g.y-g.radius);ctx.quadraticCurveTo(g.x+g.radius*.72,g.y-g.radius,g.x+g.radius,g.y);
+    ctx.lineTo(g.x+g.radius,bottom);ctx.lineTo(g.x+g.radius+sideX,bottom-sideY);
+    ctx.lineTo(g.x+g.radius+sideX,g.y-sideY);
+    ctx.quadraticCurveTo(g.x+g.radius*.75+sideX,g.y-g.radius-sideY,g.x+sideX,g.y-g.radius-sideY);
+    ctx.closePath();ctx.fill();
+
+    const steel=ctx.createLinearGradient(g.x-g.radius,0,g.x+g.radius,0);
+    steel.addColorStop(0,"#9ea9a6");steel.addColorStop(.2,"#e4e9e5");
+    steel.addColorStop(.48,"#aab5b2");steel.addColorStop(.76,"#dce2de");steel.addColorStop(1,"#858f8c");
+    ctx.fillStyle=steel;ctx.beginPath();ctx.moveTo(g.x-g.radius,bottom);ctx.lineTo(g.x-g.radius,g.y);
+    ctx.arc(g.x,g.y,g.radius,Math.PI,0);ctx.lineTo(g.x+g.radius,bottom);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(39,47,46,.62)";ctx.lineWidth=Math.max(1,width*.0013);ctx.stroke();
+
+    const recess=ctx.createRadialGradient(g.x-g.radius*.12,g.y-g.radius*.12,g.radius*.35,g.x,g.y,g.radius*.8);
+    recess.addColorStop(0,"#4f5957");recess.addColorStop(.82,"#202625");recess.addColorStop(1,"#0f1312");
+    ctx.fillStyle=recess;ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.79,0,Math.PI*2);ctx.fill();
+  }
+
+  #conduit(ctx,g,pool,height){
+    const waterY=pool.water.backL.y;
+    const rimBackY=pool.outer.backL.y;
+    const endY=Math.min(pool.water.nearL.y,waterY+height*.075);
+    const p0={x:g.x,y:g.y+g.radius*.92};
+    const p1={x:g.x-g.radius*.16,y:g.y+g.radius*1.45};
+    const p2={x:g.x+g.radius*.28,y:rimBackY-g.radius*.22};
+    const p3={x:g.x+g.radius*.16,y:waterY+g.radius*.1};
+    const p4={x:g.x+g.radius*.12,y:waterY+g.radius*.42};
+    const p5={x:g.x+g.radius*.12,y:endY-g.radius*.25};
+    const p6={x:g.x+g.radius*.12,y:endY};
+    const points=[];
+    for(let index=0;index<=14;index++)points.push(this.#cubic(p0,p1,p2,p3,index/14));
+    for(let index=1;index<=10;index++)points.push(this.#cubic(p3,p4,p5,p6,index/10));
+    const path=new Path2D();path.moveTo(points[0].x,points[0].y);
+    for(let index=1;index<points.length;index++)path.lineTo(points[index].x,points[index].y);
+    const pipeWidth=Math.max(5,g.radius*.18);
+    ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.strokeStyle="rgba(29,36,36,.72)";ctx.lineWidth=pipeWidth*1.55;ctx.stroke(path);
+    ctx.strokeStyle="#9da8a6";ctx.lineWidth=pipeWidth;ctx.stroke(path);
+    ctx.strokeStyle="rgba(244,250,244,.72)";ctx.lineWidth=Math.max(1,pipeWidth*.2);ctx.stroke(path);
+    for(let index=2;index<points.length-1;index+=2){
+      const before=points[index-1],after=points[index+1],point=points[index];
+      const length=Math.max(.001,Math.hypot(after.x-before.x,after.y-before.y));
+      const nx=-(after.y-before.y)/length,ny=(after.x-before.x)/length;
+      ctx.strokeStyle="rgba(50,59,58,.72)";ctx.lineWidth=Math.max(1,pipeWidth*.18);
+      ctx.beginPath();ctx.moveTo(point.x-nx*pipeWidth*.62,point.y-ny*pipeWidth*.62);
+      ctx.lineTo(point.x+nx*pipeWidth*.62,point.y+ny*pipeWidth*.62);ctx.stroke();
+    }
+    const submerged=points.findIndex(point=>point.y>=waterY);
+    if(submerged>=0){
+      ctx.strokeStyle="rgba(13,107,132,.46)";ctx.lineWidth=pipeWidth*1.08;
+      ctx.beginPath();ctx.moveTo(points[submerged].x,points[submerged].y);
+      for(let index=submerged+1;index<points.length;index++)ctx.lineTo(points[index].x,points[index].y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  #cubic(a,b,c,d,t){
+    const u=1-t,aa=u*u*u,bb=3*u*u*t,cc=3*u*t*t,dd=t*t*t;
+    return{x:a.x*aa+b.x*bb+c.x*cc+d.x*dd,y:a.y*aa+b.y*bb+c.y*cc+d.y*dd};
   }
 
   #digital(ctx,g,value){

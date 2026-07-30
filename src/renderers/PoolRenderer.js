@@ -4,10 +4,10 @@ import { OverflowRenderer } from "./OverflowRenderer.js?v=0017v";
 import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020d";
 import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
 import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
-import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010n";
+import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0024c";
 import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
 import { VibraSensor } from "../devices/VibraSensor.js?v=0011i";
-import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011l";
+import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0024c";
 import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011l";
 import { MADMAXDevice } from "../devices/MADMAXDevice.js?v=0012h";
 import { MADMAXOverflowEffect } from "../effects/MADMAXOverflowEffect.js?v=0012c";
@@ -106,7 +106,6 @@ export class PoolRenderer {
     };
     this.#wall(ctx,width,height,g);
     this.madmaxButtonRenderer.render(ctx,width,height,this.madmax.pressed);
-    this.thermometerRenderer.render(ctx,width,height,this.temperature);
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
@@ -123,6 +122,7 @@ export class PoolRenderer {
     // The sensor is a solid object above the rim. Keep grout and overflowing
     // water behind it instead of letting either sheet cross its front faces.
     this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,time);
+    this.thermometerRenderer.render(ctx,width,height,this.temperature,g);
     const drainAmount=Math.min(1,this.overflows.reduce((sum,overflow)=>sum+overflow.levels().rim,0)+this.madmaxOverflow.levels().rim);
     this.drainRenderer.renderOpenings(ctx,g,drainAmount);
     this.madmaxWaterRenderer.renderImpact(ctx,g,width,height,this.madmax,time);
@@ -333,13 +333,24 @@ export class PoolRenderer {
   }
 
   #handrail(ctx,w,h,g){
-    const frontBase={x:w*.87,y:h*.985};
-    const farBaseY=g.water.nearR.y;
+    const frontBase={x:w*.13,y:h*.985};
+    const farBaseY=g.water.nearL.y;
     const farX=this.#projectX(frontBase,g.vanishing,farBaseY);
+    const farShoulder={x:farX,y:h*.615};
+    const railStart={x:farX-w*.018,y:h*.55};
+    const cornerRadius=Math.max(10,w*.018);
+    const nearApproachX=frontBase.x+cornerRadius;
+    const nearApproach={
+      x:nearApproachX,
+      y:this.#projectYAtX(railStart,g.vanishing,nearApproachX)
+    };
+    const nearJoin={x:frontBase.x,y:nearApproach.y+cornerRadius*.72};
     const path=new Path2D();
     path.moveTo(farX,farBaseY);
-    path.lineTo(farX,h*.615);
-    path.bezierCurveTo(farX,h*.54,frontBase.x,h*.54,frontBase.x,h*.64);
+    path.lineTo(farShoulder.x,farShoulder.y);
+    path.bezierCurveTo(farX,farShoulder.y-h*.035,railStart.x+w*.004,railStart.y,railStart.x,railStart.y);
+    path.lineTo(nearApproach.x,nearApproach.y);
+    path.quadraticCurveTo(frontBase.x,nearApproach.y,nearJoin.x,nearJoin.y);
     path.lineTo(frontBase.x,frontBase.y);
     const railWidth=Math.max(8,w*.010);
     ctx.save();
