@@ -36,33 +36,34 @@ export class ThermometerRenderer {
   #digitalColumn(ctx,g,pool,width,height){
     const bottom=pool.water.backL.y;
     const rimDepth=Math.max(1,pool.water.backL.y-pool.outer.backL.y);
-    const sideX=Math.max(3,g.radius*.15),sideY=Math.max(2,rimDepth*.18);
+    const rearRadius=g.radius*.88;
+    const rearY=g.y-rimDepth*.13;
 
-    const wallShadow=ctx.createLinearGradient(g.x+g.radius,0,g.x+g.radius*1.85,0);
-    wallShadow.addColorStop(0,"rgba(25,31,31,.38)");wallShadow.addColorStop(1,"rgba(25,31,31,0)");
-    ctx.fillStyle=wallShadow;ctx.beginPath();
-    ctx.moveTo(g.x+g.radius,g.y-g.radius*.72);ctx.lineTo(g.x+g.radius*1.8,g.y-g.radius*.38);
-    ctx.lineTo(g.x+g.radius*1.55,bottom);ctx.lineTo(g.x+g.radius,bottom);ctx.closePath();ctx.fill();
+    // A shallow rear cap and a converging silver band give the column depth
+    // without drawing a floating shape outside the one-point perspective.
+    const rearCap=ctx.createLinearGradient(g.x-rearRadius,rearY,g.x+rearRadius,rearY);
+    rearCap.addColorStop(0,"#7a8582");rearCap.addColorStop(.48,"#eef2ed");rearCap.addColorStop(1,"#8b9692");
+    ctx.fillStyle=rearCap;ctx.beginPath();ctx.moveTo(g.x-rearRadius,rearY);
+    ctx.arc(g.x,rearY,rearRadius,Math.PI,0);ctx.closePath();ctx.fill();
+    const silver=ctx.createLinearGradient(g.x-g.radius,g.y,g.x+g.radius,rearY);
+    silver.addColorStop(0,"#bcc6c2");silver.addColorStop(.5,"#f1f4ef");silver.addColorStop(1,"#8a9591");
+    ctx.fillStyle=silver;ctx.beginPath();ctx.moveTo(g.x-g.radius,g.y);
+    ctx.lineTo(g.x+g.radius,g.y);ctx.lineTo(g.x+rearRadius,rearY);ctx.lineTo(g.x-rearRadius,rearY);ctx.closePath();ctx.fill();
+    const innerShadow=ctx.createLinearGradient(g.x,g.y-rearRadius*.8,g.x+rearRadius,rearY);
+    innerShadow.addColorStop(0,"rgba(45,52,50,.15)");innerShadow.addColorStop(1,"rgba(45,52,50,.52)");
+    ctx.fillStyle=innerShadow;ctx.beginPath();ctx.moveTo(g.x+g.radius*.12,g.y);
+    ctx.lineTo(g.x+g.radius,g.y);ctx.lineTo(g.x+rearRadius,rearY);ctx.lineTo(g.x+rearRadius*.52,rearY);ctx.closePath();ctx.fill();
 
-    const rimShadow=ctx.createLinearGradient(g.x+g.radius,bottom,g.x+g.radius+rimDepth,bottom-rimDepth*.28);
-    rimShadow.addColorStop(0,"rgba(23,30,30,.4)");rimShadow.addColorStop(1,"rgba(23,30,30,0)");
-    ctx.fillStyle=rimShadow;ctx.beginPath();ctx.moveTo(g.x-g.radius*.05,bottom);
-    ctx.lineTo(g.x+g.radius,bottom);ctx.lineTo(g.x+g.radius+rimDepth,bottom-rimDepth*.28);
-    ctx.lineTo(g.x+g.radius*.55,bottom-rimDepth*.08);ctx.closePath();ctx.fill();
-
-    ctx.fillStyle="#68726f";ctx.beginPath();
-    ctx.moveTo(g.x,g.y-g.radius);ctx.quadraticCurveTo(g.x+g.radius*.72,g.y-g.radius,g.x+g.radius,g.y);
-    ctx.lineTo(g.x+g.radius,bottom);ctx.lineTo(g.x+g.radius+sideX,bottom-sideY);
-    ctx.lineTo(g.x+g.radius+sideX,g.y-sideY);
-    ctx.quadraticCurveTo(g.x+g.radius*.75+sideX,g.y-g.radius-sideY,g.x+sideX,g.y-g.radius-sideY);
-    ctx.closePath();ctx.fill();
-
-    const steel=ctx.createLinearGradient(g.x-g.radius,0,g.x+g.radius,0);
-    steel.addColorStop(0,"#9ea9a6");steel.addColorStop(.2,"#e4e9e5");
-    steel.addColorStop(.48,"#aab5b2");steel.addColorStop(.76,"#dce2de");steel.addColorStop(1,"#858f8c");
+    const steel=ctx.createLinearGradient(g.x-g.radius,g.y+g.radius*.7,g.x+g.radius,g.y-g.radius*.7);
+    steel.addColorStop(0,"#8b9692");steel.addColorStop(.22,"#e1e8e2");
+    steel.addColorStop(.48,"#a0aba7");steel.addColorStop(.72,"#f0f3ed");steel.addColorStop(1,"#7a8581");
     ctx.fillStyle=steel;ctx.beginPath();ctx.moveTo(g.x-g.radius,bottom);ctx.lineTo(g.x-g.radius,g.y);
     ctx.arc(g.x,g.y,g.radius,Math.PI,0);ctx.lineTo(g.x+g.radius,bottom);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(39,47,46,.62)";ctx.lineWidth=Math.max(1,width*.0013);ctx.stroke();
+
+    ctx.strokeStyle="#edf2ec";ctx.lineWidth=Math.max(1,width*.0011);
+    ctx.beginPath();ctx.moveTo(g.x-g.radius,g.y);ctx.lineTo(g.x-rearRadius,rearY);
+    ctx.moveTo(g.x+g.radius,g.y);ctx.lineTo(g.x+rearRadius,rearY);ctx.stroke();
 
     const recess=ctx.createRadialGradient(g.x-g.radius*.12,g.y-g.radius*.12,g.radius*.35,g.x,g.y,g.radius*.8);
     recess.addColorStop(0,"#4f5957");recess.addColorStop(.82,"#202625");recess.addColorStop(1,"#0f1312");

@@ -53,8 +53,11 @@ export class VibraSensorRenderer {
     frontSteel.addColorStop(.72,"#c6ceca");frontSteel.addColorStop(1,"#68726f");
     ctx.fillStyle=frontSteel;
     this.#polygon(ctx,[s.plate[3],s.plate[2],s.columnFrontR,s.columnFrontL]);ctx.fill();
-    ctx.strokeStyle="rgba(32,40,39,.52)";ctx.lineWidth=Math.max(1,width*.0012);
-    this.#polygon(ctx,[s.plate[0],s.plate[1],s.columnBackR,s.columnFrontR,s.columnFrontL,s.columnBackL]);ctx.stroke();
+    // Do not outline the lower/right base edges: those perspective lines would
+    // make the opaque front face look transparent.
+    ctx.strokeStyle="rgba(32,40,39,.42)";ctx.lineWidth=Math.max(1,width*.0012);
+    ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.columnBackL.x,s.columnBackL.y);
+    ctx.moveTo(s.plate[1].x,s.plate[1].y);ctx.lineTo(s.columnBackR.x,s.columnBackR.y);ctx.stroke();
 
     const steel=ctx.createLinearGradient(s.plate[0].x,s.plate[0].y,s.plate[2].x,s.plate[2].y);
     steel.addColorStop(0,"#d8ddda");steel.addColorStop(.42,"#8e9998");steel.addColorStop(.72,"#e3e7e2");steel.addColorStop(1,"#737e7d");

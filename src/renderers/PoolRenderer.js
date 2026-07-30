@@ -339,18 +339,16 @@ export class PoolRenderer {
     const farShoulder={x:farX,y:h*.615};
     const railStart={x:farX-w*.018,y:h*.55};
     const cornerRadius=Math.max(10,w*.018);
-    const nearApproachX=frontBase.x+cornerRadius;
-    const nearApproach={
-      x:nearApproachX,
-      y:this.#projectYAtX(railStart,g.vanishing,nearApproachX)
+    const railEnd={
+      x:frontBase.x+cornerRadius,
+      y:this.#projectYAtX(railStart,g.vanishing,frontBase.x+cornerRadius)
     };
-    const nearJoin={x:frontBase.x,y:nearApproach.y+cornerRadius*.72};
+    const nearJoin={x:frontBase.x,y:railEnd.y+cornerRadius*.72};
     const path=new Path2D();
     path.moveTo(farX,farBaseY);
     path.lineTo(farShoulder.x,farShoulder.y);
     path.bezierCurveTo(farX,farShoulder.y-h*.035,railStart.x+w*.004,railStart.y,railStart.x,railStart.y);
-    path.lineTo(nearApproach.x,nearApproach.y);
-    path.quadraticCurveTo(frontBase.x,nearApproach.y,nearJoin.x,nearJoin.y);
+    path.quadraticCurveTo(frontBase.x+cornerRadius*.18,railEnd.y+cornerRadius*.12,nearJoin.x,nearJoin.y);
     path.lineTo(frontBase.x,frontBase.y);
     const railWidth=Math.max(8,w*.010);
     ctx.save();
