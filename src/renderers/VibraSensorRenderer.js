@@ -17,8 +17,8 @@ export class VibraSensorRenderer {
     const breakBaseL=this.#projectToY(baseFrontL,g.vanishing,breakY);
     const breakBaseR=this.#projectToY(baseFrontR,g.vanishing,breakY);
     const topBreakL=liftAtDepth(breakBaseL),topBreakR=liftAtDepth(breakBaseR);
-    const topFrontL={x:baseFrontL.x,y:baseFrontL.y-blockHeight*.12};
-    const topFrontR={x:baseFrontR.x,y:baseFrontR.y-blockHeight*.12};
+    const topFrontL={x:baseFrontL.x,y:baseFrontL.y-blockHeight/3};
+    const topFrontR={x:baseFrontR.x,y:baseFrontR.y-blockHeight/3};
     const slope=[topBreakL,topBreakR,topFrontR,topFrontL];
     const plate=this.#insetOnSlope(slope,.17,.17,.18,.16);
     const slit=this.#insetOnSlope(plate,.13,.40,.13,.38);

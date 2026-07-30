@@ -6,9 +6,9 @@ import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
 import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
 import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010n";
 import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
-import { VibraSensor } from "../devices/VibraSensor.js?v=0011c";
-import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011f";
-import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011e";
+import { VibraSensor } from "../devices/VibraSensor.js?v=0011i";
+import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011i";
+import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011i";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -340,15 +340,13 @@ export class PoolRenderer {
     if(!this.vibraSensor.active){this.vibraFlowElapsed=0;return;}
     this.vibraFlowElapsed+=dt;
     let pulses=0;
-    while(this.vibraFlowElapsed>=130&&pulses<4){
-      this.vibraFlowElapsed-=130;pulses++;
+    while(this.vibraFlowElapsed>=55&&pulses<6){
+      this.vibraFlowElapsed-=55;pulses++;
       const spread=this.vibraSensor.spread;
-      const angle=Math.random()*Math.PI*2;
-      const distance=Math.sqrt(Math.random())*spread*.43;
-      const u=Math.max(.05,Math.min(.95,.5+Math.cos(angle)*distance));
-      const v=Math.max(.08,Math.min(.92,.53+Math.sin(angle)*distance*.72));
-      const direction=Math.random()<.28?-1:1;
-      this.surface.disturb(u,v,direction*(.014+Math.random()*.018));
+      const u=.5+(Math.random()-.5)*.9*spread;
+      const v=.5+(Math.random()-.5)*.84*spread;
+      const direction=Math.random()<.34?-1:1;
+      this.surface.disturb(u,v,direction*(.018+Math.random()*.024));
     }
   }
 

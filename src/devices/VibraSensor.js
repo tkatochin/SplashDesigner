@@ -23,5 +23,5 @@ export class VibraSensor {
   }
 
   get progress(){return this.active?Math.min(1,this.elapsed/this.durationMs):0;}
-  get spread(){return this.active ? .08+.72*Math.min(1,this.elapsed/4000) : 0;}
+  get spread(){return this.active ? .14+.86*Math.min(1,this.elapsed/3200) : 0;}
 }
