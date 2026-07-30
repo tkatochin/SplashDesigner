@@ -312,7 +312,7 @@ Completion
 
 ## Issue-0010 — Water Thermometer
 
-Status: **0010c実装済み・プレビュー確認待ち**
+Status: **完了（実装・Netlifyプレビュー確認済み）**
 
 Purpose: 奥壁の丸形温度計そのものを操作し、水風呂、シングル水風呂、風呂、熱湯を循環切り替えする。
 
