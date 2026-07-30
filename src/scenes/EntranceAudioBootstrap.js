@@ -1,4 +1,4 @@
-import { AudioManager } from "../audio/AudioManager.js?v=0019a";
+import { AudioManager } from "../audio/AudioManager.js?v=0011h";
 
 /**
  * Patch 0013 additions for EntranceScene.
@@ -12,7 +12,9 @@ export function initializeAudio(scene){
   scene.audio.register("bath",asset("arunangshubanerjee-loopable-bathing-sound-gentle-water-movement-and-splashing-ambience-336621.mp3"),{loop:true,volume:.28});
   scene.audio.register("bucket",asset("Hurooke01-1.mp3"),{volume:.42});
   scene.audio.register("welcome",asset("notanomori_201411211251280003.wav"),{volume:.72});
-  scene.audio.register("vibra",asset("freesound_community-c02-bubbles-edit-35380.mp3"),{loop:true,volume:.46});
+  scene.audio.register("vibra",asset("freesound_community-c02-bubbles-edit-35380.mp3"),{
+    loop:true,loopStart:1,loopEndOffset:1,volume:.46
+  });
   for(let voice=1;voice<=3;voice++){
     scene.audio.register(`overflow-${voice}`,asset("u_moo3yn7s9y-big-splash-sound-202450.mp3"),{volume:.76});
   }

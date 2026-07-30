@@ -10,6 +10,7 @@ export class AudioManager {
     this.nodes=new Map();
     this.fades=new Map();
     this.segmentTimers=new Map();
+    this.mediaLoopHandlers=new Map();
   }
 
   register(key,url,options={}){
@@ -18,7 +19,11 @@ export class AudioManager {
     audio.preload="auto";
     audio.loop=options.loop??false;
     audio.volume=this.#clamp(options.volume??1);
-    this.sounds.set(key,{audio,url,loop:audio.loop,defaultVolume:audio.volume});
+    this.sounds.set(key,{
+      audio,url,loop:audio.loop,defaultVolume:audio.volume,
+      loopStart:Math.max(0,options.loopStart??0),
+      loopEndOffset:Math.max(0,options.loopEndOffset??0)
+    });
     return audio;
   }
 
@@ -120,11 +125,16 @@ export class AudioManager {
     const loop=options.loop??sound.loop;
     const restart=options.restart??true;
     this.#cancelFade(key);
-    if(this.buffers.has(key))return this.#playBuffer(key,{volume,loop,restart});
+    if(this.buffers.has(key))return this.#playBuffer(key,{
+      volume,loop,restart,loopStart:sound.loopStart,loopEndOffset:sound.loopEndOffset
+    });
 
     const {audio}=sound;
-    audio.loop=loop;audio.volume=volume;
-    if(restart)audio.currentTime=0;
+    this.#clearMediaLoop(key);
+    const rangedLoop=loop&&(sound.loopStart>0||sound.loopEndOffset>0);
+    audio.loop=loop&&!rangedLoop;audio.volume=volume;
+    if(restart)audio.currentTime=rangedLoop?sound.loopStart:0;
+    if(rangedLoop)this.#setMediaLoop(key,sound);
     try{await audio.play();return true;}catch{return false;}
   }
 
@@ -158,7 +168,7 @@ export class AudioManager {
   stop(key){
     const sound=this.sounds.get(key);
     if(!sound)return;
-    this.#cancelFade(key);this.#clearSegmentTimer(key);this.#stopNode(key);
+    this.#cancelFade(key);this.#clearSegmentTimer(key);this.#clearMediaLoop(key);this.#stopNode(key);
     sound.audio.pause();sound.audio.currentTime=0;
   }
 
@@ -191,13 +201,18 @@ export class AudioManager {
     return this.bufferPromises.get(url);
   }
 
-  #playBuffer(key,{volume,loop,restart,offset=0,duration}={}){
+  #playBuffer(key,{volume,loop,restart,offset=0,duration,loopStart=0,loopEndOffset=0}={}){
     const existing=this.nodes.get(key);
     if(existing&&!restart){existing.gain.gain.value=volume;return true;}
     this.#stopNode(key);
     const source=this.context.createBufferSource();
     const gain=this.context.createGain();
     source.buffer=this.buffers.get(key);source.loop=loop;gain.gain.value=volume;
+    if(loop){
+      source.loopStart=Math.min(loopStart,Math.max(0,source.buffer.duration-.01));
+      source.loopEnd=Math.max(source.loopStart+.01,source.buffer.duration-loopEndOffset);
+      if(restart)offset=source.loopStart;
+    }
     source.connect(gain);gain.connect(this.context.destination);
     const node={source,gain};this.nodes.set(key,node);
     source.onended=()=>{if(this.nodes.get(key)===node)this.nodes.delete(key);};
@@ -240,6 +255,28 @@ export class AudioManager {
     window.clearTimeout(segment.timer);
     this.sounds.get(key)?.audio.removeEventListener("timeupdate",segment.stop);
     this.segmentTimers.delete(key);
+  }
+
+  #setMediaLoop(key,sound){
+    const {audio,loopStart,loopEndOffset}=sound;
+    const rewind=()=>{
+      const loopEnd=audio.duration-loopEndOffset;
+      if(!Number.isFinite(loopEnd)||audio.currentTime<loopEnd-.04)return;
+      audio.currentTime=loopStart;
+      if(audio.paused)audio.play().catch(()=>{});
+    };
+    audio.addEventListener("timeupdate",rewind);
+    audio.addEventListener("ended",rewind);
+    this.mediaLoopHandlers.set(key,rewind);
+  }
+
+  #clearMediaLoop(key){
+    const handler=this.mediaLoopHandlers.get(key);
+    if(!handler)return;
+    const audio=this.sounds.get(key)?.audio;
+    audio?.removeEventListener("timeupdate",handler);
+    audio?.removeEventListener("ended",handler);
+    this.mediaLoopHandlers.delete(key);
   }
 
   #clamp(value){return Math.max(0,Math.min(1,value));}
