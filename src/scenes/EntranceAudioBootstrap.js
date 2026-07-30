@@ -12,6 +12,7 @@ export function initializeAudio(scene){
   scene.audio.register("bath",asset("arunangshubanerjee-loopable-bathing-sound-gentle-water-movement-and-splashing-ambience-336621.mp3"),{loop:true,volume:.28});
   scene.audio.register("bucket",asset("Hurooke01-1.mp3"),{volume:.42});
   scene.audio.register("welcome",asset("notanomori_201411211251280003.wav"),{volume:.72});
+  scene.audio.register("vibra",asset("freesound_community-c02-bubbles-edit-35380.mp3"),{loop:true,volume:.46});
   for(let voice=1;voice<=3;voice++){
     scene.audio.register(`overflow-${voice}`,asset("u_moo3yn7s9y-big-splash-sound-202450.mp3"),{volume:.76});
   }
@@ -76,6 +77,7 @@ export function initializeAudio(scene){
       scene.audio.fadeIn("bath",500);
       scheduleBucket(scene);
     }
+    if(scene.pool?.vibraSensor.active)scene.audio.play("vibra");
   };
   const retryVisibleAudio=()=>resumeVisibleAudio();
   const retryVisibleAudioPointer=event=>{if(event.pointerType!=="touch")resumeVisibleAudio();};
@@ -146,6 +148,9 @@ export function initializeAudio(scene){
     scene.overflowVoice=scene.overflowVoice%3+1;
     scene.audio.playSegment(`overflow-${scene.overflowVoice}`,2,6,{volume:.76});
   };
+
+  scene.startVibraAudio=()=>scene.audio.play("vibra");
+  scene.stopVibraAudio=()=>scene.audio.stop("vibra");
 }
 
 function scheduleBucket(scene,minDelay=18000,maxDelay=36000){

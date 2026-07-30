@@ -7,7 +7,7 @@ import { VibraSensorController } from "../input/VibraSensorController.js?v=0011c
 import { DragSpring } from "../input/DragSpring.js";
 import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022c";
 import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0011f";
-import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0022b";
+import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0011g";
 
 export class EntranceScene extends Scene {
   constructor(engine){
@@ -17,6 +17,7 @@ export class EntranceScene extends Scene {
     this.waterHold=null;
     this.thermometerControl=null;
     this.vibraSensorControl=null;
+    this.vibraWasActive=false;
     this.spring=new DragSpring();
     this.noren=new NorenRenderer();
     this.pool=new PoolRenderer();
@@ -50,7 +51,9 @@ export class EntranceScene extends Scene {
     this.vibraSensorControl=new VibraSensorController(canvas,{
       isEnabled:()=>this.state==="revealed",
       hitTest:(x,y)=>this.pool.vibraSensorHitTest(x,y,this.engine.width,this.engine.height),
-      onTrigger:()=>this.pool.startVibra()
+      onTrigger:()=>{
+        if(this.pool.startVibra())this.startVibraAudio?.();
+      }
     });
     this.spring.snap(0);
     this.state="idle";
@@ -76,6 +79,9 @@ export class EntranceScene extends Scene {
     this.norenAlpha=1-this.#smooth(this.#range(this.transition,.08,.55));
     this.noren.update(dt,this,this.engine.width,this.engine.height);
     this.pool.update(dt);
+    const vibraActive=this.pool.vibraSensor.active;
+    if(this.vibraWasActive&&!vibraActive)this.stopVibraAudio?.();
+    this.vibraWasActive=vibraActive;
     this.waterHold.update(dt);
     if(this.state==="revealed"&&this.drag.dragging&&!this.waterHold.triggered){
       const x=this.drag.pointerX*this.engine.width;
@@ -101,6 +107,7 @@ export class EntranceScene extends Scene {
     this.waterHold?.destroy();
     this.thermometerControl?.destroy();
     this.vibraSensorControl?.destroy();
+    this.stopVibraAudio?.();
     this.audio?.fadeOut("bath",400);
   }
 
