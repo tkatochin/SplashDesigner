@@ -7,8 +7,8 @@ import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
 import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010n";
 import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
 import { VibraSensor } from "../devices/VibraSensor.js?v=0011c";
-import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011d";
-import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011c";
+import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011e";
+import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011e";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {

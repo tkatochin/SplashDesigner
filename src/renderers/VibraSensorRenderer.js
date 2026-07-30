@@ -35,18 +35,20 @@ export class VibraSensorRenderer {
     const s=this.geometry(g,width,height);
     ctx.save();ctx.lineJoin="round";
 
-    ctx.fillStyle="#151817";
+    const stone=ctx.createLinearGradient(s.baseBackL.x,0,s.baseFrontR.x,0);
+    stone.addColorStop(0,"#777b74");stone.addColorStop(.48,"#4a504d");stone.addColorStop(1,"#656963");
+    ctx.fillStyle=stone;
     this.#polygon(ctx,[s.topFrontL,s.topFrontR,s.baseFrontR,s.baseFrontL]);ctx.fill();
-    ctx.fillStyle="#202421";
+    ctx.fillStyle="#5c615c";
     this.#polygon(ctx,[s.topBackL,s.topBreakL,s.topFrontL,s.baseFrontL,s.baseBackL]);ctx.fill();
-    ctx.fillStyle="#101312";
+    ctx.fillStyle="#454b47";
     this.#polygon(ctx,[s.topBreakR,s.topBackR,s.baseBackR,s.baseFrontR,s.topFrontR]);ctx.fill();
 
     const flat=ctx.createLinearGradient(0,s.topBackL.y,0,s.topBreakL.y);
-    flat.addColorStop(0,"#353a36");flat.addColorStop(1,"#252a27");
+    flat.addColorStop(0,"#7a7e77");flat.addColorStop(1,"#555b57");
     ctx.fillStyle=flat;this.#polygon(ctx,[s.topBackL,s.topBackR,s.topBreakR,s.topBreakL]);ctx.fill();
     const slope=ctx.createLinearGradient(0,s.topBreakL.y,0,s.topFrontL.y);
-    slope.addColorStop(0,"#303531");slope.addColorStop(1,"#171b19");
+    slope.addColorStop(0,"#6d726c");slope.addColorStop(1,"#484e4a");
     ctx.fillStyle=slope;this.#polygon(ctx,s.slope);ctx.fill();
     ctx.strokeStyle="rgba(5,8,7,.78)";ctx.lineWidth=Math.max(1,width*.0012);ctx.stroke();
 
