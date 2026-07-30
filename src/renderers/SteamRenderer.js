@@ -14,7 +14,8 @@ export class SteamRenderer {
         width:small?.25+Math.random()*.75:.8+Math.pow(Math.random(),.7)*3.7,
         height:small?.45+Math.random():1.1+Math.pow(Math.random(),.72)*4.4,
         opacity:.72+Math.random()*.9,
-        rotation:(Math.random()-.5)*.65
+        rotation:(Math.random()-.5)*.65,
+        reach:.58+Math.random()*.84
       };
     });
   }
@@ -37,16 +38,28 @@ export class SteamRenderer {
       const sourceX=left.x+(right.x-left.x)*wisp.u;
       const sourceY=left.y;
       const x=sourceX+Math.sin(time*.00065*wisp.speed+wisp.phase*11)*width*.014*wisp.sway;
-      const y=sourceY-cycle*rise*(.72+wisp.height*.08);
-      const radius=Math.max(9,width*.028*(.55+cycle*1.45));
+      const y=sourceY-cycle*rise*wisp.reach;
+      const radius=Math.max(9,width*.028*(.42+cycle*1.58));
       const life=Math.min(1,cycle/.07)*Math.pow(1-cycle,1.35);
       const alpha=life*Math.min(.38,(.08+level*.145)*wisp.opacity);
-      const fog=ctx.createRadialGradient(x,y,0,x,y,radius);
+      const horizontalRadius=radius*wisp.width;
+      const verticalRadius=radius*wisp.height;
+
+      // Build each cloud in its own transformed space. A canvas gradient is not
+      // stretched by ctx.ellipse(), so drawing it in screen coordinates made many
+      // circular gradients merge into a conspicuous rectangular band.
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.rotate(wisp.rotation);
+      ctx.scale(horizontalRadius,verticalRadius);
+      const fog=ctx.createRadialGradient(0,0,0,0,0,1);
       fog.addColorStop(0,`rgba(252,252,243,${alpha})`);
-      fog.addColorStop(.5,`rgba(235,241,231,${alpha*.62})`);
+      fog.addColorStop(.38,`rgba(244,247,238,${alpha*.68})`);
+      fog.addColorStop(.72,`rgba(229,237,226,${alpha*.24})`);
       fog.addColorStop(1,"rgba(220,230,220,0)");
       ctx.fillStyle=fog;ctx.beginPath();
-      ctx.ellipse(x,y,radius*wisp.width,radius*wisp.height,wisp.rotation,0,Math.PI*2);ctx.fill();
+      ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();
+      ctx.restore();
     }
     ctx.restore();
   }
