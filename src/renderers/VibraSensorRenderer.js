@@ -2,16 +2,21 @@
 export class VibraSensorRenderer {
   geometry(g,width,height){
     const center=.83,half=.07;
-    const baseBackL=this.#mix(g.outer.backL,g.outer.backR,center-half);
-    const baseBackR=this.#mix(g.outer.backL,g.outer.backR,center+half);
     const baseFrontL=this.#mix(g.water.backL,g.water.backR,center-half);
     const baseFrontR=this.#mix(g.water.backL,g.water.backR,center+half);
+    const baseBackL=this.#projectToY(baseFrontL,g.vanishing,g.outer.backL.y);
+    const baseBackR=this.#projectToY(baseFrontR,g.vanishing,g.outer.backR.y);
     const blockHeight=Math.max(8,height*.023);
-    const lift=point=>({x:point.x,y:point.y-blockHeight});
-    const topBackL=lift(baseBackL),topBackR=lift(baseBackR);
-    const breakBaseL=this.#mix(baseBackL,baseFrontL,.33);
-    const breakBaseR=this.#mix(baseBackR,baseFrontR,.33);
-    const topBreakL=lift(breakBaseL),topBreakR=lift(breakBaseR);
+    const frontDepth=baseFrontL.y-g.vanishing.y;
+    const liftAtDepth=point=>({
+      x:point.x,
+      y:point.y-blockHeight*(point.y-g.vanishing.y)/frontDepth
+    });
+    const topBackL=liftAtDepth(baseBackL),topBackR=liftAtDepth(baseBackR);
+    const breakY=baseBackL.y+(baseFrontL.y-baseBackL.y)*.33;
+    const breakBaseL=this.#projectToY(baseFrontL,g.vanishing,breakY);
+    const breakBaseR=this.#projectToY(baseFrontR,g.vanishing,breakY);
+    const topBreakL=liftAtDepth(breakBaseL),topBreakR=liftAtDepth(breakBaseR);
     const topFrontL={x:baseFrontL.x,y:baseFrontL.y-blockHeight*.12};
     const topFrontR={x:baseFrontR.x,y:baseFrontR.y-blockHeight*.12};
     const slope=[topBreakL,topBreakR,topFrontR,topFrontL];
@@ -74,6 +79,10 @@ export class VibraSensorRenderer {
       if(((a.y>point.y)!==(b.y>point.y))&&point.x<(b.x-a.x)*(point.y-a.y)/(b.y-a.y)+a.x)inside=!inside;
     }
     return inside;
+  }
+  #projectToY(point,vanishing,y){
+    const ratio=(y-vanishing.y)/(point.y-vanishing.y);
+    return{x:vanishing.x+(point.x-vanishing.x)*ratio,y};
   }
   #mix(a,b,t){return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};}
 }
