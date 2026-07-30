@@ -1,6 +1,6 @@
 /** Renders irregular surface bubbles emitted by the bath vibra. */
 export class VibraBubbleRenderer {
-  constructor(){this.particles=[];this.spawnElapsed=0;}
+  constructor(){this.particles=[];this.spawnElapsed=0;this.emitterIndex=0;}
 
   update(dt,active,spread){
     for(const particle of this.particles)particle.age+=dt;
@@ -10,9 +10,12 @@ export class VibraBubbleRenderer {
     let bursts=0;
     while(this.spawnElapsed>=30&&bursts<8){
       this.spawnElapsed-=30;bursts++;
-      const center=this.#burstCenter(spread);
-      const count=28+Math.floor(Math.random()*18);
-      for(let index=0;index<count;index++)this.#spawn(spread,center,index<5);
+      for(let emitter=0;emitter<10;emitter++){
+        const center=this.#burstCenter(spread,this.emitterIndex+emitter*37);
+        const count=3+Math.floor(Math.random()*3);
+        for(let index=0;index<count;index++)this.#spawn(center,index===0);
+      }
+      this.emitterIndex=(this.emitterIndex+11)%(18*11);
     }
   }
 
@@ -48,13 +51,16 @@ export class VibraBubbleRenderer {
     ctx.restore();
   }
 
-  #burstCenter(spread){
+  #burstCenter(spread,index){
+    const columns=18,rows=11,cell=index%(columns*rows);
+    const column=cell%columns,row=Math.floor(cell/columns);
+    const cellU=(column+.5)/columns,cellV=(row+.5)/rows;
     return{
-      u:.5+(Math.random()-.5)*.92*spread,
-      v:.5+(Math.random()-.5)*.86*spread
+      u:.5+(cellU-.5)*.92*spread,
+      v:.5+(cellV-.5)*.86*spread
     };
   }
-  #spawn(spread,center,mound){
+  #spawn(center,mound){
     const jitterAngle=Math.random()*Math.PI*2;
     const jitter=.006+Math.random()*.022;
     this.particles.push({
@@ -65,7 +71,7 @@ export class VibraBubbleRenderer {
       opacity:.7+Math.random()*.3,rotation:(Math.random()-.5)*.55,
       roundness:Math.random(),mound
     });
-    if(this.particles.length>1000)this.particles.splice(0,this.particles.length-1000);
+    if(this.particles.length>1200)this.particles.splice(0,this.particles.length-1200);
   }
   #waterPoint(water,u,v){
     const left=this.#mix(water.backL,water.nearL,v),right=this.#mix(water.backR,water.nearR,v);

@@ -39,14 +39,17 @@ export class VibraSensorRenderer {
 
     const stone=ctx.createLinearGradient(s.baseBackL.x,0,s.baseFrontR.x,0);
     stone.addColorStop(0,"#777b74");stone.addColorStop(.48,"#4a504d");stone.addColorStop(1,"#656963");
-    ctx.fillStyle=stone;
-    this.#polygon(ctx,[s.topFrontL,s.topFrontR,s.baseFrontR,s.baseFrontL]);ctx.fill();
     const windowLight=ctx.createLinearGradient(s.topBackL.x,0,s.topFrontL.x,0);
     windowLight.addColorStop(0,"#a3a79f");windowLight.addColorStop(1,"#7d837d");
     ctx.fillStyle=windowLight;
     this.#polygon(ctx,[s.topBackL,s.topBreakL,s.topFrontL,s.baseFrontL,s.baseBackL]);ctx.fill();
     ctx.fillStyle="#454b47";
     this.#polygon(ctx,[s.topBreakR,s.topBackR,s.baseBackR,s.baseFrontR,s.topFrontR]);ctx.fill();
+
+    // The front is an opaque cut face. Draw it after both side faces so their
+    // perspective fills cannot bleed into its lower corners.
+    ctx.fillStyle=stone;
+    this.#polygon(ctx,[s.topFrontL,s.topFrontR,s.baseFrontR,s.baseFrontL]);ctx.fill();
 
     const flat=ctx.createLinearGradient(0,s.topBackL.y,0,s.topBreakL.y);
     flat.addColorStop(0,"#7a7e77");flat.addColorStop(1,"#555b57");

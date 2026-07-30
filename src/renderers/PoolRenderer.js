@@ -7,8 +7,8 @@ import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
 import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010n";
 import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
 import { VibraSensor } from "../devices/VibraSensor.js?v=0011i";
-import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011k";
-import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011i";
+import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011l";
+import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011l";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -25,6 +25,7 @@ export class PoolRenderer {
     this.vibraSensorRenderer=new VibraSensorRenderer();
     this.vibraBubbleRenderer=new VibraBubbleRenderer();
     this.vibraFlowElapsed=0;
+    this.vibraFlowStrength=0;
   }
 
   update(dt){
@@ -337,17 +338,20 @@ export class PoolRenderer {
   }
 
   #updateVibraFlow(dt){
-    if(!this.vibraSensor.active){this.vibraFlowElapsed=0;return;}
+    if(this.vibraSensor.active)this.vibraFlowStrength=1;
+    else this.vibraFlowStrength=Math.max(0,this.vibraFlowStrength-dt/6000);
+    if(this.vibraFlowStrength<=0){this.vibraFlowElapsed=0;return;}
     this.vibraFlowElapsed+=dt;
     let pulses=0;
     while(this.vibraFlowElapsed>=24&&pulses<8){
       this.vibraFlowElapsed-=24;pulses++;
-      const spread=this.vibraSensor.spread;
+      const spread=this.vibraSensor.active?this.vibraSensor.spread:1;
+      const strength=this.vibraFlowStrength*this.vibraFlowStrength;
       for(let source=0;source<3;source++){
         const u=.5+(Math.random()-.5)*.94*spread;
         const v=.5+(Math.random()-.5)*.9*spread;
         const direction=Math.random()<.5?-1:1;
-        this.surface.disturb(u,v,direction*(.1+Math.random()*.08));
+        this.surface.disturb(u,v,direction*(.1+Math.random()*.08)*strength);
       }
     }
   }
