@@ -21,10 +21,10 @@ export class MADMAXButtonRenderer {
 
     // A substantial box seen almost head-on: only slim projected faces remain visible.
     const rightShade=ctx.createLinearGradient(g.right,0,g.right+sideDX,0);
-    rightShade.addColorStop(0,"#737b7b");rightShade.addColorStop(1,"#2c3334");
+    rightShade.addColorStop(0,"rgba(31,38,39,.68)");rightShade.addColorStop(.55,"rgba(39,47,48,.26)");rightShade.addColorStop(1,"rgba(45,52,53,0)");
     ctx.fillStyle=rightShade;this.#polygon(ctx,[
-      {x:g.right,y:g.top},{x:g.right+sideDX,y:g.top-sideDY*.18},
-      {x:g.right+sideDX,y:g.bottom+sideDY},{x:g.right,y:g.bottom}
+      {x:g.right,y:g.top},{x:g.right+sideDX,y:g.top+sideDY},
+      {x:g.right+sideDX,y:g.bottom-sideDY},{x:g.right,y:g.bottom}
     ]);ctx.fill();
     const topShade=ctx.createLinearGradient(0,g.top-sideDY,0,g.top);
     topShade.addColorStop(0,"rgba(170,180,180,.18)");topShade.addColorStop(1,"rgba(82,91,92,.48)");

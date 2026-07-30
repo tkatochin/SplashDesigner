@@ -11,7 +11,7 @@ import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011l";
 import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011l";
 import { MADMAXDevice } from "../devices/MADMAXDevice.js?v=0012c";
 import { MADMAXOverflowEffect } from "../effects/MADMAXOverflowEffect.js?v=0012c";
-import { MADMAXButtonRenderer } from "./MADMAXButtonRenderer.js?v=0012c";
+import { MADMAXButtonRenderer } from "./MADMAXButtonRenderer.js?v=0012d";
 import { MADMAXWaterRenderer } from "./MADMAXWaterRenderer.js?v=0012c";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
