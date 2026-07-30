@@ -6,8 +6,8 @@ import { ThermometerController } from "../input/ThermometerController.js?v=0010a
 import { VibraSensorController } from "../input/VibraSensorController.js?v=0011c";
 import { MADMAXButtonController } from "../input/MADMAXButtonController.js?v=0012c";
 import { DragSpring } from "../input/DragSpring.js";
-import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022c";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0012i";
+import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022d";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0012j";
 import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0012h";
 
 export class EntranceScene extends Scene {

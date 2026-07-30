@@ -2,7 +2,7 @@
 export class MADMAXWaterRenderer {
   constructor(){
     this.spray=[];this.foam=[];this.spawnElapsed=0;
-    this.steamSeeds=Array.from({length:150},()=>({
+    this.steamSeeds=Array.from({length:240},()=>({
       phase:Math.random(),x:(Math.random()-.5),speed:.65+Math.random()*1.1,
       sway:.35+Math.random(),size:.6+Math.random()*1.4,opacity:.55+Math.random()*.45
     }));
@@ -84,33 +84,37 @@ export class MADMAXWaterRenderer {
       ctx.fillStyle=burst;ctx.beginPath();ctx.ellipse(impact.x,impact.y,radius*1.5,radius*.62,0,0,Math.PI*2);ctx.fill();
     }
     ctx.restore();
-    if(device.hot)this.#renderHotSteam(ctx,impact,width,height,strength,time);
+    if(device.hot)this.#renderHotSteam(ctx,impact,width,height,strength,time,device.temperatureMode);
   }
 
-  #renderHotSteam(ctx,impact,width,height,strength,time){
+  #renderHotSteam(ctx,impact,width,height,strength,time,temperatureMode){
     if(strength<=0)return;
+    const widthScale=temperatureMode==="hot"?1.6:1.25;
+    const layerCount=temperatureMode==="hot"?12:9;
+    const particleCount=temperatureMode==="hot"?240:188;
     ctx.save();ctx.globalCompositeOperation="source-over";
     // A dense gray-white core stays visible against both bright water and wall tiles.
-    for(let layer=0;layer<7;layer++){
+    for(let layer=0;layer<layerCount;layer++){
       const phase=time*.00018+layer*.93;
-      const rise=(layer+.35)/7;
-      const x=impact.x+Math.sin(phase*2.1)*width*(.012+layer*.0015);
+      const rise=(layer+.35)/layerCount;
+      const x=impact.x+Math.sin(phase*2.1)*width*(.012+layer*.0011)*widthScale;
       const y=impact.y-rise*height*.37;
       const radius=Math.max(20,width*(.042+rise*.026));
-      const fog=ctx.createRadialGradient(x,y,0,x,y,radius);
+      const fog=ctx.createRadialGradient(x,y,0,x,y,radius*widthScale);
       const alpha=(.16+rise*.055)*strength;
       fog.addColorStop(0,`rgba(225,231,221,${alpha})`);
       fog.addColorStop(.42,`rgba(235,239,229,${alpha*.78})`);
       fog.addColorStop(1,"rgba(225,232,222,0)");
-      ctx.fillStyle=fog;ctx.beginPath();ctx.ellipse(x,y,radius*1.35,radius*1.8,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=fog;ctx.beginPath();ctx.ellipse(x,y,radius*1.35*widthScale,radius*1.8,0,0,Math.PI*2);ctx.fill();
     }
     // Fivefold local density relative to a single impact plume, without fogging the room.
-    for(const seed of this.steamSeeds){
+    for(let index=0;index<particleCount;index++){
+      const seed=this.steamSeeds[index];
       const cycle=(time*.00016*seed.speed+seed.phase)%1;
-      const x=impact.x+seed.x*width*.13+Math.sin(time*.0008+seed.phase*9)*width*.014*seed.sway;
+      const x=impact.x+(seed.x*width*.13+Math.sin(time*.0008+seed.phase*9)*width*.014*seed.sway)*widthScale;
       const y=impact.y-cycle*height*.43;
       const life=Math.min(1,cycle/.08)*Math.pow(1-cycle,1.25);
-      const rx=Math.max(13,width*.028*seed.size*(.7+cycle)),ry=rx*(1.65+seed.size*.55);
+      const rx=Math.max(13,width*.028*seed.size*(.7+cycle))*widthScale,ry=Math.max(13,width*.028*seed.size*(.7+cycle))*(1.65+seed.size*.55);
       const alpha=life*.38*seed.opacity*strength;
       ctx.save();ctx.translate(x,y);ctx.scale(rx,ry);
       const fog=ctx.createRadialGradient(0,0,0,0,0,1);

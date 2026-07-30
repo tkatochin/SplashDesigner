@@ -110,7 +110,12 @@ export class NorenRenderer {
     const b=(dy0*(sy1-sy2)+dy1*(sy2-sy0)+dy2*(sy0-sy1))/denominator;
     const d=(dy0*(sx2-sx1)+dy1*(sx0-sx2)+dy2*(sx1-sx0))/denominator;
     const f=(dy0*(sx1*sy2-sx2*sy1)+dy1*(sx2*sy0-sx0*sy2)+dy2*(sx0*sy1-sx1*sy0))/denominator;
-    ctx.save();ctx.beginPath();ctx.moveTo(dx0,dy0);ctx.lineTo(dx1,dy1);ctx.lineTo(dx2,dy2);ctx.closePath();ctx.clip();
+    // iOS Safari can expose subpixel seams between adjacent affine triangles.
+    // Expand only the clip, not the transform, so neighboring texture samples overlap.
+    const cx=(dx0+dx1+dx2)/3,cy=(dy0+dy1+dy2)/3,overlap=.9;
+    const expand=(x,y)=>{const length=Math.max(.001,Math.hypot(x-cx,y-cy));return[x+(x-cx)/length*overlap,y+(y-cy)/length*overlap];};
+    const p0=expand(dx0,dy0),p1=expand(dx1,dy1),p2=expand(dx2,dy2);
+    ctx.save();ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.lineTo(p1[0],p1[1]);ctx.lineTo(p2[0],p2[1]);ctx.closePath();ctx.clip();
     ctx.transform(a,b,c,d,e,f);ctx.drawImage(this.texture,0,0);ctx.restore();
   }
 }
