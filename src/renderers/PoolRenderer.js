@@ -4,8 +4,8 @@ import { OverflowRenderer } from "./OverflowRenderer.js?v=0017v";
 import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020d";
 import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
 import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
-import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010i";
-import { SteamRenderer } from "./SteamRenderer.js?v=0010m";
+import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010n";
+import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {

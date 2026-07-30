@@ -42,7 +42,9 @@ export class ThermometerRenderer {
     const positions=[left,left+digitWidth+gap,left+digitWidth*2+gap*2+digitWidth*.28];
     for(let index=0;index<3;index++)this.#sevenSegmentDigit(ctx,positions[index],top,digitWidth,digitHeight,digits[index]);
     ctx.fillStyle="#ffd51f";
-    ctx.beginPath();ctx.arc(left+digitWidth*2+gap*1.55,g.y+digitHeight*.39,digitWidth*.085,0,Math.PI*2);ctx.fill();
+    const decimalSize=digitWidth*.34;
+    const decimalX=(positions[1]+digitWidth+positions[2])/2;
+    ctx.fillRect(decimalX-decimalSize/2,g.y+digitHeight*.39-decimalSize/2,decimalSize,decimalSize);
     ctx.fillStyle="rgba(255,213,31,.72)";
     ctx.font=`600 ${g.radius*.19}px sans-serif`;
     ctx.textAlign="right";ctx.fillText("°C",g.x+g.radius*.53,g.y+g.radius*.43);
