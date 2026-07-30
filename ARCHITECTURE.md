@@ -950,7 +950,7 @@ Completion
 
 ## Issue-0024 — Equipment Design Adjustments
 
-Status: **事前説明・要件記録中（a/b/c未着手）**
+Status: **0024a解析完了・0024b未着手**
 
 Purpose: これまでに完成した浴室内の固定設備について、機能と操作性を維持したまま、形状、配置、材質感、陰影、遠近感を個別に整える。
 
@@ -1002,6 +1002,37 @@ Completion
 - 周辺設備との遠近関係と描画順が破綻していない
 - 既存のヒット領域と動的演出が意図せず変化していない
 - ユーザーがNetlifyプレビューで各調整を確認済み
+
+0024 staged implementation
+
+- `0024a`: 現行の描画経路、設備座標、入力判定、描画順、変更影響を解析する（完了）
+- `0024b`: 手すり、バイブラセンサー、アナログ／デジタル温度計の投影形状と変更範囲、検証方法を確定する（未着手）
+- `0024c`: 承認された内容を実装し、構文・差分検査とNetlifyプレビュー確認を行う（未着手）
+
+0024a current-path analysis
+
+- 正式な描画経路は`EntranceScene → PoolRenderer`で、手すりは`PoolRenderer.#handrail()`、温度計は`ThermometerRenderer`、バイブラセンサーは`VibraSensorRenderer`が担当する
+- 浴槽、奥ヘリ、段床、左右壁、窓、柱、排水グレーチングが共有する一点透視座標は`PoolRenderer.geometry()`に集約され、消失点は`width×0.5, height×0.26`である
+- 手すりは現在`frontBase.x=width×0.87`を基準に右側へ置かれ、奥側支柱位置だけを消失点へ逆投影している。上部は単一Bezier曲線で水平に近いアールとなっており、左反転と段床勾配は未表現である
+- 左側にはIssue-0023の柱と排水グレーチングがあるが、手すりは全設備の後に描かれるため、左右反転後も前景の立体として描画できる。支柱位置は現在値を浴槽中央基準で反転し、既存の左設備は移動しない
+- バイブラセンサーは奥ヘリ右側の約83%地点を中心とし、奥ヘリの外辺から水面奥辺までを基準に、石材ブロック、水平上面、傾斜面、前面を別ポリゴンで構成している
+- 新形状では既存の中心位置と横幅を維持しつつ、奥ヘリ外辺から水面奥辺へ40%進んだ位置を四角柱の奥辺、水面奥辺を手前辺として使える。既存の石材面と独立スチール板は廃止し、柱側面・前面と斜め切断面へ置き換える必要がある
+- センサーのヒット判定は現在、傾斜面内の独立スチール板だけを対象にしている。新形状では独立板がなくなるため、斜め切断面を新しいヒットポリゴンとしてControllerへ返す必要がある
+- センサーはオーバーフロー水膜より後に描かれており、立体物の前面を水が横切らない現在の遮蔽順を維持できる。`VibraSensor`の60秒状態、泡、水面入力、音声処理には形状変更の影響がない
+- 温度計は現在`ThermometerRenderer.geometry(width,height)`だけで奥壁中央の円形座標を求め、デジタル／アナログで同じ外周と円形ヒット領域を共有している
+- アナログ時は壁面の円形本体を維持しつつ、奥ヘリを越えて水面へ入る蛇管を追加するため、壁面、奥ヘリ、水面との前後関係を分けた描画が必要である
+- デジタル時は奥ヘリ上の自立柱になるため、`ThermometerRenderer`へ`PoolRenderer.geometry()`を渡し、壁面専用座標とは別の投影形状とヒット領域を返す必要がある。表示切り替え後も同じControllerを使えるよう、ヒット判定は現在のdisplayに応じて切り替える
+- 温度状態と表示形式は`WaterTemperature`、タップ／スワイプ判定は`ThermometerController`に分離済みであり、設備外形の変更に伴う状態モデルや入力ジェスチャーの変更は不要である
+- MADMAXボックスは温度計と同じ半径式を独自に計算しており、`ThermometerRenderer.geometry()`を直接参照していない。温度計を自立柱へ変更してもMADMAXの寸法・位置は変化しない
+- `WaterReflectionRenderer`は奥壁タイルだけを事前生成して反射しており、温度計、センサー、手すりなど固定設備の鏡像は現状描かない。Issue-0024の要求にも設備鏡像の追加は含まれていないため変更対象外とする
+
+0024a change-impact map
+
+- `src/renderers/PoolRenderer.js`: 手すりの左右反転と段床勾配、温度計への共有透視座標の受け渡し、設備ごとの描画順
+- `src/renderers/VibraSensorRenderer.js`: 四角柱の投影、最上部の斜め切断面、縦スリット、下側3分の2のLED、切断面ヒット形状
+- `src/renderers/ThermometerRenderer.js`: display別の外形・座標・ヒット形状、アナログ蛇管、デジタル自立柱と影
+- `src/scenes/EntranceScene.js`、`main.js`、`index.html`: Renderer変更を静的配信へ確実に反映するキャッシュ更新
+- `src/devices/WaterTemperature.js`、`src/devices/VibraSensor.js`、各入力Controller、泡・湯気・MADMAX・オーバーフローの状態と演出は変更しない
 
 ## Issue-0025 — Water Outlet and Automatic Water-Level Recovery
 
