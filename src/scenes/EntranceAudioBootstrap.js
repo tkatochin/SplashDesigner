@@ -86,7 +86,7 @@ export function initializeAudio(scene){
     if(madmax?.state==="countdown")scene.audio.playSegment("madmax-countdown",madmax.elapsed/1000);
     if(madmax?.falling){
       const offset=10+(madmax.elapsed-3000)/1000;
-      scene.audio.playSegment("madmax-waterfall",offset,20,{volume:.82});
+      scene.audio.playSegment("madmax-waterfall",offset,30.041,{volume:.82});
     }
   };
   const retryVisibleAudio=()=>resumeVisibleAudio();
@@ -162,7 +162,7 @@ export function initializeAudio(scene){
   scene.startVibraAudio=()=>scene.audio.play("vibra");
   scene.stopVibraAudio=()=>scene.audio.stop("vibra");
   scene.playMADMAXCountdownAudio=()=>scene.audio.play("madmax-countdown");
-  scene.startMADMAXWaterAudio=()=>scene.audio.playSegment("madmax-waterfall",10,20,{volume:.82});
+  scene.startMADMAXWaterAudio=()=>scene.audio.playSegment("madmax-waterfall",10,30.041,{volume:.82});
   scene.stopMADMAXWaterAudio=()=>scene.audio.stop("madmax-waterfall");
   scene.stopMADMAXAudio=()=>{
     scene.audio.stop("madmax-countdown");scene.audio.stop("madmax-waterfall");

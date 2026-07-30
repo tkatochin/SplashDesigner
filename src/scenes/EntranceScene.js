@@ -7,8 +7,8 @@ import { VibraSensorController } from "../input/VibraSensorController.js?v=0011c
 import { MADMAXButtonController } from "../input/MADMAXButtonController.js?v=0012c";
 import { DragSpring } from "../input/DragSpring.js";
 import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022c";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0012g";
-import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0012c";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0012h";
+import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0012h";
 
 export class EntranceScene extends Scene {
   constructor(engine){
