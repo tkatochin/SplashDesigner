@@ -1,12 +1,12 @@
-import VibraEffect from "./VibraEffect.js";
 import { Scene } from "../core/Scene.js";
 import { Camera } from "../core/Camera.js?v=0006c";
 import { DragController } from "../input/DragController.js?v=0007b";
 import { WaterHoldController } from "../input/WaterHoldController.js?v=0017e";
 import { ThermometerController } from "../input/ThermometerController.js?v=0010a";
+import { VibraSensorController } from "../input/VibraSensorController.js?v=0011c";
 import { DragSpring } from "../input/DragSpring.js";
 import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022c";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0010n";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0011c";
 import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0022b";
 
 export class EntranceScene extends Scene {
@@ -16,6 +16,7 @@ export class EntranceScene extends Scene {
     this.drag=null;
     this.waterHold=null;
     this.thermometerControl=null;
+    this.vibraSensorControl=null;
     this.spring=new DragSpring();
     this.noren=new NorenRenderer();
     this.pool=new PoolRenderer();
@@ -45,6 +46,11 @@ export class EntranceScene extends Scene {
       hitTest:(x,y)=>this.pool.thermometerHitTest(x,y,this.engine.width,this.engine.height),
       onTap:()=>this.pool.cycleTemperature(),
       onSwipe:()=>this.pool.toggleThermometerDisplay()
+    });
+    this.vibraSensorControl=new VibraSensorController(canvas,{
+      isEnabled:()=>this.state==="revealed",
+      hitTest:(x,y)=>this.pool.vibraSensorHitTest(x,y,this.engine.width,this.engine.height),
+      onTrigger:()=>this.pool.startVibra()
     });
     this.spring.snap(0);
     this.state="idle";
@@ -94,21 +100,10 @@ export class EntranceScene extends Scene {
     this.removeAudioVisibilityListener?.();
     this.waterHold?.destroy();
     this.thermometerControl?.destroy();
+    this.vibraSensorControl?.destroy();
     this.audio?.fadeOut("bath",400);
   }
 
   #range(value,start,end){return Math.max(0,Math.min(1,(value-start)/(end-start)));}
   #smooth(t){return t*t*(3-2*t);}
 }
-
-
-// ---- Patch0024 integration helpers ----
-EntranceScene.prototype.initVibraEffect ??= function(){
-  this.vibraEffect = new VibraEffect(this);
-};
-
-const __oldUpdate = EntranceScene.prototype.update;
-EntranceScene.prototype.update = function(time, delta){
-  if(__oldUpdate){ __oldUpdate.call(this, time, delta); }
-  this.vibraEffect?.update(time, delta);
-};

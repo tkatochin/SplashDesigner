@@ -377,7 +377,7 @@ Implementation map
 
 ## Issue-0011 — Infrared Sensor and Vibra
 
-Status: **0011b実装方針確定・0011c実装待ち**
+Status: **0011c実装済み・Netlifyプレビュー確認待ち**
 
 Purpose: 奥ヘリの赤外線センサーを設備UIとして使い、約1分間だけ浴槽中央から泡と水流を発生させる。
 

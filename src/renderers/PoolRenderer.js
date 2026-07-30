@@ -6,6 +6,9 @@ import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
 import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
 import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010n";
 import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
+import { VibraSensor } from "../devices/VibraSensor.js?v=0011c";
+import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011c";
+import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011c";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -18,12 +21,19 @@ export class PoolRenderer {
     this.temperature=new WaterTemperature();
     this.thermometerRenderer=new ThermometerRenderer();
     this.steamRenderer=new SteamRenderer();
+    this.vibraSensor=new VibraSensor();
+    this.vibraSensorRenderer=new VibraSensorRenderer();
+    this.vibraBubbleRenderer=new VibraBubbleRenderer();
+    this.vibraFlowElapsed=0;
   }
 
   update(dt){
     this.surface.update(dt);
     this.temperature.update(dt);
     this.steamRenderer.update(dt);
+    this.vibraSensor.update(dt);
+    this.vibraBubbleRenderer.update(dt,this.vibraSensor.active,this.vibraSensor.spread);
+    this.#updateVibraFlow(dt);
     for(const overflow of this.overflows)overflow.update(dt);
     this.overflows=this.overflows.filter(overflow=>overflow.active);
   }
@@ -51,6 +61,11 @@ export class PoolRenderer {
   cycleTemperature(){this.temperature.cycle();}
   toggleThermometerDisplay(){this.temperature.toggleDisplay();}
   boostSteam(strength=1){if(this.temperature.steamLevel>0)this.steamRenderer.splash(strength);}
+  vibraSensorHitTest(x,y,width,height){
+    const g=this.geometry(width,height);
+    return this.vibraSensorRenderer.hitTest(x,y,g,width,height);
+  }
+  startVibra(){return this.vibraSensor.start();}
 
   triggerOverflow({strength=1,origin={u:.5,v:.5}}={}){
     const overflow=new OverflowEffect();
@@ -76,6 +91,8 @@ export class PoolRenderer {
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
+    this.vibraBubbleRenderer.render(ctx,g,width);
+    this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,performance.now());
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
     this.#steps(ctx,width,height,g);
@@ -293,6 +310,22 @@ export class PoolRenderer {
     ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(8,w*.010);ctx.stroke(path);
     ctx.strokeStyle="rgba(250,255,255,.88)";ctx.lineWidth=Math.max(1.5,w*.002);ctx.stroke(path);
     ctx.restore();
+  }
+
+  #updateVibraFlow(dt){
+    if(!this.vibraSensor.active){this.vibraFlowElapsed=0;return;}
+    this.vibraFlowElapsed+=dt;
+    let pulses=0;
+    while(this.vibraFlowElapsed>=130&&pulses<4){
+      this.vibraFlowElapsed-=130;pulses++;
+      const spread=this.vibraSensor.spread;
+      const angle=Math.random()*Math.PI*2;
+      const distance=Math.sqrt(Math.random())*spread*.43;
+      const u=Math.max(.05,Math.min(.95,.5+Math.cos(angle)*distance));
+      const v=Math.max(.08,Math.min(.92,.53+Math.sin(angle)*distance*.72));
+      const direction=Math.random()<.28?-1:1;
+      this.surface.disturb(u,v,direction*(.014+Math.random()*.018));
+    }
   }
 
   #quad(ctx,a,b,c,d){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();}
