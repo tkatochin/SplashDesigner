@@ -9,6 +9,10 @@ import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
 import { VibraSensor } from "../devices/VibraSensor.js?v=0011i";
 import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011l";
 import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011l";
+import { MADMAXDevice } from "../devices/MADMAXDevice.js?v=0012c";
+import { MADMAXOverflowEffect } from "../effects/MADMAXOverflowEffect.js?v=0012c";
+import { MADMAXButtonRenderer } from "./MADMAXButtonRenderer.js?v=0012c";
+import { MADMAXWaterRenderer } from "./MADMAXWaterRenderer.js?v=0012c";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
 export class PoolRenderer {
@@ -26,6 +30,11 @@ export class PoolRenderer {
     this.vibraBubbleRenderer=new VibraBubbleRenderer();
     this.vibraFlowElapsed=0;
     this.vibraFlowStrength=0;
+    this.madmax=new MADMAXDevice();
+    this.madmaxOverflow=new MADMAXOverflowEffect();
+    this.madmaxButtonRenderer=new MADMAXButtonRenderer();
+    this.madmaxWaterRenderer=new MADMAXWaterRenderer();
+    this.madmaxFlowElapsed=0;
   }
 
   update(dt){
@@ -35,6 +44,10 @@ export class PoolRenderer {
     this.vibraSensor.update(dt);
     this.vibraBubbleRenderer.update(dt,this.vibraSensor.active,this.vibraSensor.spread);
     this.#updateVibraFlow(dt);
+    this.madmax.update(dt);
+    this.madmaxOverflow.update(dt,this.madmax.overflowHolding);
+    this.madmaxWaterRenderer.update(dt,this.madmax);
+    this.#updateMADMAXFlow(dt);
     for(const overflow of this.overflows)overflow.update(dt);
     this.overflows=this.overflows.filter(overflow=>overflow.active);
   }
@@ -67,6 +80,10 @@ export class PoolRenderer {
     return this.vibraSensorRenderer.hitTest(x,y,g,width,height);
   }
   startVibra(){return this.vibraSensor.start();}
+  madmaxButtonHitTest(x,y,width,height){return this.madmaxButtonRenderer.hitTest(x,y,width,height);}
+  pressMADMAX(){return this.madmax.press();}
+  cancelMADMAXPress(){return this.madmax.cancelPress();}
+  activateMADMAX(){return this.madmax.release(this.temperature.mode.id);}
 
   triggerOverflow({strength=1,origin={u:.5,v:.5}}={}){
     const overflow=new OverflowEffect();
@@ -88,11 +105,13 @@ export class PoolRenderer {
       sillLeftY:this.#projectYAtX({x:leftStructure.pillarLeft,y:g.water.backL.y},g.vanishing,0)
     };
     this.#wall(ctx,width,height,g);
+    this.madmaxButtonRenderer.render(ctx,width,height,this.madmax.pressed);
     this.thermometerRenderer.render(ctx,width,height,this.temperature);
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
     this.vibraBubbleRenderer.render(ctx,g,width);
+    this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
     // The equipment sits on the stone: drawing it after the grout lines hides
@@ -103,8 +122,10 @@ export class PoolRenderer {
     for(const overflow of this.overflows){
       this.overflowRenderer.render(ctx,g,width,height,overflow,time);
     }
-    const drainAmount=Math.min(1,this.overflows.reduce((sum,overflow)=>sum+overflow.levels().rim,0));
+    this.overflowRenderer.render(ctx,g,width,height,this.madmaxOverflow,time);
+    const drainAmount=Math.min(1,this.overflows.reduce((sum,overflow)=>sum+overflow.levels().rim,0)+this.madmaxOverflow.levels().rim);
     this.drainRenderer.renderOpenings(ctx,g,drainAmount);
+    this.madmaxWaterRenderer.renderImpact(ctx,g,width,height,this.madmax,time);
     this.steamRenderer.render(ctx,g,width,height,this.temperature.steamLevel,time);
     this.#leftPillar(ctx,width,height,g);
     this.#handrail(ctx,width,height,g);
@@ -352,6 +373,22 @@ export class PoolRenderer {
         const v=.5+(Math.random()-.5)*.9*spread;
         const direction=Math.random()<.5?-1:1;
         this.surface.disturb(u,v,direction*(.1+Math.random()*.08)*strength);
+      }
+    }
+  }
+
+  #updateMADMAXFlow(dt){
+    const strength=this.madmax.fallStrength;
+    if(strength<=0){this.madmaxFlowElapsed=0;return;}
+    this.madmaxFlowElapsed+=dt;
+    let pulses=0;
+    while(this.madmaxFlowElapsed>=16&&pulses<8){
+      this.madmaxFlowElapsed-=16;pulses++;
+      for(let source=0;source<7;source++){
+        const angle=Math.random()*Math.PI*2,distance=Math.pow(Math.random(),1.7)*.18;
+        const u=.5+Math.cos(angle)*distance,v=.48+Math.sin(angle)*distance*.55;
+        const direction=source%3===0?-1:1;
+        this.surface.disturb(u,v,direction*(.08+Math.random()*.1)*strength);
       }
     }
   }

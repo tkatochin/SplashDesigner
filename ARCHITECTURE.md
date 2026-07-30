@@ -527,7 +527,7 @@ Staged implementation
 
 ## Issue-0012 — MADMAX Waterfall
 
-Status: **0012b方針確定・0012c実装待ち**
+Status: **0012c実装済み・Netlifyプレビュー確認待ち**
 
 Purpose: 奥壁のMADMAXボタンから、温度状態に応じた10秒間の強烈な打たせ水／湯を起動する。
 
@@ -589,7 +589,7 @@ Completion
 
 -   `0012a`: 参照画像、正式経路、壁面座標、温度、オーバーフロー接続点を解析し、本仕様を記録する（完了）
 -   `0012b`: 箱・文字・ネジの投影、入力状態、カウントダウン時間、10秒タイムライン、落水と着水表現、継続オーバーフローの変更範囲を確定する（完了）
--   `0012c`: 承認された内容を実装し、構文・状態モデル・Netlifyプレビューで検証する
+-   `0012c`: 承認された内容を実装し、構文・状態モデルを検証した。Netlifyプレビュー確認待ち
 
 0012b confirmed timeline
 
@@ -639,6 +639,15 @@ Completion
 -   `src/scenes/EntranceAudioBootstrap.js`: 0012c途中で提供される音源を登録できる開始・停止フック。音源未提供でも状態モデルと映像は動作させる
 -   旧`MadMaxButton`、`MADMAXTimeline`、`MadMaxWaterController`、`DeviceLayer`は正式経路へ流用しない
 
+0012c audio and credits
+
+-   `freesound_community-robotic-countdown-43935.mp3`をpointerup確定時から再生する。音源内の`GO`は約3秒地点で、状態モデルの落水開始と重なる
+-   `waterfall.mp3`は全長約30.041秒のうち10〜20秒を再生し、10秒間の落水状態へ同期する
+-   `GO`の発声末尾と落水音の開始を意図的に重ね、カウントダウン完了後に間を作らない
+-   カウントダウン音源は既存の`freesound community@pixabay`クレジットへ統合し、画面内で提供者を重複表示しない
+-   `waterfall.mp3`の提供元として`DOVA-SYNDROME`と`https://dova-s.jp/`をクレジットへ追加する
+-   タブ・アプリ復帰時はMADMAX状態の経過位置からカウントダウン／落水音を再開する
+
 0012c verification plan
 
 -   状態モデルへ時間を直接進め、3秒までは落水せず、3〜13秒だけ落水し、5〜14秒だけ保持型オーバーフローが有効になることを検査する
@@ -648,6 +657,16 @@ Completion
 -   風呂・熱湯では着水点の湯気密度が通常時の約5倍となり、水風呂・シングルでは追加湯気が出ないことを検査する
 -   主要JavaScriptを`node --check`、全差分を`git diff --check`で検査する
 -   Netlifyプレビューで縦長・横長の箱形状、文字とネジ、押し込み、落水幅、着水泡、画面外飛沫、水面強度、湯気、9秒保持オーバーフローを確認する
+
+0012c verification result
+
+-   状態モデルを16ms刻みで進め、0〜3秒がcountdown、3〜13秒がfalling、5〜14秒がoverflow holding、14〜17秒がsettlingとなることを確認済み
+-   pressed中の重複press拒否、温度モードのスナップショット、17秒後のidle復帰を確認済み
+-   保持型オーバーフローが段床最下部まで立ち上がり、release後1.25秒で非activeへ戻ることを確認済み
+-   17秒統合シミュレーションを3回実行し、水面ピークが約10.1〜10.4で数値発散せず、Issue-0011バイブラ検査値約2.3の4倍強となることを確認済み
+-   音源の長さがカウントダウン4.344秒、落水30.041秒であり、3秒地点の重なりと10〜20秒区間再生に十分であることを確認済み
+-   主要JavaScriptの`node --check`と全差分の`git diff --check`を実行済み
+-   設備形状、押し込み、落水・飛沫、水面強度、温度タップロック、表示スワイプ、高温湯気、継続オーバーフロー、音量と同期はNetlifyプレビュー確認待ち
 
 ## Issue-0013 — Recording and Video Export
 
