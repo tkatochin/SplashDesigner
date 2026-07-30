@@ -11,6 +11,7 @@ export class NorenRenderer {
     this.right=new ClothPanel(1);
     this.texture=document.createElement("canvas");
     this.textureKey="";
+    this.frame=document.createElement("canvas");
     this.art=new Image();
     this.ready=new Promise(resolve=>{
       this.art.onload=async()=>{
@@ -39,15 +40,30 @@ export class NorenRenderer {
   }
 
   render(ctx, scene, width, height) {
-    ctx.save();
-    ctx.globalAlpha=scene.norenAlpha;
-    const sway=Math.sin(performance.now()*.0017);
-    ctx.filter=`brightness(${1.02+Math.max(0,sway)*.16})`;
+    const frameWidth=Math.max(1,Math.round(width));
+    const frameHeight=Math.max(1,Math.round(height));
+    if(this.frame.width!==frameWidth||this.frame.height!==frameHeight){
+      this.frame.width=frameWidth;this.frame.height=frameHeight;
+    }
+    const frameCtx=this.frame.getContext("2d");
+    frameCtx.setTransform(1,0,0,1,0,0);
+    frameCtx.globalAlpha=1;
+    frameCtx.globalCompositeOperation="source-over";
+    frameCtx.filter="none";
+    frameCtx.clearRect(0,0,frameWidth,frameHeight);
     const panelW=Math.min(width*.47,430);
     const panelH=height*.7;
     this.#prepareTexture(panelW,panelH);
-    this.#mesh(ctx,this.left,0,panelW,panelH);
-    this.#mesh(ctx,this.right,panelW,panelW,panelH);
+    this.#mesh(frameCtx,this.left,0,panelW,panelH);
+    this.#mesh(frameCtx,this.right,panelW,panelW,panelH);
+
+    // Render triangle overlaps opaquely, then fade the completed cloth once.
+    // Applying alpha per triangle makes the overlap seams dark on iOS Safari.
+    const sway=Math.sin(performance.now()*.0017);
+    ctx.save();
+    ctx.globalAlpha=scene.norenAlpha;
+    ctx.filter=`brightness(${1.02+Math.max(0,sway)*.16})`;
+    ctx.drawImage(this.frame,0,0,width,height);
     ctx.restore();
   }
 

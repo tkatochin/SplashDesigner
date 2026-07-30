@@ -6,7 +6,7 @@ import { ThermometerController } from "../input/ThermometerController.js?v=0010a
 import { VibraSensorController } from "../input/VibraSensorController.js?v=0011c";
 import { MADMAXButtonController } from "../input/MADMAXButtonController.js?v=0012c";
 import { DragSpring } from "../input/DragSpring.js";
-import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022d";
+import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022e";
 import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0012j";
 import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0012h";
 
@@ -48,7 +48,7 @@ export class EntranceScene extends Scene {
     this.thermometerControl=new ThermometerController(canvas,{
       isEnabled:()=>this.state==="revealed",
       hitTest:(x,y)=>this.pool.thermometerHitTest(x,y,this.engine.width,this.engine.height),
-      onTap:()=>{if(!this.pool.madmax.busy)this.pool.cycleTemperature();},
+      onTap:()=>{if(!this.pool.madmax.temperatureLocked)this.pool.cycleTemperature();},
       onSwipe:()=>this.pool.toggleThermometerDisplay()
     });
     this.vibraSensorControl=new VibraSensorController(canvas,{

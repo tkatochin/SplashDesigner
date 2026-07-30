@@ -39,6 +39,7 @@ export class MADMAXDevice {
   }
 
   get busy(){return this.state!=="idle";}
+  get temperatureLocked(){return this.state==="countdown"||this.state==="falling";}
   get pressed(){return this.state==="pressed";}
   get falling(){return this.elapsed>=3000&&this.elapsed<23000&&this.state!=="pressed"&&this.state!=="idle";}
   get overflowHolding(){return this.elapsed>=5000&&this.elapsed<25000&&this.state!=="pressed"&&this.state!=="idle";}
