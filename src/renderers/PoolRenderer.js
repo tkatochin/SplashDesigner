@@ -114,15 +114,15 @@ export class PoolRenderer {
     this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
-    // The equipment sits on the stone: drawing it after the grout lines hides
-    // the lines beneath its footprint instead of letting them pass through it.
-    this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,performance.now());
     this.#steps(ctx,width,height,g);
     const time=performance.now();
     for(const overflow of this.overflows){
       this.overflowRenderer.render(ctx,g,width,height,overflow,time);
     }
     this.overflowRenderer.render(ctx,g,width,height,this.madmaxOverflow,time);
+    // The sensor is a solid object above the rim. Keep grout and overflowing
+    // water behind it instead of letting either sheet cross its front faces.
+    this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,time);
     const drainAmount=Math.min(1,this.overflows.reduce((sum,overflow)=>sum+overflow.levels().rim,0)+this.madmaxOverflow.levels().rim);
     this.drainRenderer.renderOpenings(ctx,g,drainAmount);
     this.madmaxWaterRenderer.renderImpact(ctx,g,width,height,this.madmax,time);
