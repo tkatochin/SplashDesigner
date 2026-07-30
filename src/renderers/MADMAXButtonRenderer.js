@@ -57,8 +57,8 @@ export class MADMAXButtonRenderer {
     ctx.fillStyle="#121719";ctx.font=`900 ${size}px "Arial Black", "Helvetica Neue", sans-serif`;
     ctx.textAlign="center";ctx.textBaseline="middle";
     const positions={
-      M:[.22,.39],A1:[.5,.185],D:[.78,.39],
-      M2:[.22,.68],A2:[.5,.815],X:[.78,.68]
+      M:[.168,.39],A1:[.5,.185],D:[.832,.39],
+      M2:[.168,.68],A2:[.5,.815],X:[.832,.68]
     };
     for(const [label,key] of [["M","M"],["A","A1"],["D","D"],["M","M2"],["A","A2"],["X","X"]]){
       const [u,v]=positions[key],measured=Math.max(1,ctx.measureText(label).width);
