@@ -27,7 +27,7 @@ export class ThermometerRenderer {
       if(pool)this.#digitalColumn(ctx,g,pool,width,height);
       ctx.fillStyle="#111512";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.75,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle="rgba(255,255,232,.42)";ctx.lineWidth=Math.max(1,g.radius*.035);
-      ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.7,Math.PI*1.08,Math.PI*1.72);ctx.stroke();
+      ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.7,.45,1.05);ctx.stroke();
       this.#digital(ctx,g,temperature.value);
     }
     ctx.restore();
@@ -84,14 +84,16 @@ export class ThermometerRenderer {
     const points=[];
     for(let index=0;index<=14;index++)points.push(this.#cubic(p0,p1,p2,p3,index/14));
     for(let index=1;index<=10;index++)points.push(this.#cubic(p3,p4,p5,p6,index/10));
+    const submerged=points.findIndex(point=>point.y>=waterY);
+    const visibleEnd=submerged<0?points.length-1:Math.max(0,submerged);
     const path=new Path2D();path.moveTo(points[0].x,points[0].y);
-    for(let index=1;index<points.length;index++)path.lineTo(points[index].x,points[index].y);
+    for(let index=1;index<=visibleEnd;index++)path.lineTo(points[index].x,points[index].y);
     const pipeWidth=Math.max(5,g.radius*.18);
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
     ctx.strokeStyle="rgba(29,36,36,.72)";ctx.lineWidth=pipeWidth*1.55;ctx.stroke(path);
     ctx.strokeStyle="#9da8a6";ctx.lineWidth=pipeWidth;ctx.stroke(path);
     ctx.strokeStyle="rgba(244,250,244,.72)";ctx.lineWidth=Math.max(1,pipeWidth*.2);ctx.stroke(path);
-    for(let index=2;index<points.length-1;index+=2){
+    for(let index=2;index<Math.max(2,visibleEnd-1);index+=2){
       const before=points[index-1],after=points[index+1],point=points[index];
       const length=Math.max(.001,Math.hypot(after.x-before.x,after.y-before.y));
       const nx=-(after.y-before.y)/length,ny=(after.x-before.x)/length;
@@ -99,12 +101,15 @@ export class ThermometerRenderer {
       ctx.beginPath();ctx.moveTo(point.x-nx*pipeWidth*.62,point.y-ny*pipeWidth*.62);
       ctx.lineTo(point.x+nx*pipeWidth*.62,point.y+ny*pipeWidth*.62);ctx.stroke();
     }
-    const submerged=points.findIndex(point=>point.y>=waterY);
     if(submerged>=0){
-      ctx.strokeStyle="rgba(13,107,132,.46)";ctx.lineWidth=pipeWidth*1.08;
-      ctx.beginPath();ctx.moveTo(points[submerged].x,points[submerged].y);
-      for(let index=submerged+1;index<points.length;index++)ctx.lineTo(points[index].x,points[index].y);
-      ctx.stroke();
+      for(let index=submerged;index<points.length-1;index++){
+        const a=points[index],b=points[index+1],t=(index-submerged)/Math.max(1,points.length-1-submerged);
+        const alpha=.48*(1-t);
+        ctx.strokeStyle=`rgba(32,104,121,${alpha*.8})`;ctx.lineWidth=pipeWidth*1.42;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        ctx.strokeStyle=`rgba(201,219,211,${alpha})`;ctx.lineWidth=pipeWidth*.8;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+      }
     }
     ctx.restore();
   }

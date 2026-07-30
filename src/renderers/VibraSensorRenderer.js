@@ -46,7 +46,9 @@ export class VibraSensorRenderer {
     leftSteel.addColorStop(0,"#cbd2cf");leftSteel.addColorStop(1,"#848e8b");
     ctx.fillStyle=leftSteel;
     this.#polygon(ctx,[s.plate[0],s.plate[3],s.columnFrontL,s.columnBackL]);ctx.fill();
-    ctx.fillStyle="#626c69";
+    const rightFace=ctx.createLinearGradient(s.plate[1].x,0,s.columnFrontR.x+width*.03,0);
+    rightFace.addColorStop(0,"#505b58");rightFace.addColorStop(.72,"#707a76");rightFace.addColorStop(1,"rgba(54,63,60,0)");
+    ctx.fillStyle=rightFace;
     this.#polygon(ctx,[s.plate[1],s.columnBackR,s.columnFrontR,s.plate[2]]);ctx.fill();
     const frontSteel=ctx.createLinearGradient(s.columnFrontL.x,0,s.columnFrontR.x,0);
     frontSteel.addColorStop(0,"#aeb8b5");frontSteel.addColorStop(.34,"#747f7c");
@@ -62,7 +64,13 @@ export class VibraSensorRenderer {
     const steel=ctx.createLinearGradient(s.plate[0].x,s.plate[0].y,s.plate[2].x,s.plate[2].y);
     steel.addColorStop(0,"#d8ddda");steel.addColorStop(.42,"#8e9998");steel.addColorStop(.72,"#e3e7e2");steel.addColorStop(1,"#737e7d");
     ctx.fillStyle=steel;this.#polygon(ctx,s.plate);ctx.fill();
-    ctx.strokeStyle="rgba(25,32,31,.72)";ctx.lineWidth=Math.max(1,width*.0015);ctx.stroke();
+    // Let each panel edge inherit the adjacent column face instead of using
+    // one uniform gray outline that visually disconnects the two pieces.
+    ctx.lineWidth=Math.max(1,width*.0015);ctx.lineCap="round";
+    ctx.strokeStyle="#f0f4ee";ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.plate[3].x,s.plate[3].y);ctx.stroke();
+    ctx.strokeStyle="#58635f";ctx.beginPath();ctx.moveTo(s.plate[1].x,s.plate[1].y);ctx.lineTo(s.plate[2].x,s.plate[2].y);ctx.stroke();
+    ctx.strokeStyle="#b7c0bb";ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.plate[1].x,s.plate[1].y);ctx.stroke();
+    ctx.strokeStyle="#65706b";ctx.beginPath();ctx.moveTo(s.plate[3].x,s.plate[3].y);ctx.lineTo(s.plate[2].x,s.plate[2].y);ctx.stroke();
 
     ctx.fillStyle="#171b1a";this.#polygon(ctx,s.slit);ctx.fill();
     if(!active&&Math.floor(time/320)%2===0){
