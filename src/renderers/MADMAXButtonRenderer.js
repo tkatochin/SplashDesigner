@@ -26,18 +26,6 @@ export class MADMAXButtonRenderer {
       {x:g.right,y:g.top},{x:g.right+sideDX,y:g.top+sideDY},
       {x:g.right+sideDX,y:g.bottom-sideDY},{x:g.right,y:g.bottom}
     ]);ctx.fill();
-    const topShade=ctx.createLinearGradient(0,g.top-sideDY,0,g.top);
-    topShade.addColorStop(0,"rgba(170,180,180,.18)");topShade.addColorStop(1,"rgba(82,91,92,.48)");
-    ctx.fillStyle=topShade;this.#polygon(ctx,[
-      {x:g.left+g.side*.42,y:g.top},{x:g.right,y:g.top},
-      {x:g.right+sideDX,y:g.top-sideDY*.18},{x:g.left+g.side*.5,y:g.top-sideDY*.35}
-    ]);ctx.fill();
-    const bottomShade=ctx.createLinearGradient(0,g.bottom,0,g.bottom+sideDY);
-    bottomShade.addColorStop(0,"rgba(79,87,88,.72)");bottomShade.addColorStop(1,"rgba(27,33,34,.18)");
-    ctx.fillStyle=bottomShade;this.#polygon(ctx,[
-      {x:g.left+g.side*.38,y:g.bottom},{x:g.right,y:g.bottom},
-      {x:g.right+sideDX,y:g.bottom+sideDY},{x:g.left+g.side*.48,y:g.bottom+sideDY*.42}
-    ]);ctx.fill();
 
     ctx.shadowColor="rgba(21,27,28,.28)";ctx.shadowBlur=g.side*.09;ctx.shadowOffsetX=g.side*.04;ctx.shadowOffsetY=g.side*.05;
     const steel=ctx.createLinearGradient(g.left,0,g.right,0);
