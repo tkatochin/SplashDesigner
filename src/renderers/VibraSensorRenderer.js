@@ -39,7 +39,9 @@ export class VibraSensorRenderer {
     stone.addColorStop(0,"#777b74");stone.addColorStop(.48,"#4a504d");stone.addColorStop(1,"#656963");
     ctx.fillStyle=stone;
     this.#polygon(ctx,[s.topFrontL,s.topFrontR,s.baseFrontR,s.baseFrontL]);ctx.fill();
-    ctx.fillStyle="#5c615c";
+    const windowLight=ctx.createLinearGradient(s.topBackL.x,0,s.topFrontL.x,0);
+    windowLight.addColorStop(0,"#a3a79f");windowLight.addColorStop(1,"#7d837d");
+    ctx.fillStyle=windowLight;
     this.#polygon(ctx,[s.topBackL,s.topBreakL,s.topFrontL,s.baseFrontL,s.baseBackL]);ctx.fill();
     ctx.fillStyle="#454b47";
     this.#polygon(ctx,[s.topBreakR,s.topBackR,s.baseBackR,s.baseFrontR,s.topFrontR]);ctx.fill();
@@ -50,7 +52,7 @@ export class VibraSensorRenderer {
     const slope=ctx.createLinearGradient(0,s.topBreakL.y,0,s.topFrontL.y);
     slope.addColorStop(0,"#6d726c");slope.addColorStop(1,"#484e4a");
     ctx.fillStyle=slope;this.#polygon(ctx,s.slope);ctx.fill();
-    ctx.strokeStyle="rgba(5,8,7,.78)";ctx.lineWidth=Math.max(1,width*.0012);ctx.stroke();
+    ctx.strokeStyle="rgba(213,219,210,.38)";ctx.lineWidth=Math.max(1,width*.0012);ctx.stroke();
 
     const steel=ctx.createLinearGradient(s.plate[0].x,s.plate[0].y,s.plate[2].x,s.plate[2].y);
     steel.addColorStop(0,"#d8ddda");steel.addColorStop(.42,"#8e9998");steel.addColorStop(.72,"#e3e7e2");steel.addColorStop(1,"#737e7d");

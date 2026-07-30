@@ -7,7 +7,7 @@ import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
 import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010n";
 import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
 import { VibraSensor } from "../devices/VibraSensor.js?v=0011c";
-import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011e";
+import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011f";
 import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011e";
 
 /** Draws the bath as a physical facility seen from a standing visitor. */
@@ -92,9 +92,11 @@ export class PoolRenderer {
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
     this.vibraBubbleRenderer.render(ctx,g,width);
-    this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,performance.now());
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
+    // The equipment sits on the stone: drawing it after the grout lines hides
+    // the lines beneath its footprint instead of letting them pass through it.
+    this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,performance.now());
     this.#steps(ctx,width,height,g);
     const time=performance.now();
     for(const overflow of this.overflows){
@@ -165,12 +167,34 @@ export class PoolRenderer {
     ctx.fillStyle=this.#stoneGradient(ctx,g);ctx.fillRect(0,g.wallBottom,w,h-g.wallBottom);
     const s=g.sideWalls;
     this.#leftWindow(ctx,w,h,g);
-    const sideShade=ctx.createLinearGradient(0,0,w,0);
-    sideShade.addColorStop(0,"#858b8a");sideShade.addColorStop(.5,"#c4c2bb");sideShade.addColorStop(1,"#858b8a");
+    const sideShade=ctx.createLinearGradient(s.rightCorner.x,0,w,0);
+    sideShade.addColorStop(0,"#c9cac3");sideShade.addColorStop(.55,"#deddd5");sideShade.addColorStop(1,"#e7e3d8");
     ctx.fillStyle=sideShade;
     ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.lineTo(w,h);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(70,76,76,.4)";ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(s.rightCorner.x,0);ctx.lineTo(s.rightCorner.x,s.rightCorner.y);ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.stroke();
+    this.#rightWallStoneLines(ctx,w,h,g,tileH);
+  }
+
+  #rightWallStoneLines(ctx,w,h,g,tileH){
+    const s=g.sideWalls,cornerX=s.rightCorner.x,v=g.vanishing;
+    const courseYAtX=(backY,x)=>v.y+(backY-v.y)*(x-v.x)/(cornerX-v.x);
+    ctx.save();
+    ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(cornerX,0);ctx.lineTo(cornerX,s.rightCorner.y);
+    ctx.lineTo(s.rightNear.x,s.rightNear.y);ctx.lineTo(w,h);ctx.closePath();ctx.clip();
+    ctx.strokeStyle="rgba(91,99,101,.30)";ctx.lineWidth=1;
+    const courses=[];
+    for(let y=0;y<g.wallBottom+h*.16;y+=tileH)courses.push(y);
+    for(const y of courses){
+      ctx.beginPath();ctx.moveTo(cornerX,y);ctx.lineTo(w,courseYAtX(y,w));ctx.stroke();
+    }
+    for(let row=0;row<courses.length-1;row++){
+      const fraction=row%2?.43:.68;
+      const x=cornerX+(w-cornerX)*fraction;
+      const top=courseYAtX(courses[row],x),bottom=courseYAtX(courses[row+1],x);
+      ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();
+    }
+    ctx.restore();
   }
 
   #leftWindow(ctx,w,h,g){
