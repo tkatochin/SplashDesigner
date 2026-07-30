@@ -6,7 +6,7 @@ import { ThermometerController } from "../input/ThermometerController.js?v=0010a
 import { VibraSensorController } from "../input/VibraSensorController.js?v=0011c";
 import { DragSpring } from "../input/DragSpring.js";
 import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022c";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0011i";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0011j";
 import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0011h";
 
 export class EntranceScene extends Scene {

@@ -340,13 +340,15 @@ export class PoolRenderer {
     if(!this.vibraSensor.active){this.vibraFlowElapsed=0;return;}
     this.vibraFlowElapsed+=dt;
     let pulses=0;
-    while(this.vibraFlowElapsed>=55&&pulses<6){
-      this.vibraFlowElapsed-=55;pulses++;
+    while(this.vibraFlowElapsed>=24&&pulses<8){
+      this.vibraFlowElapsed-=24;pulses++;
       const spread=this.vibraSensor.spread;
-      const u=.5+(Math.random()-.5)*.9*spread;
-      const v=.5+(Math.random()-.5)*.84*spread;
-      const direction=Math.random()<.34?-1:1;
-      this.surface.disturb(u,v,direction*(.018+Math.random()*.024));
+      for(let source=0;source<3;source++){
+        const u=.5+(Math.random()-.5)*.94*spread;
+        const v=.5+(Math.random()-.5)*.9*spread;
+        const direction=Math.random()<.5?-1:1;
+        this.surface.disturb(u,v,direction*(.1+Math.random()*.08));
+      }
     }
   }
 
