@@ -527,7 +527,7 @@ Staged implementation
 
 ## Issue-0012 — MADMAX Waterfall
 
-Status: **0012a解析済み・0012b方針確認待ち**
+Status: **0012b方針確定・0012c実装待ち**
 
 Purpose: 奥壁のMADMAXボタンから、温度状態に応じた10秒間の強烈な打たせ水／湯を起動する。
 
@@ -577,21 +577,70 @@ Completion
 -   奥壁横目地は`PoolRenderer.#wall()`が`tileHeight=max(38, height×0.075)`間隔で描く。設置中心は床側の最初の横目地から2本上へ求める
 -   基準サイズは`ThermometerRenderer.geometry()`の半径を共有し、MADMAX前面の一辺を温度計直径と同程度にする
 -   温度判定は`PoolRenderer.temperature.mode.id`の`cold / single / warm / hot`を参照できる
--   長押しオーバーフローは`PoolRenderer.triggerOverflow()`と`OverflowEffect`が正式経路にある。9秒間継続するMADMAX用制御では、最大3重の既存表現を壊さない間隔で再起動する必要がある
+-   長押しオーバーフローは`PoolRenderer.triggerOverflow()`と`OverflowEffect`が正式経路にある。ただし9秒間の再発火では最大3重制御と流量が不安定になるため、同じRendererへ接続する保持型状態を追加する
 -   落水本体、着水泡、画面外へ飛ぶ飛沫には正式経路の実装がなく、専用状態モデルとRendererが必要である
 -   将来の人物衝突へ備え、落水中心線、頭部衝突点、最終着水点を分離できる座標APIにする
 
 0012 staged implementation
 
 -   `0012a`: 参照画像、正式経路、壁面座標、温度、オーバーフロー接続点を解析し、本仕様を記録する（完了）
--   `0012b`: 箱・文字・ネジの投影、入力状態、カウントダウン時間、10秒タイムライン、落水と着水表現、継続オーバーフローの変更範囲を確定する
+-   `0012b`: 箱・文字・ネジの投影、入力状態、カウントダウン時間、10秒タイムライン、落水と着水表現、継続オーバーフローの変更範囲を確定する（完了）
 -   `0012c`: 承認された内容を実装し、構文・状態モデル・Netlifyプレビューで検証する
 
-0012b decisions required
+0012b confirmed timeline
 
--   pointerupから落水開始までのカウントダウン時間と、その間を音だけで示すか設備の物理反応も伴わせるか
--   初回実装で使用するMADMAX固有音源の有無。未提供の場合は無音でも映像シーケンスが成立する構成を先に作る
--   打たせ水の画面上端側の幅、着水中心の前後位置、温水時に既存湯気をどの程度増幅するか
+-   pointerdown中だけ赤い押し面を奥へ沈め、pointerupで元へ戻す。pointerupが前面ヒット領域内なら1回のシーケンスを確定する
+-   pointerupを0秒として3秒間カウントダウンする。数字、テロップ、LEDなどの説明UIは追加しない
+-   3〜13秒で打たせ水／湯を落とす。開始と停止は一瞬で切らず、設備圧が立ち上がる短い流量変化を持たせながら、実流量は10秒間を維持する
+-   落水開始2秒後の5秒地点から、落水開始11秒後の14秒地点までオーバーフローを保持する
+-   13秒で落水本体を止めた後も、14秒までは浴槽からあふれる水と着水後の水面・飛沫の減衰を続ける
+-   14秒以降はオーバーフローを解放し、残った水膜、飛沫、水面波が自然に消えた時点で再入力を許可する
+-   シーケンス中のpointer入力は無視し、カウントダウンや落水時間を延長・多重化しない
+
+0012b button geometry and input
+
+-   `MADMAXButtonRenderer.geometry(width,height)`で温度計と同じ半径計算を使い、前面の一辺を温度計直径とほぼ同寸にする
+-   前面中心Xは画面中央。中心Yは`wallBottom`より上にある横目地のうち床側から3本目に一致させる
+-   箱の見かけ奥行きは前面一辺の約1/2を基準とし、左窓光源に従って右側面を最も暗く、上面右寄りを淡く、下面右寄りをやや濃く描く
+-   前面はステンレスの縦方向の淡いムラを持たせるが、壁面が透ける表現にはしない
+-   文字は`M`左上、`A`中央上、`D`右上、`M`左下、`A`中央下、`X`右下へ個別配置し、中央の黒縁ボタンが上下段間へ食い込む
+-   四隅はワッシャー、暗いネジ頭、プラス溝の3層とし、左側のネジを窓光でわずかに明るくする
+-   `MADMAXButtonController`はpointer captureを使い、押下開始、移動キャンセル、pointerup確定、pointercancel復帰を管理する
+
+0012b waterfall and impact geometry
+
+-   落水中心線は画面中央に固定する。上端側の流路幅はMADMAX前面幅の約60%、着水直前は揺らぎと飛沫を含め約1.4倍まで広げる
+-   初期着水点は水面UVの`u=.5, v=.48`とし、将来は人物の頭部衝突点を途中へ挿入しても、最終着水点を独立して保持できる構造にする
+-   落水本体は白一色の柱にせず、暗い水芯、半透明の水膜、縦筋、左右へ剥がれる水片を重ねる
+-   着水部は専用の高密度な白泡、上向き・横向きの水柱、大小の飛沫粒子、画面外へ出る水滴を組み合わせ、水面台形でclipしない
+-   リザバー水面へは着水中心と周辺へ毎フレーム複数の強い正負入力を行い、Issue-0011のバイブラ最大値より明確に強くする
+-   風呂・熱湯モードでは落水経路と着水点の周囲だけ既存湯気を増幅し、浴室全体を白く覆わない
+
+0012b sustained overflow
+
+-   MADMAX専用の保持型オーバーフロー状態を用意し、開始時に段階的に浴槽四辺・2段床・最下部へ到達させた後、14秒地点まで流量を保つ
+-   既存の最大3重`OverflowEffect`を短時間に再発火して疑似保持せず、専用状態の`levels()`を既存`OverflowRenderer`へ渡して同じ流路を再利用する
+-   14秒地点で保持を解放し、水膜を短時間で減衰させる。落水停止直後に床面の水が消える不自然さを避ける
+
+0012b state and change map
+
+-   `src/devices/MADMAXDevice.js`: idle / pressed / countdown / falling / overflow-tail / settling、3秒・10秒・9秒のタイムライン、重複起動防止、温度スナップショット
+-   `src/input/MADMAXButtonController.js`: pointerdown中の押し込み、pointerup確定、キャンセルとpointer capture解除
+-   `src/renderers/MADMAXButtonRenderer.js`: 箱の奥行き、採光方向、ステンレス前面、6文字、中央ボタン、ワッシャー付きプラスネジ、ヒット形状
+-   `src/effects/MADMAXOverflowEffect.js`: 5〜14秒の保持型オーバーフローと解放後の減衰
+-   `src/renderers/MADMAXWaterRenderer.js`: 上端からの落水、水筋、水片、着水泡、飛沫粒子、将来の頭部衝突点API
+-   `src/renderers/PoolRenderer.js`: 温度状態、MADMAX状態、落水・着水・水面入力・湯気・既存OverflowRendererの統合
+-   `src/scenes/EntranceScene.js`: 入館後だけ有効なMADMAX入力の生成・破棄
+-   `src/scenes/EntranceAudioBootstrap.js`: 0012c途中で提供される音源を登録できる開始・停止フック。音源未提供でも状態モデルと映像は動作させる
+-   旧`MadMaxButton`、`MADMAXTimeline`、`MadMaxWaterController`、`DeviceLayer`は正式経路へ流用しない
+
+0012c verification plan
+
+-   状態モデルへ時間を直接進め、3秒までは落水せず、3〜13秒だけ落水し、5〜14秒だけ保持型オーバーフローが有効になることを検査する
+-   pressed中の移動キャンセル、シーケンス中の再入力拒否、settling完了後の再起動を検査する
+-   水風呂・シングルは水、風呂・熱湯は湯として開始時の温度状態を保持することを検査する
+-   主要JavaScriptを`node --check`、全差分を`git diff --check`で検査する
+-   Netlifyプレビューで縦長・横長の箱形状、文字とネジ、押し込み、落水幅、着水泡、画面外飛沫、水面強度、湯気、9秒保持オーバーフローを確認する
 
 ## Issue-0013 — Recording and Video Export
 
