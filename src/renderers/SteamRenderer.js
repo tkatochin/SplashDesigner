@@ -3,7 +3,6 @@ export class SteamRenderer {
   constructor(){
     this.boost=0;
     this.wisps=Array.from({length:78},()=>{
-      const small=Math.random()<.28;
       return{
         u:Math.random(),
         v:.02+Math.random()*.96,
@@ -11,8 +10,8 @@ export class SteamRenderer {
         activation:Math.random(),
         speed:.42+Math.random()*1.05,
         sway:.3+Math.random()*1.55,
-        width:small?.25+Math.random()*.75:.8+Math.pow(Math.random(),.7)*3.7,
-        height:small?.45+Math.random():1.1+Math.pow(Math.random(),.72)*4.4,
+        width:.85+Math.pow(Math.random(),.7)*3.65,
+        height:1.15+Math.pow(Math.random(),.72)*4.35,
         opacity:.72+Math.random()*.9,
         rotation:(Math.random()-.5)*.65,
         reach:.58+Math.random()*.84

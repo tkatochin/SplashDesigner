@@ -31,13 +31,53 @@ export class ThermometerRenderer {
   }
 
   #digital(ctx,g,value){
+    const fixed=value.toFixed(1).padStart(4," ");
+    const digitHeight=g.radius*.48;
+    const digitWidth=digitHeight*.53;
+    const gap=digitWidth*.22;
+    const totalWidth=digitWidth*3+gap*2+digitWidth*.28;
+    const left=g.x-totalWidth/2;
+    const top=g.y-digitHeight*.5;
+    const digits=[fixed[0],fixed[1],fixed[3]];
+    const positions=[left,left+digitWidth+gap,left+digitWidth*2+gap*2+digitWidth*.28];
+    for(let index=0;index<3;index++)this.#sevenSegmentDigit(ctx,positions[index],top,digitWidth,digitHeight,digits[index]);
     ctx.fillStyle="#ffd51f";
-    ctx.font=`700 ${g.radius*.56}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-    ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText(value.toFixed(1),g.x,g.y+g.radius*.03);
+    ctx.beginPath();ctx.arc(left+digitWidth*2+gap*1.55,g.y+digitHeight*.39,digitWidth*.085,0,Math.PI*2);ctx.fill();
     ctx.fillStyle="rgba(255,213,31,.72)";
     ctx.font=`600 ${g.radius*.19}px sans-serif`;
     ctx.textAlign="right";ctx.fillText("°C",g.x+g.radius*.53,g.y+g.radius*.43);
+  }
+
+  #sevenSegmentDigit(ctx,x,y,width,height,digit){
+    const map={
+      0:"abcedf",1:"bc",2:"abged",3:"abgcd",4:"fgbc",
+      5:"afgcd",6:"afgecd",7:"abc",8:"abcdefg",9:"abfgcd"
+    };
+    const active=new Set(map[digit]||"");
+    const thickness=width*.18;
+    const horizontal=(cx,cy)=>[
+      [cx-thickness*.5,cy],[cx,cy-thickness*.5],[cx+width-thickness,cy-thickness*.5],
+      [cx+width-thickness*.5,cy],[cx+width-thickness,cy+thickness*.5],[cx,cy+thickness*.5]
+    ];
+    const vertical=(cx,cy)=>[
+      [cx,cy-thickness*.5],[cx+thickness*.5,cy],[cx+thickness*.5,cy+height*.5-thickness],
+      [cx,cy+height*.5-thickness*.5],[cx-thickness*.5,cy+height*.5-thickness],[cx-thickness*.5,cy]
+    ];
+    const segments={
+      a:horizontal(x+thickness*.5,y+thickness*.5),
+      g:horizontal(x+thickness*.5,y+height*.5),
+      d:horizontal(x+thickness*.5,y+height-thickness*.5),
+      f:vertical(x+thickness*.5,y+thickness*.5),
+      b:vertical(x+width-thickness*.5,y+thickness*.5),
+      e:vertical(x+thickness*.5,y+height*.5),
+      c:vertical(x+width-thickness*.5,y+height*.5)
+    };
+    for(const [name,points] of Object.entries(segments)){
+      ctx.fillStyle=active.has(name)?"#ffd51f":"rgba(255,213,31,.075)";
+      ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);
+      for(let index=1;index<points.length;index++)ctx.lineTo(points[index][0],points[index][1]);
+      ctx.closePath();ctx.fill();
+    }
   }
 
   #analog(ctx,g,value){

@@ -10,7 +10,7 @@ export class WaterTemperature {
   constructor(){
     this.modeIndex=0;
     this.display="digital";
-    this.offset=0;
+    this.offsetSteps=0;
     this.elapsed=0;
   }
 
@@ -18,17 +18,18 @@ export class WaterTemperature {
     this.elapsed+=Math.min(dt,1000);
     if(this.elapsed<20000)return;
     this.elapsed%=20000;
-    this.offset=(Math.floor(Math.random()*5)-2)/10;
+    const step=Math.floor(Math.random()*3)-1;
+    this.offsetSteps=Math.max(-2,Math.min(2,this.offsetSteps+step));
   }
 
   cycle(){
     this.modeIndex=(this.modeIndex+1)%MODES.length;
-    this.offset=0;
+    this.offsetSteps=0;
     this.elapsed=0;
   }
 
   toggleDisplay(){this.display=this.display==="digital"?"analog":"digital";}
   get mode(){return MODES[this.modeIndex];}
-  get value(){return Math.round((this.mode.base+this.offset)*10)/10;}
+  get value(){return Math.round((this.mode.base+this.offsetSteps/10)*10)/10;}
   get steamLevel(){return this.mode.steam;}
 }
