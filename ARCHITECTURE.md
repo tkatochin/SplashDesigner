@@ -231,14 +231,73 @@ Recording & Sharing
 
 各Issueは原則として `a: 解析` → `b: 修正方針と承認` → `c: 実装・検証・資料更新` の順で進める。
 
+Issue-0001〜0005は、ChatGPT上で差分ZIPを受け渡しながら、起動不能だった試作を
+本来の独自Engine構成へ戻した復旧Issueである。Issue-0006で入館体験まで完成した
+状態が、Git管理を本格化した時点の初期`main`の土台になっている。これらは初期開発の
+同番号の`Patch`とは別の管理体系であり、Gitコミットとの一対一対応は求めない。
+
+## Issue-0001 — Browser Entry Point Recovery
+
+Status: **完了**
+
+Purpose: 静的Webアプリとしてブラウザから起動できる入口を復元する。
+
+-   `index.html`と`main.js`を追加し、ES Modulesの読込経路を用意した
+-   ブラウザでJavaScriptが起動する状態まで復旧した
+-   当初接続したPhaser版`SplashScene`は仮デモであり、本来の実行経路ではないと後に判明した
+
+## Issue-0002 — Independent Engine Boot Path Recovery
+
+Status: **完了**
+
+Purpose: Phaser版の仮起動を外し、設計資料に沿った独自Engineの起動経路を復元する。
+
+-   `ARCHITECTURE.md`と既存クラスの参照関係を再解析した
+-   正式な起動経路を`Engine → SceneManager → EntranceScene`へ戻した
+-   Markdownが混入していた`Scene.js`を実行可能なJavaScriptへ復元した
+-   Phaser版`Game.js`と`SplashScene`は正式経路から外したが、参照精査までは削除しない方針とした
+
+## Issue-0003 — Camera Recovery
+
+Status: **完了**
+
+Purpose: 欠落していた、暖簾をくぐって浴室へ進む視点変換を復元する。
+
+-   `EntranceScene`が要求するCamera APIを既存コードから特定した
+-   `moveToZoom()`、`update()`、`begin()`、`end()`を持つ`Camera.js`を復元した
+-   Cameraは各Rendererへ座標処理を持たせず、Canvas Contextの変換として前進感を与える構成とした
+
+## Issue-0004 — Scene Lifecycle Recovery
+
+Status: **完了**
+
+Purpose: `SceneManager`と各Sceneのライフサイクル契約を復元する。
+
+-   `Scene`へ`constructor(engine)`を追加し、各SceneがEngineを参照できるようにした
+-   `_activate()` / `_deactivate()`を復元した
+-   内部ライフサイクルから`enter()` / `leave()`を呼び出す接続を修正した
+
+## Issue-0005 — Engine and EntranceScene Integration
+
+Status: **完了**
+
+Purpose: Engine、Canvas描画基盤、EntranceSceneを正しい生成順で接続する。
+
+-   `SceneManager`ではなく`Engine`を`EntranceScene`へ渡す生成順に修正した
+-   EngineへCanvas、2D Context、`renderer`を復元した
+-   `requestAnimationFrame`による更新・描画ループを復元した
+-   暖簾と水風呂がブラウザへ描画される状態まで到達した
+
 ## Issue-0006 — Entrance Experience
 
 Status: **完了**
 
--   暖簾だけの初期表示
+-   初期画面で水風呂を見せず、暖簾だけを主役にした
 -   タップ／ドラッグによる布メッシュの開閉
+-   慣性と距離拘束を使った布変形
 -   前進、暖簾のフェードアウト、暗い間、浴室のフェードイン
 -   レスポンシブCanvasと浴室の一点透視構図
+-   浴室の基本構図と、状態を保持・伝播するリザバー型水面
 -   ブラウザ表示・操作およびコンソールエラーなしを確認済み
 
 ## Issue-0007 — Audio Experience
