@@ -8,5 +8,7 @@
 | `notanomori_201411211251280003.wav` | ノタの森 | http://notanomori.net/ |
 | `u_moo3yn7s9y-big-splash-sound-202450.mp3` | u_moo3yn7s9y@pixabay | https://pixabay.com/ja/users/u_moo3yn7s9y-43362546/ |
 | `freesound_community-c02-bubbles-edit-35380.mp3` | freesound community@pixabay | https://pixabay.com/ja/users/freesound_community-46691455/ |
+| `freesound_community-robotic-countdown-43935.mp3` | freesound community@pixabay | https://pixabay.com/ja/users/freesound_community-46691455/ |
+| `waterfall.mp3` | DOVA-SYNDROME | https://dova-s.jp/ |
 
 画面内のクレジット一覧では、同一の提供元を重複表示しない。

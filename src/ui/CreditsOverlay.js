@@ -4,6 +4,7 @@ const CREDIT_ENTRIES = [
   { caption: "ノタの森", url: "http://notanomori.net/" },
   { caption: "u_moo3yn7s9y@pixabay", url: "https://pixabay.com/ja/users/u_moo3yn7s9y-43362546/" },
   { caption: "freesound community@pixabay", url: "https://pixabay.com/ja/users/freesound_community-46691455/" },
+  { caption: "DOVA-SYNDROME", url: "https://dova-s.jp/" },
 ];
 
 export function mountCreditsOverlay(entries = CREDIT_ENTRIES) {

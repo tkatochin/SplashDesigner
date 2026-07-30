@@ -11,6 +11,7 @@ export class NorenRenderer {
     this.right=new ClothPanel(1);
     this.texture=document.createElement("canvas");
     this.textureKey="";
+    this.frame=document.createElement("canvas");
     this.art=new Image();
     this.ready=new Promise(resolve=>{
       this.art.onload=async()=>{
@@ -39,15 +40,30 @@ export class NorenRenderer {
   }
 
   render(ctx, scene, width, height) {
-    ctx.save();
-    ctx.globalAlpha=scene.norenAlpha;
-    const sway=Math.sin(performance.now()*.0017);
-    ctx.filter=`brightness(${1.02+Math.max(0,sway)*.16})`;
+    const frameWidth=Math.max(1,Math.round(width));
+    const frameHeight=Math.max(1,Math.round(height));
+    if(this.frame.width!==frameWidth||this.frame.height!==frameHeight){
+      this.frame.width=frameWidth;this.frame.height=frameHeight;
+    }
+    const frameCtx=this.frame.getContext("2d");
+    frameCtx.setTransform(1,0,0,1,0,0);
+    frameCtx.globalAlpha=1;
+    frameCtx.globalCompositeOperation="source-over";
+    frameCtx.filter="none";
+    frameCtx.clearRect(0,0,frameWidth,frameHeight);
     const panelW=Math.min(width*.47,430);
     const panelH=height*.7;
     this.#prepareTexture(panelW,panelH);
-    this.#mesh(ctx,this.left,0,panelW,panelH);
-    this.#mesh(ctx,this.right,panelW,panelW,panelH);
+    this.#mesh(frameCtx,this.left,0,panelW,panelH);
+    this.#mesh(frameCtx,this.right,panelW,panelW,panelH);
+
+    // Render triangle overlaps opaquely, then fade the completed cloth once.
+    // Applying alpha per triangle makes the overlap seams dark on iOS Safari.
+    const sway=Math.sin(performance.now()*.0017);
+    ctx.save();
+    ctx.globalAlpha=scene.norenAlpha;
+    ctx.filter=`brightness(${1.02+Math.max(0,sway)*.16})`;
+    ctx.drawImage(this.frame,0,0,width,height);
     ctx.restore();
   }
 
@@ -110,7 +126,12 @@ export class NorenRenderer {
     const b=(dy0*(sy1-sy2)+dy1*(sy2-sy0)+dy2*(sy0-sy1))/denominator;
     const d=(dy0*(sx2-sx1)+dy1*(sx0-sx2)+dy2*(sx1-sx0))/denominator;
     const f=(dy0*(sx1*sy2-sx2*sy1)+dy1*(sx2*sy0-sx0*sy2)+dy2*(sx0*sy1-sx1*sy0))/denominator;
-    ctx.save();ctx.beginPath();ctx.moveTo(dx0,dy0);ctx.lineTo(dx1,dy1);ctx.lineTo(dx2,dy2);ctx.closePath();ctx.clip();
+    // iOS Safari can expose subpixel seams between adjacent affine triangles.
+    // Expand only the clip, not the transform, so neighboring texture samples overlap.
+    const cx=(dx0+dx1+dx2)/3,cy=(dy0+dy1+dy2)/3,overlap=.9;
+    const expand=(x,y)=>{const length=Math.max(.001,Math.hypot(x-cx,y-cy));return[x+(x-cx)/length*overlap,y+(y-cy)/length*overlap];};
+    const p0=expand(dx0,dy0),p1=expand(dx1,dy1),p2=expand(dx2,dy2);
+    ctx.save();ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.lineTo(p1[0],p1[1]);ctx.lineTo(p2[0],p2[1]);ctx.closePath();ctx.clip();
     ctx.transform(a,b,c,d,e,f);ctx.drawImage(this.texture,0,0);ctx.restore();
   }
 }

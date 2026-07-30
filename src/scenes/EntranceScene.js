@@ -4,10 +4,11 @@ import { DragController } from "../input/DragController.js?v=0007b";
 import { WaterHoldController } from "../input/WaterHoldController.js?v=0017e";
 import { ThermometerController } from "../input/ThermometerController.js?v=0010a";
 import { VibraSensorController } from "../input/VibraSensorController.js?v=0011c";
+import { MADMAXButtonController } from "../input/MADMAXButtonController.js?v=0012c";
 import { DragSpring } from "../input/DragSpring.js";
-import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022c";
-import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0011l";
-import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0011h";
+import { NorenRenderer } from "../renderers/NorenRenderer.js?v=0022e";
+import { PoolRenderer } from "../renderers/PoolRenderer.js?v=0012k";
+import { initializeAudio } from "./EntranceAudioBootstrap.js?v=0012h";
 
 export class EntranceScene extends Scene {
   constructor(engine){
@@ -17,7 +18,9 @@ export class EntranceScene extends Scene {
     this.waterHold=null;
     this.thermometerControl=null;
     this.vibraSensorControl=null;
+    this.madmaxControl=null;
     this.vibraWasActive=false;
+    this.madmaxWasFalling=false;
     this.spring=new DragSpring();
     this.noren=new NorenRenderer();
     this.pool=new PoolRenderer();
@@ -45,7 +48,7 @@ export class EntranceScene extends Scene {
     this.thermometerControl=new ThermometerController(canvas,{
       isEnabled:()=>this.state==="revealed",
       hitTest:(x,y)=>this.pool.thermometerHitTest(x,y,this.engine.width,this.engine.height),
-      onTap:()=>this.pool.cycleTemperature(),
+      onTap:()=>{if(!this.pool.madmax.temperatureLocked)this.pool.cycleTemperature();},
       onSwipe:()=>this.pool.toggleThermometerDisplay()
     });
     this.vibraSensorControl=new VibraSensorController(canvas,{
@@ -53,6 +56,15 @@ export class EntranceScene extends Scene {
       hitTest:(x,y)=>this.pool.vibraSensorHitTest(x,y,this.engine.width,this.engine.height),
       onTrigger:()=>{
         if(this.pool.startVibra())this.startVibraAudio?.();
+      }
+    });
+    this.madmaxControl=new MADMAXButtonController(canvas,{
+      isEnabled:()=>this.state==="revealed"&&!this.pool.madmax.busy,
+      hitTest:(x,y)=>this.pool.madmaxButtonHitTest(x,y,this.engine.width,this.engine.height),
+      onPress:()=>this.pool.pressMADMAX(),
+      onCancel:()=>this.pool.cancelMADMAXPress(),
+      onActivate:()=>{
+        if(this.pool.activateMADMAX())this.playMADMAXCountdownAudio?.();
       }
     });
     this.spring.snap(0);
@@ -82,6 +94,10 @@ export class EntranceScene extends Scene {
     const vibraActive=this.pool.vibraSensor.active;
     if(this.vibraWasActive&&!vibraActive)this.stopVibraAudio?.();
     this.vibraWasActive=vibraActive;
+    const madmaxFalling=this.pool.madmax.falling;
+    if(!this.madmaxWasFalling&&madmaxFalling)this.startMADMAXWaterAudio?.();
+    if(this.madmaxWasFalling&&!madmaxFalling)this.stopMADMAXWaterAudio?.();
+    this.madmaxWasFalling=madmaxFalling;
     this.waterHold.update(dt);
     if(this.state==="revealed"&&this.drag.dragging&&!this.waterHold.triggered){
       const x=this.drag.pointerX*this.engine.width;
@@ -107,7 +123,9 @@ export class EntranceScene extends Scene {
     this.waterHold?.destroy();
     this.thermometerControl?.destroy();
     this.vibraSensorControl?.destroy();
+    this.madmaxControl?.destroy();
     this.stopVibraAudio?.();
+    this.stopMADMAXAudio?.();
     this.audio?.fadeOut("bath",400);
   }
 

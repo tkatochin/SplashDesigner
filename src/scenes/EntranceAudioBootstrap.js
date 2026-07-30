@@ -1,4 +1,4 @@
-import { AudioManager } from "../audio/AudioManager.js?v=0011h";
+import { AudioManager } from "../audio/AudioManager.js?v=0012c";
 
 /**
  * Patch 0013 additions for EntranceScene.
@@ -15,6 +15,8 @@ export function initializeAudio(scene){
   scene.audio.register("vibra",asset("freesound_community-c02-bubbles-edit-35380.mp3"),{
     loop:true,loopStart:1,loopEndOffset:1,volume:.46
   });
+  scene.audio.register("madmax-countdown",asset("freesound_community-robotic-countdown-43935.mp3"),{volume:.72});
+  scene.audio.register("madmax-waterfall",asset("waterfall.mp3"),{volume:.82});
   for(let voice=1;voice<=3;voice++){
     scene.audio.register(`overflow-${voice}`,asset("u_moo3yn7s9y-big-splash-sound-202450.mp3"),{volume:.76});
   }
@@ -80,6 +82,12 @@ export function initializeAudio(scene){
       scheduleBucket(scene);
     }
     if(scene.pool?.vibraSensor.active)scene.audio.play("vibra");
+    const madmax=scene.pool?.madmax;
+    if(madmax?.state==="countdown")scene.audio.playSegment("madmax-countdown",madmax.elapsed/1000);
+    if(madmax?.falling){
+      const offset=10+(madmax.elapsed-3000)/1000;
+      scene.audio.playSegment("madmax-waterfall",offset,30.041,{volume:.82});
+    }
   };
   const retryVisibleAudio=()=>resumeVisibleAudio();
   const retryVisibleAudioPointer=event=>{if(event.pointerType!=="touch")resumeVisibleAudio();};
@@ -153,6 +161,12 @@ export function initializeAudio(scene){
 
   scene.startVibraAudio=()=>scene.audio.play("vibra");
   scene.stopVibraAudio=()=>scene.audio.stop("vibra");
+  scene.playMADMAXCountdownAudio=()=>scene.audio.play("madmax-countdown");
+  scene.startMADMAXWaterAudio=()=>scene.audio.playSegment("madmax-waterfall",10,30.041,{volume:.82});
+  scene.stopMADMAXWaterAudio=()=>scene.audio.stop("madmax-waterfall");
+  scene.stopMADMAXAudio=()=>{
+    scene.audio.stop("madmax-countdown");scene.audio.stop("madmax-waterfall");
+  };
 }
 
 function scheduleBucket(scene,minDelay=18000,maxDelay=36000){
