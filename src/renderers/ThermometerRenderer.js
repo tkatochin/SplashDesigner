@@ -26,8 +26,6 @@ export class ThermometerRenderer {
     else{
       if(pool)this.#digitalColumn(ctx,g,pool,width,height);
       ctx.fillStyle="#111512";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.75,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="rgba(255,255,232,.42)";ctx.lineWidth=Math.max(1,g.radius*.035);
-      ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.7,.45,1.05);ctx.stroke();
       this.#digital(ctx,g,temperature.value);
     }
     ctx.restore();
@@ -54,12 +52,22 @@ export class ThermometerRenderer {
     ctx.fillStyle=innerShadow;ctx.beginPath();ctx.moveTo(g.x+g.radius*.12,g.y);
     ctx.lineTo(g.x+g.radius,g.y);ctx.lineTo(g.x+rearRadius,rearY);ctx.lineTo(g.x+rearRadius*.52,rearY);ctx.closePath();ctx.fill();
 
+    const rightShadowWidth=Math.max(5,rimDepth*.16);
+    const rightShadow=ctx.createLinearGradient(g.x+g.radius,0,g.x+g.radius+rightShadowWidth,0);
+    rightShadow.addColorStop(0,"rgba(31,38,37,.48)");rightShadow.addColorStop(.58,"rgba(45,53,51,.2)");rightShadow.addColorStop(1,"rgba(45,53,51,0)");
+    ctx.fillStyle=rightShadow;ctx.beginPath();ctx.moveTo(g.x+g.radius,g.y);
+    ctx.lineTo(g.x+g.radius+rightShadowWidth,g.y+rimDepth*.08);
+    ctx.lineTo(g.x+g.radius+rightShadowWidth,bottom-rimDepth*.12);
+    ctx.lineTo(g.x+g.radius,bottom);ctx.closePath();ctx.fill();
+
     const steel=ctx.createLinearGradient(g.x-g.radius,g.y+g.radius*.7,g.x+g.radius,g.y-g.radius*.7);
     steel.addColorStop(0,"#8b9692");steel.addColorStop(.22,"#e1e8e2");
     steel.addColorStop(.48,"#a0aba7");steel.addColorStop(.72,"#f0f3ed");steel.addColorStop(1,"#7a8581");
     ctx.fillStyle=steel;ctx.beginPath();ctx.moveTo(g.x-g.radius,bottom);ctx.lineTo(g.x-g.radius,g.y);
     ctx.arc(g.x,g.y,g.radius,Math.PI,0);ctx.lineTo(g.x+g.radius,bottom);ctx.closePath();ctx.fill();
     ctx.strokeStyle="rgba(39,47,46,.62)";ctx.lineWidth=Math.max(1,width*.0013);ctx.stroke();
+    ctx.strokeStyle="#e1ebe1";ctx.lineWidth=Math.max(1,width*.0015);
+    ctx.beginPath();ctx.moveTo(g.x-g.radius,bottom);ctx.lineTo(g.x-g.radius,g.y);ctx.stroke();
 
     ctx.strokeStyle="#edf2ec";ctx.lineWidth=Math.max(1,width*.0011);
     ctx.beginPath();ctx.moveTo(g.x-g.radius,g.y);ctx.lineTo(g.x-rearRadius,rearY);

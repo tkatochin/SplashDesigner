@@ -50,6 +50,12 @@ export class VibraSensorRenderer {
     rightFace.addColorStop(0,"#505b58");rightFace.addColorStop(.72,"#707a76");rightFace.addColorStop(1,"rgba(54,63,60,0)");
     ctx.fillStyle=rightFace;
     this.#polygon(ctx,[s.plate[1],s.columnBackR,s.columnFrontR,s.plate[2]]);ctx.fill();
+    const shadowWidth=Math.max(4,width*.012);
+    const sensorShadow=ctx.createLinearGradient(s.columnFrontR.x,0,s.columnFrontR.x+shadowWidth,0);
+    sensorShadow.addColorStop(0,"rgba(30,38,36,.46)");sensorShadow.addColorStop(.58,"rgba(42,50,48,.18)");sensorShadow.addColorStop(1,"rgba(42,50,48,0)");
+    ctx.fillStyle=sensorShadow;this.#polygon(ctx,[s.plate[1],s.plate[2],
+      {x:s.columnFrontR.x+shadowWidth,y:s.columnFrontR.y+width*.004},
+      {x:s.columnBackR.x+shadowWidth,y:s.columnBackR.y+width*.004}]);ctx.fill();
     const frontSteel=ctx.createLinearGradient(s.columnFrontL.x,0,s.columnFrontR.x,0);
     frontSteel.addColorStop(0,"#aeb8b5");frontSteel.addColorStop(.34,"#747f7c");
     frontSteel.addColorStop(.72,"#c6ceca");frontSteel.addColorStop(1,"#68726f");
@@ -67,10 +73,11 @@ export class VibraSensorRenderer {
     // Let each panel edge inherit the adjacent column face instead of using
     // one uniform gray outline that visually disconnects the two pieces.
     ctx.lineWidth=Math.max(1,width*.0015);ctx.lineCap="round";
-    ctx.strokeStyle="#f0f4ee";ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.plate[3].x,s.plate[3].y);ctx.stroke();
+    ctx.strokeStyle="#dfe8df";ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.plate[3].x,s.plate[3].y);ctx.stroke();
     ctx.strokeStyle="#58635f";ctx.beginPath();ctx.moveTo(s.plate[1].x,s.plate[1].y);ctx.lineTo(s.plate[2].x,s.plate[2].y);ctx.stroke();
     ctx.strokeStyle="#b7c0bb";ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.plate[1].x,s.plate[1].y);ctx.stroke();
-    ctx.strokeStyle="#65706b";ctx.beginPath();ctx.moveTo(s.plate[3].x,s.plate[3].y);ctx.lineTo(s.plate[2].x,s.plate[2].y);ctx.stroke();
+    ctx.strokeStyle="#8b9690";ctx.beginPath();ctx.moveTo(s.plate[3].x,s.plate[3].y);ctx.lineTo(s.plate[2].x,s.plate[2].y);ctx.stroke();
+    ctx.strokeStyle="#dfe8df";ctx.beginPath();ctx.moveTo(s.plate[3].x,s.plate[3].y);ctx.lineTo(s.columnFrontL.x,s.columnFrontL.y);ctx.stroke();
 
     ctx.fillStyle="#171b1a";this.#polygon(ctx,s.slit);ctx.fill();
     if(!active&&Math.floor(time/320)%2===0){
