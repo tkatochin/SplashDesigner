@@ -363,14 +363,20 @@ export class PoolRenderer {
     const segments=[];
     const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push({path:a,order:1,kind:"front"});
     const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.quadraticCurveTo(frontBase.x+w*.01,nearJoin.y,railStart.x,railStart.y);segments.push({path:b,order:2,kind:"slope"});
-    const c=new Path2D();c.moveTo(railStart.x,railStart.y);c.bezierCurveTo(farX,farShoulder.y-w*.035,farX,farShoulder.y,farX,farBaseY);segments.push({path:c,order:0,kind:"rear"});
+    const c=new Path2D();c.moveTo(farX,farBaseY);c.lineTo(farShoulder.x,farShoulder.y);segments.push({path:c,order:0,kind:"rear"});
+    const d=new Path2D();d.moveTo(farShoulder.x,farShoulder.y);
+    d.bezierCurveTo(farX,farShoulder.y-w*.035,railStart.x+w*.004,railStart.y,railStart.x,railStart.y);
+    segments.push({path:d,order:3,kind:"arc"});
     segments.sort((left,right)=>left.order-right.order);
     for(const [index,segment] of segments.entries()){
       const path=segment.path;
       ctx.strokeStyle="rgba(35,45,46,.72)";ctx.lineWidth=Math.max(5,w*.007);ctx.stroke(path);
       const diagonal=segment.kind==="slope";
       let steel;
-      if(diagonal){
+      if(segment.kind==="arc"){
+        const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
+        steel=ctx.createRadialGradient(cx,cy,0,cx,cy,railWidth*.8);
+      }else if(diagonal){
         const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
         const length=Math.max(1,Math.hypot(dx,dy));
         const nx=-dy/length,ny=dx/length,half=railWidth*.52;
