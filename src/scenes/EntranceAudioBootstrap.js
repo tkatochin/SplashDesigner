@@ -125,7 +125,13 @@ export function initializeAudio(scene){
       startOverlay.dataset.state="preparing";
       startOverlay.disabled=true;
       startLabel.textContent="";
-      const ready=await scene.audio.unlock();
+      // Do not leave the entrance covered indefinitely when iOS delays audio
+      // decoding or keeps an AudioContext promise pending. The audio manager
+      // can finish loading in the background while the scene becomes visible.
+      const ready=await Promise.race([
+        scene.audio.unlock(),
+        new Promise(resolve=>window.setTimeout(()=>resolve(true),1800))
+      ]);
       if(!ready){
         startOverlay.dataset.state="ready";
         startOverlay.disabled=false;
