@@ -361,8 +361,10 @@ export class PoolRenderer {
   }
 
   #railRightEdges(ctx,w,h,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart,railWidth){
-    const edge=Math.max(1.5,railWidth*.34);
-    ctx.save();ctx.strokeStyle="rgba(8,18,22,.98)";ctx.lineWidth=Math.max(3,w*.0048);
+    // Place the dark stroke on the outside/right half of the metal profile,
+    // so it replaces the bright outer rim rather than sitting inside it.
+    const edge=Math.max(1.5,railWidth*.62);
+    ctx.save();ctx.strokeStyle="rgba(8,18,22,.98)";ctx.lineWidth=Math.max(3,railWidth*.30);
     ctx.lineCap="butt";ctx.lineJoin="round";
     // The right edge of each vertical support remains dark; the opposite
     // edge stays bright from the window light.
