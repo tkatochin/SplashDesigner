@@ -369,16 +369,20 @@ export class PoolRenderer {
       const diagonal=index===1;
       let steel;
       if(diagonal){
-        steel=ctx.createLinearGradient(nearJoin.x,nearJoin.y,railStart.x,railStart.y);
+        const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
+        const length=Math.max(1,Math.hypot(dx,dy));
+        const nx=-dy/length,ny=dx/length,half=railWidth*.52;
+        const cx=(nearJoin.x+railStart.x)/2,cy=(nearJoin.y+railStart.y)/2;
+        steel=ctx.createLinearGradient(cx-nx*half,cy-ny*half,cx+nx*half,cy+ny*half);
       }else{
         const center=index===0?frontBase.x:farX,half=railWidth*.52;
         steel=ctx.createLinearGradient(center-half,0,center+half,0);
       }
-      steel.addColorStop(0,"#ffffff");steel.addColorStop(.025,"#ffffff");
-      steel.addColorStop(.10,"#c4cfcc");steel.addColorStop(.22,"#596768");
-      steel.addColorStop(.38,"#f1f6f1");steel.addColorStop(.52,"#a9b7b3");
-      steel.addColorStop(.68,"#526061");steel.addColorStop(.91,"#242e30");
-      steel.addColorStop(.975,"#11191b");steel.addColorStop(1,"#080e10");
+      steel.addColorStop(0,"#ffffff");steel.addColorStop(.055,"#ffffff");
+      steel.addColorStop(.14,"#c4cfcc");steel.addColorStop(.27,"#596768");
+      steel.addColorStop(.40,"#f1f6f1");steel.addColorStop(.53,"#a9b7b3");
+      steel.addColorStop(.70,"#526061");steel.addColorStop(.88,"#242e30");
+      steel.addColorStop(.96,"#11191b");steel.addColorStop(1,"#080e10");
       ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
     }
     ctx.restore();
