@@ -367,9 +367,17 @@ export class PoolRenderer {
     for(const [index,path] of segments.entries()){
       ctx.strokeStyle="rgba(35,45,46,.72)";ctx.lineWidth=Math.max(5,w*.007);ctx.stroke(path);
       const diagonal=index===1;
-      const steel=diagonal
-        ? ctx.createLinearGradient(nearJoin.x,nearJoin.y,railStart.x,railStart.y)
-        : ctx.createLinearGradient(0,0,w,0);
+      let steel;
+      if(diagonal){
+        const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
+        const length=Math.max(1,Math.hypot(dx,dy));
+        const nx=-dy/length,ny=dx/length,half=railWidth*.52;
+        const cx=(nearJoin.x+railStart.x)/2,cy=(nearJoin.y+railStart.y)/2;
+        steel=ctx.createLinearGradient(cx-nx*half,cy-ny*half,cx+nx*half,cy+ny*half);
+      }else{
+        const center=index===0?frontBase.x:farX,half=railWidth*.52;
+        steel=ctx.createLinearGradient(center-half,0,center+half,0);
+      }
       steel.addColorStop(0,"#ffffff");steel.addColorStop(.055,"#ffffff");
       steel.addColorStop(.14,"#c4cfcc");steel.addColorStop(.27,"#596768");
       steel.addColorStop(.40,"#f1f6f1");steel.addColorStop(.53,"#a9b7b3");
