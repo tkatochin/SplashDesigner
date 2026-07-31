@@ -333,7 +333,7 @@ export class PoolRenderer {
   }
 
   #handrail(ctx,w,h,g){
-    const frontBase={x:w*.13,y:h*.985};
+    const frontBase={x:w*.13,y:h*.965};
     const farBaseY=g.water.nearL.y;
     const farX=this.#projectX(frontBase,g.vanishing,farBaseY);
     const farShoulder={x:farX,y:h*.615};
@@ -352,19 +352,19 @@ export class PoolRenderer {
     path.lineTo(frontBase.x,frontBase.y);
     const railWidth=Math.max(8,w*.010);
     ctx.save();
-    ctx.fillStyle="rgba(35,44,46,.5)";
-    ctx.beginPath();ctx.ellipse(frontBase.x,frontBase.y,railWidth*1.45,railWidth*.42,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(2,railWidth*.22);ctx.stroke();
+    ctx.fillStyle="rgba(35,44,46,.28)";
+    ctx.beginPath();ctx.ellipse(frontBase.x,frontBase.y,railWidth*.9,railWidth*.24,0,0,Math.PI*2);ctx.fill();
     ctx.restore();
     this.#railStroke(ctx,path,w);
   }
 
   #railStroke(ctx,path,w){
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
-    ctx.strokeStyle="rgba(7,15,18,.92)";ctx.lineWidth=Math.max(9,w*.011);ctx.stroke(path);
+    ctx.strokeStyle="rgba(35,45,46,.72)";ctx.lineWidth=Math.max(3,w*.0048);ctx.stroke(path);
     const steel=ctx.createLinearGradient(0,0,w,0);
-    steel.addColorStop(0,"#f3f8f4");steel.addColorStop(.18,"#b8c5c5");steel.addColorStop(.5,"#e2e9e6");steel.addColorStop(.82,"#93a1a3");steel.addColorStop(1,"#253235");
-    ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
+    steel.addColorStop(0,"#f8fff9");steel.addColorStop(.12,"#b7c5c3");steel.addColorStop(.32,"#f2f7f3");
+    steel.addColorStop(.5,"#839391");steel.addColorStop(.66,"#e8efea");steel.addColorStop(.84,"#7c8b8c");steel.addColorStop(1,"#dbe5e0");
+    ctx.strokeStyle=steel;ctx.lineWidth=Math.max(2.5,w*.0038);ctx.stroke(path);
     ctx.restore();
   }
 
