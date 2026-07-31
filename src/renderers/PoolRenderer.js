@@ -339,14 +339,14 @@ export class PoolRenderer {
     const farX=this.#projectX(frontBase,g.vanishing,farBaseY);
     // The rear post meets the lower end of a true upper semicircular bend;
     // both arc endpoints share the same height before the sloped rail joins.
-    const railStart={x:farX-w*.06,y:h*.55};
+    const railStart={x:farX-w*.06,y:h*.545};
     const farShoulder={x:farX,y:railStart.y};
     const cornerRadius=Math.max(10,w*.018);
     const railEnd={
       x:frontBase.x+cornerRadius,
       y:this.#projectYAtX(railStart,g.vanishing,frontBase.x+cornerRadius)
     };
-    const nearJoin={x:frontBase.x,y:h*.70};
+    const nearJoin={x:frontBase.x,y:h*.71};
     const path=new Path2D();
     path.moveTo(farX,farBaseY);
     path.lineTo(farShoulder.x,farShoulder.y);
