@@ -336,8 +336,10 @@ export class PoolRenderer {
     const frontBase={x:w*.13,y:h*.985};
     const farBaseY=g.water.nearL.y-h*.012;
     const farX=this.#projectX(frontBase,g.vanishing,farBaseY);
-    const farShoulder={x:farX,y:h*.615};
+    // The rear post meets the lower end of a true upper semicircular bend;
+    // both arc endpoints share the same height before the sloped rail joins.
     const railStart={x:farX-w*.018,y:h*.55};
+    const farShoulder={x:farX,y:railStart.y};
     const cornerRadius=Math.max(10,w*.018);
     const railEnd={
       x:frontBase.x+cornerRadius,
