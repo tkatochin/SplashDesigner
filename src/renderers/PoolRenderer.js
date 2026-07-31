@@ -364,11 +364,17 @@ export class PoolRenderer {
     const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push(a);
     const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.quadraticCurveTo(frontBase.x+w*.01,nearJoin.y,railStart.x,railStart.y);segments.push(b);
     const c=new Path2D();c.moveTo(railStart.x,railStart.y);c.bezierCurveTo(farX,farShoulder.y-w*.035,farX,farShoulder.y,farX,farBaseY);segments.push(c);
-    for(const path of segments){
+    for(const [index,path] of segments.entries()){
       ctx.strokeStyle="rgba(35,45,46,.72)";ctx.lineWidth=Math.max(5,w*.007);ctx.stroke(path);
-      const steel=ctx.createLinearGradient(0,0,w,0);
-      steel.addColorStop(0,"#ffffff");steel.addColorStop(.08,"#c8d0ce");steel.addColorStop(.22,"#626f70");
-      steel.addColorStop(.38,"#e9efeb");steel.addColorStop(.52,"#aebbb8");steel.addColorStop(.72,"#5b6869");steel.addColorStop(1,"#202a2c");
+      const diagonal=index===1;
+      const steel=diagonal
+        ? ctx.createLinearGradient(nearJoin.x,nearJoin.y,railStart.x,railStart.y)
+        : ctx.createLinearGradient(0,0,w,0);
+      steel.addColorStop(0,"#ffffff");steel.addColorStop(.055,"#ffffff");
+      steel.addColorStop(.14,"#c4cfcc");steel.addColorStop(.27,"#596768");
+      steel.addColorStop(.40,"#f1f6f1");steel.addColorStop(.53,"#a9b7b3");
+      steel.addColorStop(.70,"#526061");steel.addColorStop(.88,"#242e30");
+      steel.addColorStop(.96,"#11191b");steel.addColorStop(1,"#080e10");
       ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
     }
     ctx.restore();
