@@ -367,8 +367,14 @@ export class PoolRenderer {
     const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push({path:a,order:1,kind:"front"});
     const b=new Path2D();
     const joinRadius=Math.max(8,w*.018);
+    const blend=.14;
+    const blendPoint={
+      x:nearJoin.x+(railStart.x-nearJoin.x)*blend,
+      y:nearJoin.y+(railStart.y-nearJoin.y)*blend
+    };
     b.moveTo(nearJoin.x,nearJoin.y);
-    b.quadraticCurveTo(nearJoin.x,nearJoin.y-joinRadius,railStart.x,railStart.y);
+    b.quadraticCurveTo(nearJoin.x,nearJoin.y-joinRadius,blendPoint.x,blendPoint.y);
+    b.lineTo(railStart.x,railStart.y);
     segments.push({path:b,order:2,kind:"slope"});
     const c=new Path2D();c.moveTo(farX,farBaseY);c.lineTo(farShoulder.x,farShoulder.y);segments.push({path:c,order:0,kind:"rear"});
     const d=new Path2D();d.moveTo(railStart.x,railStart.y);
