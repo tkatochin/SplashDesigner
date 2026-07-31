@@ -361,14 +361,14 @@ export class PoolRenderer {
   #railStroke(ctx,w,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart){
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
     const segments=[];
-    const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push({path:a,order:1});
-    const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.quadraticCurveTo(frontBase.x+w*.01,nearJoin.y,railStart.x,railStart.y);segments.push({path:b,order:2});
-    const c=new Path2D();c.moveTo(railStart.x,railStart.y);c.bezierCurveTo(farX,farShoulder.y-w*.035,farX,farShoulder.y,farX,farBaseY);segments.push({path:c,order:0});
+    const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push({path:a,order:1,kind:"front"});
+    const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.quadraticCurveTo(frontBase.x+w*.01,nearJoin.y,railStart.x,railStart.y);segments.push({path:b,order:2,kind:"slope"});
+    const c=new Path2D();c.moveTo(railStart.x,railStart.y);c.bezierCurveTo(farX,farShoulder.y-w*.035,farX,farShoulder.y,farX,farBaseY);segments.push({path:c,order:0,kind:"rear"});
     segments.sort((left,right)=>left.order-right.order);
     for(const [index,segment] of segments.entries()){
       const path=segment.path;
       ctx.strokeStyle="rgba(35,45,46,.72)";ctx.lineWidth=Math.max(5,w*.007);ctx.stroke(path);
-      const diagonal=index===1;
+      const diagonal=segment.kind==="slope";
       let steel;
       if(diagonal){
         const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
@@ -377,7 +377,7 @@ export class PoolRenderer {
         const cx=(nearJoin.x+railStart.x)/2,cy=(nearJoin.y+railStart.y)/2;
         steel=ctx.createLinearGradient(cx-nx*half,cy-ny*half,cx+nx*half,cy+ny*half);
       }else{
-        const center=index===0?frontBase.x:farX,half=railWidth*.52;
+        const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
         steel=ctx.createLinearGradient(center-half,0,center+half,0);
       }
       steel.addColorStop(0,"#ffffff");steel.addColorStop(.055,"#ffffff");
