@@ -361,18 +361,17 @@ export class PoolRenderer {
   }
 
   #railRightEdges(ctx,w,h,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart,railWidth){
-    // Place the dark stroke on the outside/right half of the metal profile,
-    // so it replaces the bright outer rim rather than sitting inside it.
-    const edge=Math.max(1.5,railWidth*.62);
-    ctx.save();ctx.strokeStyle="rgba(8,18,22,.98)";ctx.lineWidth=Math.max(3,railWidth*.30);
+    // Two independent, hairline contour segments only; follow the existing
+    // rail geometry without creating a new connecting edge or offset gap.
+    const edge=0;
+    ctx.save();ctx.strokeStyle="rgba(8,18,22,.98)";ctx.lineWidth=Math.max(1.2,w*.0018);
     ctx.lineCap="butt";ctx.lineJoin="round";
     // The right edge of each vertical support remains dark; the opposite
     // edge stays bright from the window light.
-    ctx.beginPath();ctx.moveTo(frontBase.x+edge,nearJoin.y);ctx.lineTo(frontBase.x+edge,frontBase.y);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(railStart.x+edge,railStart.y);
-    ctx.quadraticCurveTo(frontBase.x+railWidth+edge,nearJoin.y,nearJoin.x+edge,nearJoin.y);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(farX+edge,farBaseY);ctx.lineTo(farShoulder.x+edge,farShoulder.y);
-    ctx.bezierCurveTo(farX+edge,farShoulder.y-h*.035,railStart.x+w*.004+edge,railStart.y,railStart.x+edge,railStart.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(frontBase.x,frontBase.y);ctx.lineTo(frontBase.x,nearJoin.y);
+    ctx.quadraticCurveTo(frontBase.x+railWidth,nearJoin.y,railStart.x,railStart.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(farX,farBaseY);ctx.lineTo(farShoulder.x,farShoulder.y);
+    ctx.bezierCurveTo(farX,farShoulder.y-h*.035,railStart.x+w*.004,railStart.y,railStart.x,railStart.y);ctx.stroke();
     ctx.restore();
   }
 
