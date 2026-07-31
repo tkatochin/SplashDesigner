@@ -355,16 +355,18 @@ export class PoolRenderer {
     ctx.fillStyle="rgba(35,44,46,.5)";
     ctx.beginPath();ctx.ellipse(frontBase.x,frontBase.y,railWidth*1.45,railWidth*.42,0,0,Math.PI*2);ctx.fill();
     ctx.restore();
-    this.#railStroke(ctx,w,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart);
+    this.#railStroke(ctx,w,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart);
   }
 
-  #railStroke(ctx,w,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart){
+  #railStroke(ctx,w,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart){
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
     const segments=[];
-    const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push(a);
-    const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.quadraticCurveTo(frontBase.x+w*.01,nearJoin.y,railStart.x,railStart.y);segments.push(b);
-    const c=new Path2D();c.moveTo(railStart.x,railStart.y);c.bezierCurveTo(farX,farShoulder.y-w*.035,farX,farShoulder.y,farX,farBaseY);segments.push(c);
-    for(const [index,path] of segments.entries()){
+    const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push({path:a,order:1});
+    const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.quadraticCurveTo(frontBase.x+w*.01,nearJoin.y,railStart.x,railStart.y);segments.push({path:b,order:2});
+    const c=new Path2D();c.moveTo(railStart.x,railStart.y);c.bezierCurveTo(farX,farShoulder.y-w*.035,farX,farShoulder.y,farX,farBaseY);segments.push({path:c,order:0});
+    segments.sort((left,right)=>left.order-right.order);
+    for(const [index,segment] of segments.entries()){
+      const path=segment.path;
       ctx.strokeStyle="rgba(35,45,46,.72)";ctx.lineWidth=Math.max(5,w*.007);ctx.stroke(path);
       const diagonal=index===1;
       let steel;
