@@ -334,7 +334,7 @@ export class PoolRenderer {
 
   #handrail(ctx,w,h,g){
     const frontBase={x:w*.13,y:h*.985};
-    const farBaseY=g.water.nearL.y;
+    const farBaseY=g.water.nearL.y-h*.012;
     const farX=this.#projectX(frontBase,g.vanishing,farBaseY);
     const farShoulder={x:farX,y:h*.615};
     const railStart={x:farX-w*.018,y:h*.55};
@@ -355,16 +355,22 @@ export class PoolRenderer {
     ctx.fillStyle="rgba(35,44,46,.5)";
     ctx.beginPath();ctx.ellipse(frontBase.x,frontBase.y,railWidth*1.45,railWidth*.42,0,0,Math.PI*2);ctx.fill();
     ctx.restore();
-    this.#railStroke(ctx,path,w);
+    this.#railStroke(ctx,w,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart);
   }
 
-  #railStroke(ctx,path,w){
+  #railStroke(ctx,w,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart){
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
-    ctx.strokeStyle="rgba(35,45,46,.72)";ctx.lineWidth=Math.max(5,w*.007);ctx.stroke(path);
-    const steel=ctx.createLinearGradient(0,0,w,0);
-    steel.addColorStop(0,"#f8fff9");steel.addColorStop(.12,"#b7c5c3");steel.addColorStop(.32,"#f2f7f3");
-    steel.addColorStop(.5,"#839391");steel.addColorStop(.66,"#e8efea");steel.addColorStop(.84,"#7c8b8c");steel.addColorStop(1,"#dbe5e0");
-    ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
+    const segments=[];
+    const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push(a);
+    const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.quadraticCurveTo(frontBase.x+w*.01,nearJoin.y,railStart.x,railStart.y);segments.push(b);
+    const c=new Path2D();c.moveTo(railStart.x,railStart.y);c.bezierCurveTo(farX,farShoulder.y-w*.035,farX,farShoulder.y,farX,farBaseY);segments.push(c);
+    for(const path of segments){
+      ctx.strokeStyle="rgba(35,45,46,.72)";ctx.lineWidth=Math.max(5,w*.007);ctx.stroke(path);
+      const steel=ctx.createLinearGradient(0,0,w,0);
+      steel.addColorStop(0,"#ffffff");steel.addColorStop(.08,"#c8d0ce");steel.addColorStop(.22,"#626f70");
+      steel.addColorStop(.38,"#e9efeb");steel.addColorStop(.52,"#aebbb8");steel.addColorStop(.72,"#5b6869");steel.addColorStop(1,"#202a2c");
+      ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
+    }
     ctx.restore();
   }
 
