@@ -357,28 +357,14 @@ export class PoolRenderer {
     ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(2,railWidth*.22);ctx.stroke();
     ctx.restore();
     this.#railStroke(ctx,path,w);
-    this.#railRightEdges(ctx,w,h,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart,railWidth);
-  }
-
-  #railRightEdges(ctx,w,h,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart,railWidth){
-    // Two independent, hairline contour segments only; follow the existing
-    // rail geometry without creating a new connecting edge or offset gap.
-    const edge=0;
-    ctx.save();ctx.strokeStyle="rgba(8,18,22,.98)";ctx.lineWidth=Math.max(1.2,w*.0018);
-    ctx.lineCap="butt";ctx.lineJoin="round";
-    // The right edge of each vertical support remains dark; the opposite
-    // edge stays bright from the window light.
-    ctx.beginPath();ctx.moveTo(frontBase.x,frontBase.y);ctx.lineTo(frontBase.x,nearJoin.y);
-    ctx.quadraticCurveTo(frontBase.x+railWidth,nearJoin.y,railStart.x,railStart.y);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(farX,farBaseY);ctx.lineTo(farShoulder.x,farShoulder.y);
-    ctx.bezierCurveTo(farX,farShoulder.y-h*.035,railStart.x+w*.004,railStart.y,railStart.x,railStart.y);ctx.stroke();
-    ctx.restore();
   }
 
   #railStroke(ctx,path,w){
-    ctx.save();ctx.lineCap="butt";ctx.lineJoin="round";
-    ctx.strokeStyle="rgba(245,250,247,.92)";ctx.lineWidth=Math.max(8,w*.010);ctx.stroke(path);
-    ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
+    ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.strokeStyle="rgba(7,15,18,.92)";ctx.lineWidth=Math.max(9,w*.011);ctx.stroke(path);
+    const steel=ctx.createLinearGradient(0,0,w,0);
+    steel.addColorStop(0,"#f3f8f4");steel.addColorStop(.18,"#b8c5c5");steel.addColorStop(.5,"#e2e9e6");steel.addColorStop(.82,"#93a1a3");steel.addColorStop(1,"#253235");
+    ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
     ctx.restore();
   }
 
