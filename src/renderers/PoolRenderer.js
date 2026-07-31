@@ -357,6 +357,18 @@ export class PoolRenderer {
     ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(2,railWidth*.22);ctx.stroke();
     ctx.restore();
     this.#railStroke(ctx,path,w);
+    this.#railRightEdges(ctx,w,frontBase,nearJoin,farX,farBaseY,farShoulder,railWidth);
+  }
+
+  #railRightEdges(ctx,w,frontBase,nearJoin,farX,farBaseY,farShoulder,railWidth){
+    const edge=Math.max(1.5,railWidth*.42);
+    ctx.save();ctx.strokeStyle="rgba(8,18,22,.9)";ctx.lineWidth=Math.max(1.5,w*.0026);
+    ctx.lineCap="butt";ctx.lineJoin="round";
+    // The right edge of each vertical support remains dark; the opposite
+    // edge stays bright from the window light.
+    ctx.beginPath();ctx.moveTo(frontBase.x+edge,nearJoin.y);ctx.lineTo(frontBase.x+edge,frontBase.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(farX+edge,farBaseY);ctx.lineTo(farShoulder.x+edge,farShoulder.y);ctx.stroke();
+    ctx.restore();
   }
 
   #railStroke(ctx,path,w){
