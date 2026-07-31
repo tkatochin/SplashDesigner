@@ -361,7 +361,7 @@ export class PoolRenderer {
 
   #railStroke(ctx,path,w){
     ctx.save();ctx.lineCap="butt";ctx.lineJoin="round";
-    ctx.strokeStyle="rgba(8,18,22,.5)";ctx.lineWidth=Math.max(12,w*.015);ctx.stroke(path);
+    ctx.strokeStyle="rgba(245,250,247,.92)";ctx.lineWidth=Math.max(12,w*.015);ctx.stroke(path);
     ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(8,w*.010);ctx.stroke(path);
     ctx.strokeStyle="rgba(250,255,255,.88)";ctx.lineWidth=Math.max(1.5,w*.002);ctx.stroke(path);
     ctx.restore();

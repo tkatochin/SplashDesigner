@@ -43,7 +43,7 @@ export class MADMAXButtonRenderer {
   }
 
   #letters(ctx,g){
-    const size=g.side*.24,targetWidth=g.side*.215;
+    const size=g.side*.27,targetWidth=g.side*.24;
     ctx.fillStyle="#121719";ctx.font=`900 ${size}px "Arial Black", "Helvetica Neue", sans-serif`;
     ctx.textAlign="center";ctx.textBaseline="middle";
     const positions={
