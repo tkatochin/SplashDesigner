@@ -390,11 +390,24 @@ export class PoolRenderer {
     segments.sort((left,right)=>left.order-right.order);
     for(const segment of segments){
       const path=segment.path;
-      ctx.strokeStyle="#f4f7f4";ctx.lineWidth=Math.max(7,w*.009);ctx.stroke(path);
-      /* Shape-only pass: defer all material gradients until geometry is approved. */
-      continue;
-      /*
-      const diagonal=segment.kind==="slope";
+      ctx.strokeStyle="rgba(45,55,55,.7)";ctx.lineWidth=Math.max(7,w*.009);ctx.stroke(path);
+      let steel;
+      if(segment.kind==="arc"){
+        const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
+        steel=ctx.createRadialGradient(cx,cy,0,cx,cy,railWidth*.9);
+      }else if(segment.kind==="slope"){
+        const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
+        steel=ctx.createLinearGradient(nearJoin.x,nearJoin.y,railStart.x,railStart.y);
+      }else{
+        const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
+        steel=ctx.createLinearGradient(center-half,0,center+half,0);
+      }
+      steel.addColorStop(0,"#f8fbf8");steel.addColorStop(.08,"#d4ddda");
+      steel.addColorStop(.22,"#71807f");steel.addColorStop(.38,"#eef3ef");
+      steel.addColorStop(.54,"#aab8b4");steel.addColorStop(.72,"#657371");
+      steel.addColorStop(.9,"#dce5e0");steel.addColorStop(1,"#4d5b5a");
+      ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
+      /* const diagonal=segment.kind==="slope";
       let steel;
       if(segment.kind==="arc"){
         const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
