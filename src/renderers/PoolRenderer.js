@@ -109,7 +109,6 @@ export class PoolRenderer {
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
-    this.vibraBubbleRenderer.render(ctx,g,width);
     this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
@@ -119,6 +118,8 @@ export class PoolRenderer {
       this.overflowRenderer.render(ctx,g,width,height,overflow,time);
     }
     this.overflowRenderer.render(ctx,g,width,height,this.madmaxOverflow,time);
+    // Vibra bubbles must sit above overflow water when both effects overlap.
+    this.vibraBubbleRenderer.render(ctx,g,width);
     // The sensor is a solid object above the rim. Keep grout and overflowing
     // water behind it instead of letting either sheet cross its front faces.
     this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,time);
@@ -357,10 +358,10 @@ export class PoolRenderer {
     ctx.fillStyle="rgba(35,44,46,.5)";
     ctx.beginPath();ctx.ellipse(frontBase.x,frontBase.y,railWidth*1.45,railWidth*.42,0,0,Math.PI*2);ctx.fill();
     ctx.restore();
-    this.#railStroke(ctx,w,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart);
+    this.#railStroke(ctx,w,h,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart);
   }
 
-  #railStroke(ctx,w,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart){
+  #railStroke(ctx,w,h,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart){
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
     const segments=[];
     const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push({path:a,order:1,kind:"front"});
