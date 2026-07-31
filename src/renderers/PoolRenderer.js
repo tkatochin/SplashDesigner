@@ -346,7 +346,7 @@ export class PoolRenderer {
       x:frontBase.x+cornerRadius,
       y:this.#projectYAtX(railStart,g.vanishing,frontBase.x+cornerRadius)
     };
-    const nearJoin={x:frontBase.x,y:g.water.nearL.y-h*.015};
+    const nearJoin={x:frontBase.x,y:h*.70};
     const path=new Path2D();
     path.moveTo(farX,farBaseY);
     path.lineTo(farShoulder.x,farShoulder.y);
@@ -365,10 +365,15 @@ export class PoolRenderer {
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
     const segments=[];
     const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push({path:a,order:1,kind:"front"});
-    const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.quadraticCurveTo(frontBase.x+w*.01,nearJoin.y,railStart.x,railStart.y);segments.push({path:b,order:2,kind:"slope"});
+    const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.lineTo(railStart.x,railStart.y);segments.push({path:b,order:2,kind:"slope"});
     const c=new Path2D();c.moveTo(farX,farBaseY);c.lineTo(farShoulder.x,farShoulder.y);segments.push({path:c,order:0,kind:"rear"});
     const d=new Path2D();d.moveTo(farShoulder.x,farShoulder.y);
-    d.bezierCurveTo(farX,farShoulder.y-h*.045,railStart.x,railStart.y-h*.045,railStart.x,railStart.y);
+    const slopeDx=railStart.x-nearJoin.x,slopeDy=railStart.y-nearJoin.y;
+    const slopeLen=Math.max(1,Math.hypot(slopeDx,slopeDy));
+    const bend= Math.min(w*.06,slopeLen*.28);
+    d.bezierCurveTo(farX,farShoulder.y-h*.045,
+      railStart.x-slopeDx/slopeLen*bend,railStart.y-slopeDy/slopeLen*bend,
+      railStart.x,railStart.y);
     segments.push({path:d,order:3,kind:"arc"});
     segments.sort((left,right)=>left.order-right.order);
     for(const segment of segments){
