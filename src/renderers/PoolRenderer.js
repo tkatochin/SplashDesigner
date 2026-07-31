@@ -370,9 +370,12 @@ export class PoolRenderer {
     d.bezierCurveTo(farX,farShoulder.y-h*.10,railStart.x,railStart.y-h*.10,railStart.x,railStart.y);
     segments.push({path:d,order:3,kind:"arc"});
     segments.sort((left,right)=>left.order-right.order);
-    for(const [index,segment] of segments.entries()){
+    for(const segment of segments){
       const path=segment.path;
-      ctx.strokeStyle="rgba(35,45,46,.72)";ctx.lineWidth=Math.max(5,w*.007);ctx.stroke(path);
+      ctx.strokeStyle="#f4f7f4";ctx.lineWidth=Math.max(7,w*.009);ctx.stroke(path);
+      /* Shape-only pass: defer all material gradients until geometry is approved. */
+      continue;
+      /*
       const diagonal=segment.kind==="slope";
       let steel;
       if(segment.kind==="arc"){
@@ -393,7 +396,7 @@ export class PoolRenderer {
       steel.addColorStop(.40,"#f1f6f1");steel.addColorStop(.53,"#a9b7b3");
       steel.addColorStop(.70,"#526061");steel.addColorStop(.88,"#242e30");
       steel.addColorStop(.96,"#11191b");steel.addColorStop(1,"#080e10");
-      ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
+      ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path); */
     }
     ctx.restore();
   }
