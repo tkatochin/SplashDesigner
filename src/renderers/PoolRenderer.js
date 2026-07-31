@@ -366,8 +366,8 @@ export class PoolRenderer {
     const segments=[];
     const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(frontBase.x,nearJoin.y);segments.push({path:a,order:1,kind:"front"});
     const b=new Path2D();
-    const joinRadius=Math.max(8,w*.018);
-    const blend=.14;
+    const joinRadius=Math.max(3,w*.006);
+    const blend=.07;
     const blendPoint={
       x:nearJoin.x+(railStart.x-nearJoin.x)*blend,
       y:nearJoin.y+(railStart.y-nearJoin.y)*blend
