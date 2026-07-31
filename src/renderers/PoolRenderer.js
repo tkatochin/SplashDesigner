@@ -338,7 +338,7 @@ export class PoolRenderer {
     const farX=this.#projectX(frontBase,g.vanishing,farBaseY);
     // The rear post meets the lower end of a true upper semicircular bend;
     // both arc endpoints share the same height before the sloped rail joins.
-    const railStart={x:farX-w*.018,y:h*.55};
+    const railStart={x:farX-w*.10,y:h*.55};
     const farShoulder={x:farX,y:railStart.y};
     const cornerRadius=Math.max(10,w*.018);
     const railEnd={
@@ -367,7 +367,7 @@ export class PoolRenderer {
     const b=new Path2D();b.moveTo(nearJoin.x,nearJoin.y);b.quadraticCurveTo(frontBase.x+w*.01,nearJoin.y,railStart.x,railStart.y);segments.push({path:b,order:2,kind:"slope"});
     const c=new Path2D();c.moveTo(farX,farBaseY);c.lineTo(farShoulder.x,farShoulder.y);segments.push({path:c,order:0,kind:"rear"});
     const d=new Path2D();d.moveTo(farShoulder.x,farShoulder.y);
-    d.bezierCurveTo(farX,farShoulder.y-w*.035,railStart.x+w*.004,railStart.y,railStart.x,railStart.y);
+    d.bezierCurveTo(farX,farShoulder.y-h*.10,railStart.x,railStart.y-h*.10,railStart.x,railStart.y);
     segments.push({path:d,order:3,kind:"arc"});
     segments.sort((left,right)=>left.order-right.order);
     for(const [index,segment] of segments.entries()){
