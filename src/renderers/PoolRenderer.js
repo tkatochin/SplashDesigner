@@ -357,17 +357,18 @@ export class PoolRenderer {
     ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(2,railWidth*.22);ctx.stroke();
     ctx.restore();
     this.#railStroke(ctx,path,w);
-    this.#railRightEdges(ctx,w,frontBase,nearJoin,farX,farBaseY,farShoulder,railWidth);
+    this.#railRightEdges(ctx,w,h,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart,railWidth);
   }
 
-  #railRightEdges(ctx,w,frontBase,nearJoin,farX,farBaseY,farShoulder,railWidth){
-    const edge=Math.max(1.5,railWidth*.42);
-    ctx.save();ctx.strokeStyle="rgba(8,18,22,.9)";ctx.lineWidth=Math.max(1.5,w*.0026);
+  #railRightEdges(ctx,w,h,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart,railWidth){
+    const edge=Math.max(1.5,railWidth*.34);
+    ctx.save();ctx.strokeStyle="rgba(8,18,22,.98)";ctx.lineWidth=Math.max(3,w*.0048);
     ctx.lineCap="butt";ctx.lineJoin="round";
     // The right edge of each vertical support remains dark; the opposite
     // edge stays bright from the window light.
     ctx.beginPath();ctx.moveTo(frontBase.x+edge,nearJoin.y);ctx.lineTo(frontBase.x+edge,frontBase.y);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(farX+edge,farBaseY);ctx.lineTo(farShoulder.x+edge,farShoulder.y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(farX+edge,farBaseY);ctx.lineTo(farShoulder.x+edge,farShoulder.y);
+    ctx.bezierCurveTo(farX+edge,farShoulder.y-h*.035,railStart.x+w*.004+edge,railStart.y,railStart.x+edge,railStart.y);ctx.stroke();
     ctx.restore();
   }
 

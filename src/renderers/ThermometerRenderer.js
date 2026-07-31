@@ -65,7 +65,9 @@ export class ThermometerRenderer {
     steel.addColorStop(.48,"#a0aba7");steel.addColorStop(.72,"#f0f3ed");steel.addColorStop(1,"#7a8581");
     ctx.fillStyle=steel;ctx.beginPath();ctx.moveTo(g.x-g.radius,bottom);ctx.lineTo(g.x-g.radius,g.y);
     ctx.arc(g.x,g.y,g.radius,Math.PI,0);ctx.lineTo(g.x+g.radius,bottom);ctx.closePath();ctx.fill();
-    ctx.strokeStyle="rgba(39,47,46,.62)";ctx.lineWidth=Math.max(1,width*.0013);ctx.stroke();
+    const upperFrame=ctx.createLinearGradient(g.x-g.radius,g.y-g.radius,g.x+g.radius,g.y-g.radius);
+    upperFrame.addColorStop(0,"rgba(238,246,240,.95)");upperFrame.addColorStop(.42,"rgba(175,187,182,.82)");upperFrame.addColorStop(1,"rgba(112,124,120,.72)");
+    ctx.strokeStyle=upperFrame;ctx.lineWidth=Math.max(1,width*.0013);ctx.stroke();
     ctx.strokeStyle="#e1ebe1";ctx.lineWidth=Math.max(1,width*.0015);
     ctx.beginPath();ctx.moveTo(g.x-g.radius,bottom);ctx.lineTo(g.x-g.radius,g.y);ctx.stroke();
 
