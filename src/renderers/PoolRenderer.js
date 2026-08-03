@@ -385,8 +385,7 @@ export class PoolRenderer {
         ctx.strokeStyle="rgba(45,55,55,.7)";ctx.lineWidth=Math.max(7,w*.009);ctx.stroke(path);
       }
       if(segment.kind==="slope"){
-        ctx.strokeStyle="#f4f7f4";ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
-        continue;
+        // Keep the slope free of a dark outline; its material pass follows.
       }
       let steel;
       let jointGradient=false;
@@ -400,7 +399,14 @@ export class PoolRenderer {
         steel=ctx.createRadialGradient(cx,cy,0,cx,cy,railWidth*.9);
       }else if(segment.kind==="slope"){
         const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
-        steel=ctx.createLinearGradient(railStart.x,railStart.y,nearJoin.x,nearJoin.y);
+        const axis=Math.atan2(dy,dx);
+        const normal=axis-Math.PI/2;
+        const half=railWidth*.52;
+        const cx=(nearJoin.x+railStart.x)/2,cy=(nearJoin.y+railStart.y)/2;
+        steel=ctx.createLinearGradient(
+          cx-Math.cos(normal)*half,cy-Math.sin(normal)*half,
+          cx+Math.cos(normal)*half,cy+Math.sin(normal)*half
+        );
       }else{
         const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
         steel=ctx.createLinearGradient(center-half,0,center+half,0);
