@@ -365,7 +365,10 @@ export class PoolRenderer {
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
     const segments=[];
     const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(nearJoin.x,nearJoin.y);segments.push({path:a,order:1,kind:"front"});
-    const slope=new Path2D();slope.moveTo(nearJoin.x,nearJoin.y);slope.lineTo(railStart.x,railStart.y);
+    const slopeDx=railStart.x-nearJoin.x,slopeDy=railStart.y-nearJoin.y;
+    const slopeLength=Math.max(1,Math.hypot(slopeDx,slopeDy));
+    const slopeStart={x:nearJoin.x+slopeDx/slopeLength*railWidth*.45,y:nearJoin.y+slopeDy/slopeLength*railWidth*.45};
+    const slope=new Path2D();slope.moveTo(slopeStart.x,slopeStart.y);slope.lineTo(railStart.x,railStart.y);
     segments.push({path:slope,order:2,kind:"slope"});
     const c=new Path2D();c.moveTo(farX,farBaseY);c.lineTo(farShoulder.x,farShoulder.y);segments.push({path:c,order:0,kind:"rear"});
     const d=new Path2D();d.moveTo(railStart.x,railStart.y);
