@@ -399,8 +399,12 @@ export class PoolRenderer {
         continue;
       }
       let steel;
+      let jointGradient=false;
       if(segment.kind==="joint"){
-        steel=ctx.createRadialGradient(nearJoin.x,nearJoin.y,0,nearJoin.x,nearJoin.y,railWidth*.9);
+        const cx=nearJoin.x+railWidth*.5,cy=nearJoin.y+railWidth*.5;
+        const radius=Math.max(1,Math.hypot(cx-nearJoin.x,cy-nearJoin.y));
+        steel=ctx.createRadialGradient(cx,cy,0,cx,cy,radius);
+        jointGradient=true;
       }else if(segment.kind==="arc"){
         const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
         steel=ctx.createRadialGradient(cx,cy,0,cx,cy,railWidth*.9);
@@ -411,10 +415,14 @@ export class PoolRenderer {
         const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
         steel=ctx.createLinearGradient(center-half,0,center+half,0);
       }
+      if(jointGradient){
+        steel.addColorStop(0,"#f8fbf8");steel.addColorStop(.35,"#d4ddda");
+        steel.addColorStop(.7,"#71807f");steel.addColorStop(1,"#263231");
+      }else{
       steel.addColorStop(0,"#f8fbf8");steel.addColorStop(.08,"#d4ddda");
       steel.addColorStop(.22,"#71807f");steel.addColorStop(.38,"#eef3ef");
       steel.addColorStop(.54,"#aab8b4");steel.addColorStop(.72,"#657371");
-      steel.addColorStop(.9,"#dce5e0");steel.addColorStop(1,"#4d5b5a");
+      steel.addColorStop(.9,"#dce5e0");steel.addColorStop(1,"#4d5b5a");}
       ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
       /* const diagonal=segment.kind==="slope";
       let steel;
