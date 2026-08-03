@@ -364,20 +364,8 @@ export class PoolRenderer {
   #railStroke(ctx,w,h,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart){
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
     const segments=[];
-    const joinRadius=Math.max(5,w*.011);
-    const jointStart={x:nearJoin.x,y:nearJoin.y+joinRadius};
-    const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(jointStart.x,jointStart.y);segments.push({path:a,order:1,kind:"front"});
-    const b=new Path2D();
-    const slopeLength=Math.max(1,Math.hypot(railStart.x-nearJoin.x,railStart.y-nearJoin.y));
-    const blend=Math.min(.035,(joinRadius*2.2)/slopeLength);
-    const blendPoint={
-      x:nearJoin.x+(railStart.x-nearJoin.x)*blend,
-      y:nearJoin.y+(railStart.y-nearJoin.y)*blend
-    };
-    b.moveTo(jointStart.x,jointStart.y);
-    b.quadraticCurveTo(nearJoin.x,nearJoin.y,blendPoint.x,blendPoint.y);
-    segments.push({path:b,order:2,kind:"joint"});
-    const slope=new Path2D();slope.moveTo(blendPoint.x,blendPoint.y);slope.lineTo(railStart.x,railStart.y);
+    const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(nearJoin.x,nearJoin.y);segments.push({path:a,order:1,kind:"front"});
+    const slope=new Path2D();slope.moveTo(nearJoin.x,nearJoin.y);slope.lineTo(railStart.x,railStart.y);
     segments.push({path:slope,order:2,kind:"slope"});
     const c=new Path2D();c.moveTo(farX,farBaseY);c.lineTo(farShoulder.x,farShoulder.y);segments.push({path:c,order:0,kind:"rear"});
     const d=new Path2D();d.moveTo(railStart.x,railStart.y);
