@@ -390,14 +390,16 @@ export class PoolRenderer {
     segments.sort((left,right)=>left.order-right.order);
     for(const segment of segments){
       const path=segment.path;
-      ctx.strokeStyle="rgba(45,55,55,.7)";ctx.lineWidth=Math.max(7,w*.009);ctx.stroke(path);
+      if(segment.kind!=="slope"){
+        ctx.strokeStyle="rgba(45,55,55,.7)";ctx.lineWidth=Math.max(7,w*.009);ctx.stroke(path);
+      }
       let steel;
       if(segment.kind==="arc"){
         const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
         steel=ctx.createRadialGradient(cx,cy,0,cx,cy,railWidth*.9);
       }else if(segment.kind==="slope"){
         const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
-        steel=ctx.createLinearGradient(nearJoin.x,nearJoin.y,railStart.x,railStart.y);
+        steel=ctx.createLinearGradient(railStart.x,railStart.y,nearJoin.x,nearJoin.y);
       }else{
         const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
         steel=ctx.createLinearGradient(center-half,0,center+half,0);
