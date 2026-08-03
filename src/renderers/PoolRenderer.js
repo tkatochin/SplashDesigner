@@ -399,14 +399,7 @@ export class PoolRenderer {
         steel=ctx.createRadialGradient(cx,cy,0,cx,cy,railWidth*.9);
       }else if(segment.kind==="slope"){
         const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
-        const axis=Math.atan2(dy,dx);
-        const cross=axis+Math.PI/4;
-        const half=railWidth*.52;
-        const cx=(nearJoin.x+railStart.x)/2,cy=(nearJoin.y+railStart.y)/2;
-        steel=ctx.createLinearGradient(
-          cx-Math.cos(cross)*half,cy-Math.sin(cross)*half,
-          cx+Math.cos(cross)*half,cy+Math.sin(cross)*half
-        );
+        steel=ctx.createLinearGradient(nearJoin.x,railStart.y,railStart.x,nearJoin.y);
       }else{
         const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
         steel=ctx.createLinearGradient(center-half,0,center+half,0);
