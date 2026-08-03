@@ -399,7 +399,9 @@ export class PoolRenderer {
         continue;
       }
       let steel;
-      if(segment.kind==="arc"){
+      if(segment.kind==="joint"){
+        steel=ctx.createRadialGradient(nearJoin.x,nearJoin.y,0,nearJoin.x,nearJoin.y,railWidth*.9);
+      }else if(segment.kind==="arc"){
         const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
         steel=ctx.createRadialGradient(cx,cy,0,cx,cy,railWidth*.9);
       }else if(segment.kind==="slope"){
