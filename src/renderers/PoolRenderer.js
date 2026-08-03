@@ -364,12 +364,12 @@ export class PoolRenderer {
   #railStroke(ctx,w,h,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart){
     ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
     const segments=[];
-    const joinRadius=Math.max(3,w*.006);
+    const joinRadius=Math.max(5,w*.011);
     const jointStart={x:nearJoin.x,y:nearJoin.y+joinRadius};
     const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(jointStart.x,jointStart.y);segments.push({path:a,order:1,kind:"front"});
     const b=new Path2D();
     const slopeLength=Math.max(1,Math.hypot(railStart.x-nearJoin.x,railStart.y-nearJoin.y));
-    const blend=Math.min(.02,(joinRadius*2)/slopeLength);
+    const blend=Math.min(.035,(joinRadius*2.2)/slopeLength);
     const blendPoint={
       x:nearJoin.x+(railStart.x-nearJoin.x)*blend,
       y:nearJoin.y+(railStart.y-nearJoin.y)*blend
