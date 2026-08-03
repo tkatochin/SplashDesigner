@@ -432,6 +432,10 @@ export class PoolRenderer {
       steel.addColorStop(.96,"#11191b");steel.addColorStop(1,"#080e10");
       ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path); */
     }
+    const blendRadius=railWidth*.62;
+    const blend=ctx.createRadialGradient(nearJoin.x,nearJoin.y,0,nearJoin.x,nearJoin.y,blendRadius);
+    blend.addColorStop(0,"rgba(218,226,222,.72)");blend.addColorStop(.48,"rgba(155,169,166,.38)");blend.addColorStop(1,"rgba(155,169,166,0)");
+    ctx.fillStyle=blend;ctx.beginPath();ctx.arc(nearJoin.x,nearJoin.y,blendRadius,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
 
