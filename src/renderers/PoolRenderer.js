@@ -375,7 +375,14 @@ export class PoolRenderer {
       y:nearJoin.y+(railStart.y-nearJoin.y)*blend
     };
     b.moveTo(jointStart.x,jointStart.y);
-    b.quadraticCurveTo(nearJoin.x,nearJoin.y,blendPoint.x,blendPoint.y);
+    const tangentX=blendPoint.x-nearJoin.x,tangentY=blendPoint.y-nearJoin.y;
+    const tangentLength=Math.max(1,Math.hypot(tangentX,tangentY));
+    b.bezierCurveTo(
+      jointStart.x+joinRadius,jointStart.y,
+      blendPoint.x-tangentX/tangentLength*joinRadius,
+      blendPoint.y-tangentY/tangentLength*joinRadius,
+      blendPoint.x,blendPoint.y
+    );
     segments.push({path:b,order:2,kind:"joint"});
     const slope=new Path2D();slope.moveTo(blendPoint.x,blendPoint.y);slope.lineTo(railStart.x,railStart.y);
     segments.push({path:slope,order:2,kind:"slope"});
