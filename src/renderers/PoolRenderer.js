@@ -394,6 +394,10 @@ export class PoolRenderer {
       if(segment.kind!=="slope"){
         ctx.strokeStyle="rgba(45,55,55,.7)";ctx.lineWidth=Math.max(7,w*.009);ctx.stroke(path);
       }
+      if(segment.kind==="slope"){
+        ctx.strokeStyle="#f4f7f4";ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
+        continue;
+      }
       let steel;
       if(segment.kind==="arc"){
         const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
