@@ -408,7 +408,7 @@ export class PoolRenderer {
       steel.addColorStop(0,"#f8fbf8");steel.addColorStop(.08,"#d4ddda");
       steel.addColorStop(.22,"#71807f");steel.addColorStop(.38,"#eef3ef");
       steel.addColorStop(.54,"#aab8b4");steel.addColorStop(.72,"#657371");
-      steel.addColorStop(.9,"#dce5e0");steel.addColorStop(1,"#4d5b5a");
+      steel.addColorStop(.9,"#8b9692");steel.addColorStop(1,"#1f2929");
       ctx.strokeStyle=steel;ctx.lineWidth=Math.max(8,w*.010);ctx.stroke(path);
       /* const diagonal=segment.kind==="slope";
       let steel;
