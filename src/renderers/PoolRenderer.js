@@ -398,8 +398,8 @@ export class PoolRenderer {
         const half=railWidth*.52;
         const cx=(nearJoin.x+railStart.x)/2,cy=(nearJoin.y+railStart.y)/2;
         steel=ctx.createLinearGradient(
-          cx-Math.cos(normal)*half,cy-Math.sin(normal)*half,
-          cx+Math.cos(normal)*half,cy+Math.sin(normal)*half
+          cx+Math.cos(normal)*half,cy+Math.sin(normal)*half,
+          cx-Math.cos(normal)*half,cy-Math.sin(normal)*half
         );
       }else{
         const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
