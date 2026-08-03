@@ -368,7 +368,8 @@ export class PoolRenderer {
     const jointStart={x:nearJoin.x,y:nearJoin.y+joinRadius};
     const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(jointStart.x,jointStart.y);segments.push({path:a,order:1,kind:"front"});
     const b=new Path2D();
-    const blend=.07;
+    const slopeLength=Math.max(1,Math.hypot(railStart.x-nearJoin.x,railStart.y-nearJoin.y));
+    const blend=Math.min(.02,(joinRadius*2)/slopeLength);
     const blendPoint={
       x:nearJoin.x+(railStart.x-nearJoin.x)*blend,
       y:nearJoin.y+(railStart.y-nearJoin.y)*blend
@@ -416,14 +417,10 @@ export class PoolRenderer {
         const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
         steel=ctx.createLinearGradient(center-half,0,center+half,0);
       }
-      if(jointGradient){
-        steel.addColorStop(0,"#f8fbf8");steel.addColorStop(.35,"#d4ddda");
-        steel.addColorStop(.7,"#71807f");steel.addColorStop(1,"#263231");
-      }else{
       steel.addColorStop(0,"#f8fbf8");steel.addColorStop(.08,"#d4ddda");
       steel.addColorStop(.22,"#71807f");steel.addColorStop(.38,"#eef3ef");
       steel.addColorStop(.54,"#aab8b4");steel.addColorStop(.72,"#657371");
-      steel.addColorStop(.9,"#dce5e0");steel.addColorStop(1,"#4d5b5a");}
+      steel.addColorStop(.9,"#dce5e0");steel.addColorStop(1,"#4d5b5a");
       ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path);
       /* const diagonal=segment.kind==="slope";
       let steel;
