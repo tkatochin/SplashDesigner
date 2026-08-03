@@ -381,12 +381,6 @@ export class PoolRenderer {
     segments.sort((left,right)=>left.order-right.order);
     for(const segment of segments){
       const path=segment.path;
-      if(segment.kind!=="slope"){
-        ctx.strokeStyle="rgba(45,55,55,.7)";ctx.lineWidth=Math.max(7,w*.009);ctx.stroke(path);
-      }
-      if(segment.kind==="slope"){
-        // Keep the slope free of a dark outline; its material pass follows.
-      }
       let steel;
       let jointGradient=false;
       if(segment.kind==="joint"){
