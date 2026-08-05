@@ -23,11 +23,16 @@ export class VibraSensorRenderer {
     const topFrontR={x:baseFrontR.x,y:baseFrontR.y-blockHeight*.4};
     const slope=[topBreakL,topBreakR,topFrontR,topFrontL];
     const plate=this.#insetOnSlope(slope,.17,.17,.18,.16);
-    const slit=this.#insetOnSlope(plate,.13,.40,.13,.38);
+    // Preserve the sensor center while rotating the former horizontal slot.
+    const slit=this.#insetOnSlope(plate,.44,.10,.44,.08);
+    const columnBackL={x:plate[0].x,y:breakY};
+    const columnBackR={x:plate[1].x,y:breakY};
+    const columnFrontR={x:plate[2].x,y:baseFrontR.y};
+    const columnFrontL={x:plate[3].x,y:baseFrontL.y};
     return{
       baseBackL,baseBackR,baseFrontL,baseFrontR,
       topBackL,topBackR,topBreakL,topBreakR,topFrontL,topFrontR,
-      slope,plate,slit,width,height
+      slope,plate,slit,columnBackL,columnBackR,columnFrontR,columnFrontL,width,height
     };
   }
 
@@ -37,37 +42,47 @@ export class VibraSensorRenderer {
     const s=this.geometry(g,width,height);
     ctx.save();ctx.lineJoin="round";
 
-    const stone=ctx.createLinearGradient(s.baseBackL.x,0,s.baseFrontR.x,0);
-    stone.addColorStop(0,"#777b74");stone.addColorStop(.48,"#4a504d");stone.addColorStop(1,"#656963");
-    const windowLight=ctx.createLinearGradient(s.topBackL.x,0,s.topFrontL.x,0);
-    windowLight.addColorStop(0,"#a3a79f");windowLight.addColorStop(1,"#7d837d");
-    ctx.fillStyle=windowLight;
-    this.#polygon(ctx,[s.topBackL,s.topBreakL,s.topFrontL,s.baseFrontL,s.baseBackL]);ctx.fill();
-    ctx.fillStyle="#454b47";
-    this.#polygon(ctx,[s.topBreakR,s.topBackR,s.baseBackR,s.baseFrontR,s.topFrontR]);ctx.fill();
-
-    // The front is an opaque cut face. Draw it after both side faces so their
-    // perspective fills cannot bleed into its lower corners.
-    ctx.fillStyle=stone;
-    this.#polygon(ctx,[s.topFrontL,s.topFrontR,s.baseFrontR,s.baseFrontL]);ctx.fill();
-
-    const flat=ctx.createLinearGradient(0,s.topBackL.y,0,s.topBreakL.y);
-    flat.addColorStop(0,"#7a7e77");flat.addColorStop(1,"#555b57");
-    ctx.fillStyle=flat;this.#polygon(ctx,[s.topBackL,s.topBackR,s.topBreakR,s.topBreakL]);ctx.fill();
-    const slope=ctx.createLinearGradient(0,s.topBreakL.y,0,s.topFrontL.y);
-    slope.addColorStop(0,"#6d726c");slope.addColorStop(1,"#484e4a");
-    ctx.fillStyle=slope;this.#polygon(ctx,s.slope);ctx.fill();
-    ctx.strokeStyle="rgba(213,219,210,.38)";ctx.lineWidth=Math.max(1,width*.0012);ctx.stroke();
+    const leftSteel=ctx.createLinearGradient(s.plate[0].x,0,s.plate[3].x,0);
+    leftSteel.addColorStop(0,"#cbd2cf");leftSteel.addColorStop(1,"#848e8b");
+    ctx.fillStyle=leftSteel;
+    this.#polygon(ctx,[s.plate[0],s.plate[3],s.columnFrontL,s.columnBackL]);ctx.fill();
+    const rightFace=ctx.createLinearGradient(s.plate[1].x,0,s.columnFrontR.x+width*.03,0);
+    rightFace.addColorStop(0,"#505b58");rightFace.addColorStop(.72,"#707a76");rightFace.addColorStop(1,"rgba(54,63,60,0)");
+    ctx.fillStyle=rightFace;
+    this.#polygon(ctx,[s.plate[1],s.columnBackR,s.columnFrontR,s.plate[2]]);ctx.fill();
+    const shadowWidth=Math.max(4,width*.012);
+    const sensorShadow=ctx.createLinearGradient(s.columnFrontR.x,0,s.columnFrontR.x+shadowWidth,0);
+    sensorShadow.addColorStop(0,"rgba(30,38,36,.46)");sensorShadow.addColorStop(.58,"rgba(42,50,48,.18)");sensorShadow.addColorStop(1,"rgba(42,50,48,0)");
+    ctx.fillStyle=sensorShadow;this.#polygon(ctx,[s.plate[1],s.plate[2],
+      {x:s.columnFrontR.x+shadowWidth,y:s.columnFrontR.y+width*.004},
+      {x:s.columnBackR.x+shadowWidth,y:s.columnBackR.y+width*.004}]);ctx.fill();
+    const frontSteel=ctx.createLinearGradient(s.columnFrontL.x,0,s.columnFrontR.x,0);
+    frontSteel.addColorStop(0,"#aeb8b5");frontSteel.addColorStop(.34,"#747f7c");
+    frontSteel.addColorStop(.72,"#c6ceca");frontSteel.addColorStop(1,"#68726f");
+    ctx.fillStyle=frontSteel;
+    this.#polygon(ctx,[s.plate[3],s.plate[2],s.columnFrontR,s.columnFrontL]);ctx.fill();
+    // Do not outline the lower/right base edges: those perspective lines would
+    // make the opaque front face look transparent.
+    ctx.strokeStyle="rgba(32,40,39,.42)";ctx.lineWidth=Math.max(1,width*.0012);
+    ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.columnBackL.x,s.columnBackL.y);
+    ctx.moveTo(s.plate[1].x,s.plate[1].y);ctx.lineTo(s.columnBackR.x,s.columnBackR.y);ctx.stroke();
 
     const steel=ctx.createLinearGradient(s.plate[0].x,s.plate[0].y,s.plate[2].x,s.plate[2].y);
     steel.addColorStop(0,"#d8ddda");steel.addColorStop(.42,"#8e9998");steel.addColorStop(.72,"#e3e7e2");steel.addColorStop(1,"#737e7d");
     ctx.fillStyle=steel;this.#polygon(ctx,s.plate);ctx.fill();
-    ctx.strokeStyle="rgba(25,32,31,.72)";ctx.lineWidth=Math.max(1,width*.0015);ctx.stroke();
+    // Let each panel edge inherit the adjacent column face instead of using
+    // one uniform gray outline that visually disconnects the two pieces.
+    ctx.lineWidth=Math.max(1,width*.0015);ctx.lineCap="round";
+    ctx.strokeStyle="#dfe8df";ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.plate[3].x,s.plate[3].y);ctx.stroke();
+    ctx.strokeStyle="#58635f";ctx.beginPath();ctx.moveTo(s.plate[1].x,s.plate[1].y);ctx.lineTo(s.plate[2].x,s.plate[2].y);ctx.stroke();
+    ctx.strokeStyle="#b7c0bb";ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.plate[1].x,s.plate[1].y);ctx.stroke();
+    ctx.strokeStyle="#8b9690";ctx.beginPath();ctx.moveTo(s.plate[3].x,s.plate[3].y);ctx.lineTo(s.plate[2].x,s.plate[2].y);ctx.stroke();
+    ctx.strokeStyle="#dfe8df";ctx.beginPath();ctx.moveTo(s.plate[3].x,s.plate[3].y);ctx.lineTo(s.columnFrontL.x,s.columnFrontL.y);ctx.stroke();
 
     ctx.fillStyle="#171b1a";this.#polygon(ctx,s.slit);ctx.fill();
     if(!active&&Math.floor(time/320)%2===0){
       ctx.save();ctx.shadowColor="#ff1e18";ctx.shadowBlur=Math.max(5,width*.009);
-      ctx.fillStyle="#ff261e";this.#polygon(ctx,this.#insetOnSlope(s.slit,.07,.14,.07,.14));ctx.fill();ctx.restore();
+      ctx.fillStyle="#ff261e";this.#polygon(ctx,this.#lowerLed(s.slit));ctx.fill();ctx.restore();
     }
     ctx.restore();
   }
@@ -78,6 +93,13 @@ export class VibraSensorRenderer {
     return[
       this.#mix(upperL,lowerL,top),this.#mix(upperR,lowerR,top),
       this.#mix(upperR,lowerR,1-bottom),this.#mix(upperL,lowerL,1-bottom)
+    ];
+  }
+  #lowerLed(quad){
+    const topL=this.#mix(quad[0],quad[3],1/3),topR=this.#mix(quad[1],quad[2],1/3);
+    return[
+      this.#mix(topL,topR,.12),this.#mix(topL,topR,.88),
+      this.#mix(quad[3],quad[2],.88),this.#mix(quad[3],quad[2],.12)
     ];
   }
   #polygon(ctx,points){ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);ctx.closePath();}

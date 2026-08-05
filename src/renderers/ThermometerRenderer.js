@@ -13,21 +13,120 @@ export class ThermometerRenderer {
     return Math.hypot(px-g.x,py-g.y)<=g.radius*1.18;
   }
 
-  render(ctx,width,height,temperature){
+  render(ctx,width,height,temperature,pool){
     const g=this.geometry(width,height);
     ctx.save();
-    ctx.shadowColor="rgba(23,28,27,.42)";ctx.shadowBlur=g.radius*.22;ctx.shadowOffsetY=g.radius*.1;
-    ctx.fillStyle="#8b908c";ctx.beginPath();ctx.arc(g.x,g.y,g.radius,0,Math.PI*2);ctx.fill();
-    ctx.shadowColor="transparent";
-    if(temperature.display==="analog")this.#analog(ctx,g,temperature.value);
+    if(temperature.display==="analog"){
+      if(pool)this.#conduit(ctx,g,pool,height);
+      ctx.shadowColor="rgba(23,28,27,.42)";ctx.shadowBlur=g.radius*.22;ctx.shadowOffsetY=g.radius*.1;
+      ctx.fillStyle="#8b908c";ctx.beginPath();ctx.arc(g.x,g.y,g.radius,0,Math.PI*2);ctx.fill();
+      ctx.shadowColor="transparent";
+      this.#analog(ctx,g,temperature.value);
+    }
     else{
-      ctx.fillStyle="#c8cbc3";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.88,0,Math.PI*2);ctx.fill();
+      if(pool)this.#digitalColumn(ctx,g,pool,width,height);
       ctx.fillStyle="#111512";ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.75,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle="rgba(255,255,232,.42)";ctx.lineWidth=Math.max(1,g.radius*.035);
-      ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.7,Math.PI*1.08,Math.PI*1.72);ctx.stroke();
       this.#digital(ctx,g,temperature.value);
     }
     ctx.restore();
+  }
+
+  #digitalColumn(ctx,g,pool,width,height){
+    const bottom=pool.water.backL.y;
+    const rimDepth=Math.max(1,pool.water.backL.y-pool.outer.backL.y);
+    const rearRadius=g.radius*.88;
+    const rearY=g.y-rimDepth*.13;
+
+    // A shallow rear cap and a converging silver band give the column depth
+    // without drawing a floating shape outside the one-point perspective.
+    const rearCap=ctx.createLinearGradient(g.x-rearRadius,rearY,g.x+rearRadius,rearY);
+    rearCap.addColorStop(0,"#7a8582");rearCap.addColorStop(.48,"#eef2ed");rearCap.addColorStop(1,"#8b9692");
+    ctx.fillStyle=rearCap;ctx.beginPath();ctx.moveTo(g.x-rearRadius,rearY);
+    ctx.arc(g.x,rearY,rearRadius,Math.PI,0);ctx.closePath();ctx.fill();
+    const silver=ctx.createLinearGradient(g.x-g.radius,g.y,g.x+g.radius,rearY);
+    silver.addColorStop(0,"#bcc6c2");silver.addColorStop(.5,"#f1f4ef");silver.addColorStop(1,"#8a9591");
+    ctx.fillStyle=silver;ctx.beginPath();ctx.moveTo(g.x-g.radius,g.y);
+    ctx.lineTo(g.x+g.radius,g.y);ctx.lineTo(g.x+rearRadius,rearY);ctx.lineTo(g.x-rearRadius,rearY);ctx.closePath();ctx.fill();
+    const innerShadow=ctx.createLinearGradient(g.x,g.y-rearRadius*.8,g.x+rearRadius,rearY);
+    innerShadow.addColorStop(0,"rgba(45,52,50,.15)");innerShadow.addColorStop(1,"rgba(45,52,50,.52)");
+    ctx.fillStyle=innerShadow;ctx.beginPath();ctx.moveTo(g.x+g.radius*.12,g.y);
+    ctx.lineTo(g.x+g.radius,g.y);ctx.lineTo(g.x+rearRadius,rearY);ctx.lineTo(g.x+rearRadius*.52,rearY);ctx.closePath();ctx.fill();
+
+    const rightShadowWidth=Math.max(5,rimDepth*.16);
+    const rightShadow=ctx.createLinearGradient(g.x+g.radius,0,g.x+g.radius+rightShadowWidth,0);
+    rightShadow.addColorStop(0,"rgba(31,38,37,.48)");rightShadow.addColorStop(.58,"rgba(45,53,51,.2)");rightShadow.addColorStop(1,"rgba(45,53,51,0)");
+    ctx.fillStyle=rightShadow;ctx.beginPath();ctx.moveTo(g.x+g.radius,g.y);
+    ctx.lineTo(g.x+g.radius+rightShadowWidth,g.y+rimDepth*.08);
+    ctx.lineTo(g.x+g.radius+rightShadowWidth,bottom-rimDepth*.12);
+    ctx.lineTo(g.x+g.radius,bottom);ctx.closePath();ctx.fill();
+
+    const steel=ctx.createLinearGradient(g.x-g.radius,g.y+g.radius*.7,g.x+g.radius,g.y-g.radius*.7);
+    steel.addColorStop(0,"#8b9692");steel.addColorStop(.22,"#e1e8e2");
+    steel.addColorStop(.48,"#a0aba7");steel.addColorStop(.72,"#f0f3ed");steel.addColorStop(1,"#7a8581");
+    ctx.fillStyle=steel;ctx.beginPath();ctx.moveTo(g.x-g.radius,bottom);ctx.lineTo(g.x-g.radius,g.y);
+    ctx.arc(g.x,g.y,g.radius,Math.PI,0);ctx.lineTo(g.x+g.radius,bottom);ctx.closePath();ctx.fill();
+    const upperFrame=ctx.createLinearGradient(g.x-g.radius,g.y-g.radius,g.x+g.radius,g.y-g.radius);
+    upperFrame.addColorStop(0,"rgba(238,246,240,.95)");upperFrame.addColorStop(.42,"rgba(175,187,182,.82)");upperFrame.addColorStop(1,"rgba(112,124,120,.72)");
+    ctx.strokeStyle=upperFrame;ctx.lineWidth=Math.max(1,width*.0013);ctx.stroke();
+    ctx.strokeStyle="#e1ebe1";ctx.lineWidth=Math.max(1,width*.0015);
+    ctx.beginPath();ctx.moveTo(g.x-g.radius,bottom);ctx.lineTo(g.x-g.radius,g.y);ctx.stroke();
+
+    ctx.strokeStyle="#edf2ec";ctx.lineWidth=Math.max(1,width*.0011);
+    ctx.beginPath();ctx.moveTo(g.x-g.radius,g.y);ctx.lineTo(g.x-rearRadius,rearY);
+    ctx.moveTo(g.x+g.radius,g.y);ctx.lineTo(g.x+rearRadius,rearY);ctx.stroke();
+
+    const recess=ctx.createRadialGradient(g.x-g.radius*.12,g.y-g.radius*.12,g.radius*.35,g.x,g.y,g.radius*.8);
+    recess.addColorStop(0,"#4f5957");recess.addColorStop(.82,"#202625");recess.addColorStop(1,"#0f1312");
+    ctx.fillStyle=recess;ctx.beginPath();ctx.arc(g.x,g.y,g.radius*.79,0,Math.PI*2);ctx.fill();
+  }
+
+  #conduit(ctx,g,pool,height){
+    const waterY=pool.water.backL.y;
+    const rimBackY=pool.outer.backL.y;
+    const endY=Math.min(pool.water.nearL.y,waterY+height*.075);
+    const p0={x:g.x,y:g.y+g.radius*.92};
+    const p1={x:g.x-g.radius*.16,y:g.y+g.radius*1.45};
+    const p2={x:g.x+g.radius*.28,y:rimBackY-g.radius*.22};
+    const p3={x:g.x+g.radius*.16,y:waterY+g.radius*.1};
+    const p4={x:g.x+g.radius*.12,y:waterY+g.radius*.42};
+    const p5={x:g.x+g.radius*.12,y:endY-g.radius*.25};
+    const p6={x:g.x+g.radius*.12,y:endY};
+    const points=[];
+    for(let index=0;index<=14;index++)points.push(this.#cubic(p0,p1,p2,p3,index/14));
+    for(let index=1;index<=10;index++)points.push(this.#cubic(p3,p4,p5,p6,index/10));
+    const submerged=points.findIndex(point=>point.y>=waterY);
+    const visibleEnd=submerged<0?points.length-1:Math.max(0,submerged);
+    const path=new Path2D();path.moveTo(points[0].x,points[0].y);
+    for(let index=1;index<=visibleEnd;index++)path.lineTo(points[index].x,points[index].y);
+    const pipeWidth=Math.max(5,g.radius*.18);
+    ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.strokeStyle="rgba(29,36,36,.72)";ctx.lineWidth=pipeWidth*1.55;ctx.stroke(path);
+    ctx.strokeStyle="#9da8a6";ctx.lineWidth=pipeWidth;ctx.stroke(path);
+    ctx.strokeStyle="rgba(244,250,244,.72)";ctx.lineWidth=Math.max(1,pipeWidth*.2);ctx.stroke(path);
+    for(let index=2;index<Math.max(2,visibleEnd-1);index+=2){
+      const before=points[index-1],after=points[index+1],point=points[index];
+      const length=Math.max(.001,Math.hypot(after.x-before.x,after.y-before.y));
+      const nx=-(after.y-before.y)/length,ny=(after.x-before.x)/length;
+      ctx.strokeStyle="rgba(50,59,58,.72)";ctx.lineWidth=Math.max(1,pipeWidth*.18);
+      ctx.beginPath();ctx.moveTo(point.x-nx*pipeWidth*.62,point.y-ny*pipeWidth*.62);
+      ctx.lineTo(point.x+nx*pipeWidth*.62,point.y+ny*pipeWidth*.62);ctx.stroke();
+    }
+    if(submerged>=0){
+      for(let index=submerged;index<points.length-1;index++){
+        const a=points[index],b=points[index+1],t=(index-submerged)/Math.max(1,points.length-1-submerged);
+        const alpha=.48*(1-t);
+        ctx.strokeStyle=`rgba(32,104,121,${alpha*.8})`;ctx.lineWidth=pipeWidth*1.42;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        ctx.strokeStyle=`rgba(201,219,211,${alpha})`;ctx.lineWidth=pipeWidth*.8;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  #cubic(a,b,c,d,t){
+    const u=1-t,aa=u*u*u,bb=3*u*u*t,cc=3*u*t*t,dd=t*t*t;
+    return{x:a.x*aa+b.x*bb+c.x*cc+d.x*dd,y:a.y*aa+b.y*bb+c.y*cc+d.y*dd};
   }
 
   #digital(ctx,g,value){
