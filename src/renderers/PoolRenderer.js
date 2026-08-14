@@ -99,7 +99,7 @@ export class PoolRenderer {
 
   render(ctx,width,height){
     const g=this.geometry(width,height);
-    const leftStructure=this.#leftStructure(g,width);
+    const leftStructure=this.#leftStructure(g);
     g.leftOpening={
       ...leftStructure,
       sillLeftY:this.#projectYAtX({x:leftStructure.pillarLeft,y:g.water.backL.y},g.vanishing,0)
@@ -341,11 +341,6 @@ export class PoolRenderer {
     // both horizon endpoints share the same height before the sloped rail joins.
     const railStart={x:farX-w*.08,y:h*.635};
     const farShoulder={x:farX,y:h*.545};
-    const cornerRadius=Math.max(10,w*.018);
-    const railEnd={
-      x:frontBase.x+cornerRadius,
-      y:this.#projectYAtX(railStart,g.vanishing,frontBase.x+cornerRadius)
-    };
     const nearJoin={x:frontBase.x,y:h*.81};
     const railWidth=Math.max(8,w*.010);
     ctx.save();
@@ -362,17 +357,12 @@ export class PoolRenderer {
     const slope=new Path2D();slope.moveTo(nearJoin.x,nearJoin.y);slope.lineTo(railStart.x,railStart.y);
     segments.push({path:slope,order:2,kind:"slope"});
     const c=new Path2D();c.moveTo(farX,farBaseY);c.lineTo(farShoulder.x,farShoulder.y);segments.push({path:c,order:0,kind:"rear"});
-    const slopeDx=railStart.x-nearJoin.x,slopeDy=railStart.y-nearJoin.y;
-    const slopeLen=Math.max(1,Math.hypot(slopeDx,slopeDy));
-    const bend= Math.min(w*.06,slopeLen*.28);
-
     const d=new Path2D();d.moveTo(railStart.x,railStart.y);d.lineTo(farShoulder.x,farShoulder.y);
     segments.push({path:d,order:3,kind:"horizon"});
     segments.sort((left,right)=>left.order-right.order);
     for(const segment of segments){
       const path=segment.path;
       let steel;
-      let jointGradient=false;
       if(segment.kind==="horizon"){
         const dx=railStart.x-farShoulder.x,dy=railStart.y-farShoulder.y;
         const axis=Math.atan2(dy,dx);
@@ -444,7 +434,7 @@ export class PoolRenderer {
   #quad(ctx,a,b,c,d){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();}
   #mix(a,b,t){return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};}
   #pointAtY(a,b,y){return this.#mix(a,b,(y-a.y)/(b.y-a.y));}
-  #leftStructure(g,w){
+  #leftStructure(g){
     const backY=g.water.backL.y;
     const drainLeft=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,backY);
     const pillarRight=drainLeft.x;
