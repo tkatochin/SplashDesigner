@@ -112,13 +112,13 @@ export class PoolRenderer {
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
     this.#steps(ctx,width,height,g);
-    this.thermometerRenderer.render(ctx,width,height,this.temperature,g);
-    this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
     const time=performance.now();
     for(const overflow of this.overflows){
       this.overflowRenderer.render(ctx,g,width,height,overflow,time);
     }
     this.overflowRenderer.render(ctx,g,width,height,this.madmaxOverflow,time);
+    this.thermometerRenderer.render(ctx,width,height,this.temperature,g);
+    this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
     // Vibra bubbles must sit above overflow water when both effects overlap.
     this.vibraBubbleRenderer.render(ctx,g,width);
     // The sensor is a solid object above the rim. Keep grout and overflowing
