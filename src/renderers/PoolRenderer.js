@@ -109,6 +109,7 @@ export class PoolRenderer {
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
+    this.thermometerRenderer.render(ctx,width,height,this.temperature,g);
     this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
@@ -123,7 +124,6 @@ export class PoolRenderer {
     // The sensor is a solid object above the rim. Keep grout and overflowing
     // water behind it instead of letting either sheet cross its front faces.
     this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,time);
-    this.thermometerRenderer.render(ctx,width,height,this.temperature,g);
     const drainAmount=Math.min(1,this.overflows.reduce((sum,overflow)=>sum+overflow.levels().rim,0)+this.madmaxOverflow.levels().rim);
     this.drainRenderer.renderOpenings(ctx,g,drainAmount);
     this.madmaxWaterRenderer.renderImpact(ctx,g,width,height,this.madmax,time);
