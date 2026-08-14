@@ -109,11 +109,11 @@ export class PoolRenderer {
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
-    this.thermometerRenderer.render(ctx,width,height,this.temperature,g);
-    this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
     this.#steps(ctx,width,height,g);
+    this.thermometerRenderer.render(ctx,width,height,this.temperature,g);
+    this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
     const time=performance.now();
     for(const overflow of this.overflows){
       this.overflowRenderer.render(ctx,g,width,height,overflow,time);
