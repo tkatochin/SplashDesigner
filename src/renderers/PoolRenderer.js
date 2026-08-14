@@ -334,29 +334,23 @@ export class PoolRenderer {
   }
 
   #handrail(ctx,w,h,g){
-    const frontBase={x:w*.13,y:h*.985};
+    const frontBase={x:w*.05,y:h*.985};
     const farBaseY=g.water.nearL.y-h*.012;
     const farX=this.#projectX(frontBase,g.vanishing,farBaseY);
     // The rear post meets the lower end of a true upper semicircular bend;
-    // both arc endpoints share the same height before the sloped rail joins.
-    const railStart={x:farX-w*.06,y:h*.545};
-    const farShoulder={x:farX,y:railStart.y};
+    // both horizon endpoints share the same height before the sloped rail joins.
+    const railStart={x:farX-w*.08,y:h*.635};
+    const farShoulder={x:farX,y:h*.545};
     const cornerRadius=Math.max(10,w*.018);
     const railEnd={
       x:frontBase.x+cornerRadius,
       y:this.#projectYAtX(railStart,g.vanishing,frontBase.x+cornerRadius)
     };
-    const nearJoin={x:frontBase.x,y:h*.71};
-    const path=new Path2D();
-    path.moveTo(farX,farBaseY);
-    path.lineTo(farShoulder.x,farShoulder.y);
-    path.bezierCurveTo(farX,farShoulder.y-h*.035,railStart.x+w*.004,railStart.y,railStart.x,railStart.y);
-    path.quadraticCurveTo(frontBase.x+cornerRadius*.18,railEnd.y+cornerRadius*.12,nearJoin.x,nearJoin.y);
-    path.lineTo(frontBase.x,frontBase.y);
+    const nearJoin={x:frontBase.x,y:h*.81};
     const railWidth=Math.max(8,w*.010);
     ctx.save();
     ctx.fillStyle="rgba(35,44,46,.5)";
-    ctx.beginPath();ctx.ellipse(frontBase.x,frontBase.y,railWidth*1.45,railWidth*.42,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(frontBase.x,frontBase.y+2,railWidth*1.15,railWidth*.82,0,0,Math.PI*2);ctx.fill();
     ctx.restore();
     this.#railStroke(ctx,w,h,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart);
   }
@@ -368,29 +362,27 @@ export class PoolRenderer {
     const slope=new Path2D();slope.moveTo(nearJoin.x,nearJoin.y);slope.lineTo(railStart.x,railStart.y);
     segments.push({path:slope,order:2,kind:"slope"});
     const c=new Path2D();c.moveTo(farX,farBaseY);c.lineTo(farShoulder.x,farShoulder.y);segments.push({path:c,order:0,kind:"rear"});
-    const d=new Path2D();d.moveTo(railStart.x,railStart.y);
     const slopeDx=railStart.x-nearJoin.x,slopeDy=railStart.y-nearJoin.y;
     const slopeLen=Math.max(1,Math.hypot(slopeDx,slopeDy));
     const bend= Math.min(w*.06,slopeLen*.28);
-    d.bezierCurveTo(
-      railStart.x+slopeDx/slopeLen*bend,railStart.y+slopeDy/slopeLen*bend,
-      farShoulder.x,farShoulder.y-bend,
-      farShoulder.x,farShoulder.y
-    );
-    segments.push({path:d,order:3,kind:"arc"});
+
+    const d=new Path2D();d.moveTo(railStart.x,railStart.y);d.lineTo(farShoulder.x,farShoulder.y);
+    segments.push({path:d,order:3,kind:"horizon"});
     segments.sort((left,right)=>left.order-right.order);
     for(const segment of segments){
       const path=segment.path;
       let steel;
       let jointGradient=false;
-      if(segment.kind==="joint"){
-        const cx=nearJoin.x+railWidth*.5,cy=nearJoin.y+railWidth*.5;
-        const radius=Math.max(1,Math.hypot(cx-nearJoin.x,cy-nearJoin.y));
-        steel=ctx.createRadialGradient(cx,cy,0,cx,cy,radius);
-        jointGradient=true;
-      }else if(segment.kind==="arc"){
+      if(segment.kind==="horizon"){
+        const dx=railStart.x-farShoulder.x,dy=railStart.y-farShoulder.y;
+        const axis=Math.atan2(dy,dx);
+        const normal=axis-Math.PI/2;
+        const half=railWidth*.52;
         const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
-        steel=ctx.createRadialGradient(cx,cy,0,cx,cy,railWidth*.9);
+        steel=ctx.createLinearGradient(
+          cx-Math.cos(normal)*half,cy-Math.sin(normal)*half,
+          cx+Math.cos(normal)*half,cy+Math.sin(normal)*half
+        );
       }else if(segment.kind==="slope"){
         const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
         const axis=Math.atan2(dy,dx);
@@ -406,31 +398,10 @@ export class PoolRenderer {
         steel=ctx.createLinearGradient(center-half,0,center+half,0);
       }
       steel.addColorStop(0,"#f8fbf8");steel.addColorStop(.08,"#d4ddda");
-      steel.addColorStop(.22,"#71807f");steel.addColorStop(.38,"#eef3ef");
+      steel.addColorStop(.22,"#c1d0cf");steel.addColorStop(.38,"#eef3ef");
       steel.addColorStop(.54,"#aab8b4");steel.addColorStop(.72,"#657371");
       steel.addColorStop(.9,"#8b9692");steel.addColorStop(1,"#1f2929");
       ctx.strokeStyle=steel;ctx.lineWidth=Math.max(8,w*.010);ctx.stroke(path);
-      /* const diagonal=segment.kind==="slope";
-      let steel;
-      if(segment.kind==="arc"){
-        const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
-        steel=ctx.createRadialGradient(cx,cy,0,cx,cy,railWidth*.8);
-      }else if(diagonal){
-        const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
-        const length=Math.max(1,Math.hypot(dx,dy));
-        const nx=-dy/length,ny=dx/length,half=railWidth*.52;
-        const cx=(nearJoin.x+railStart.x)/2,cy=(nearJoin.y+railStart.y)/2;
-        steel=ctx.createLinearGradient(cx-nx*half,cy-ny*half,cx+nx*half,cy+ny*half);
-      }else{
-        const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
-        steel=ctx.createLinearGradient(center-half,0,center+half,0);
-      }
-      steel.addColorStop(0,"#ffffff");steel.addColorStop(.055,"#ffffff");
-      steel.addColorStop(.14,"#c4cfcc");steel.addColorStop(.27,"#596768");
-      steel.addColorStop(.40,"#f1f6f1");steel.addColorStop(.53,"#a9b7b3");
-      steel.addColorStop(.70,"#526061");steel.addColorStop(.88,"#242e30");
-      steel.addColorStop(.96,"#11191b");steel.addColorStop(1,"#080e10");
-      ctx.strokeStyle=steel;ctx.lineWidth=Math.max(5,w*.0065);ctx.stroke(path); */
     }
     ctx.restore();
   }
