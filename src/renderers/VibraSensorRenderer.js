@@ -50,23 +50,11 @@ export class VibraSensorRenderer {
     rightFace.addColorStop(0,"#505b58");rightFace.addColorStop(.72,"#707a76");rightFace.addColorStop(1,"rgba(54,63,60,0)");
     ctx.fillStyle=rightFace;
     this.#polygon(ctx,[s.plate[1],s.columnBackR,s.columnFrontR,s.plate[2]]);ctx.fill();
-    const shadowWidth=Math.max(4,width*.012);
-    const sensorShadow=ctx.createLinearGradient(s.columnFrontR.x,0,s.columnFrontR.x+shadowWidth,0);
-    sensorShadow.addColorStop(0,"rgba(30,38,36,.46)");sensorShadow.addColorStop(.58,"rgba(42,50,48,.18)");sensorShadow.addColorStop(1,"rgba(42,50,48,0)");
-    ctx.fillStyle=sensorShadow;this.#polygon(ctx,[s.plate[1],s.plate[2],
-      {x:s.columnFrontR.x+shadowWidth,y:s.columnFrontR.y+width*.004},
-      {x:s.columnBackR.x+shadowWidth,y:s.columnBackR.y+width*.004}]);ctx.fill();
     const frontSteel=ctx.createLinearGradient(s.columnFrontL.x,0,s.columnFrontR.x,0);
     frontSteel.addColorStop(0,"#aeb8b5");frontSteel.addColorStop(.34,"#747f7c");
     frontSteel.addColorStop(.72,"#c6ceca");frontSteel.addColorStop(1,"#68726f");
     ctx.fillStyle=frontSteel;
     this.#polygon(ctx,[s.plate[3],s.plate[2],s.columnFrontR,s.columnFrontL]);ctx.fill();
-    // Do not outline the lower/right base edges: those perspective lines would
-    // make the opaque front face look transparent.
-    ctx.strokeStyle="rgba(32,40,39,.42)";ctx.lineWidth=Math.max(1,width*.0012);
-    ctx.beginPath();ctx.moveTo(s.plate[0].x,s.plate[0].y);ctx.lineTo(s.columnBackL.x,s.columnBackL.y);
-    ctx.moveTo(s.plate[1].x,s.plate[1].y);ctx.lineTo(s.columnBackR.x,s.columnBackR.y);ctx.stroke();
-
     const steel=ctx.createLinearGradient(s.plate[0].x,s.plate[0].y,s.plate[2].x,s.plate[2].y);
     steel.addColorStop(0,"#d8ddda");steel.addColorStop(.42,"#8e9998");steel.addColorStop(.72,"#e3e7e2");steel.addColorStop(1,"#737e7d");
     ctx.fillStyle=steel;this.#polygon(ctx,s.plate);ctx.fill();
