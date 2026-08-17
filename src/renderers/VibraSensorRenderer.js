@@ -1,6 +1,11 @@
 /** Draws the sloped infrared sensor block on the right side of the back rim. */
 export class VibraSensorRenderer {
   geometry(g,width,height){
+    const madmaxSide=Math.max(20,Math.min(34,Math.min(width,height)*.055));
+    const madmaxTile=Math.max(38,height*.075);
+    const madmaxGrout=Math.floor((height*.52-.001)/madmaxTile)*madmaxTile;
+    const madmaxTop=madmaxGrout-madmaxTile*2-madmaxSide*.5;
+    const equipmentVanishing={x:width*.5,y:madmaxTop};
     const center=.83,half=.07;
     const baseFrontL=this.#mix(g.water.backL,g.water.backR,center-half);
     const baseFrontR=this.#mix(g.water.backL,g.water.backR,center+half);
@@ -28,8 +33,8 @@ export class VibraSensorRenderer {
     // The rear lower corners sit directly below the upper plate corners.  Do
     // not extend these edges all the way to the back rim: that turns the
     // visible column side into an unrelated long perspective wedge.
-    const columnBackL={x:plate[0].x,y:this.#yAtX(baseFrontL,g.vanishing,plate[0].x)};
-    const columnBackR={x:plate[1].x,y:this.#yAtX(baseFrontR,g.vanishing,plate[1].x)};
+    const columnBackL={x:plate[0].x,y:this.#yAtX(baseFrontL,equipmentVanishing,plate[0].x)};
+    const columnBackR={x:plate[1].x,y:this.#yAtX(baseFrontR,equipmentVanishing,plate[1].x)};
     const columnFrontR={x:plate[2].x,y:baseFrontR.y};
     const columnFrontL={x:plate[3].x,y:baseFrontL.y};
     return{
