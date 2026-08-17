@@ -319,12 +319,14 @@ export class PoolRenderer {
     ctx.strokeStyle="rgba(218,222,214,.27)";ctx.lineWidth=1;
     for(let x=0;x<=w;x+=w/3.25){
       const bottom={x,y:h};
-      const rimX=this.#projectX(bottom,g.vanishing,top);
+      const topX=this.#projectX(bottom,g.vanishing,top);
+      const treadX=this.#projectX(bottom,g.vanishing,treadTop);
       const riser2X=this.#projectX(bottom,g.vanishing,riser2Top);
+      const floorX=this.#projectX(bottom,g.vanishing,floorTop);
       ctx.beginPath();
-      ctx.moveTo(rimX,top);ctx.lineTo(rimX,treadTop);
+      ctx.moveTo(topX,top);ctx.lineTo(treadX,treadTop);
       ctx.lineTo(riser2X,riser2Top);
-      ctx.lineTo(riser2X,floorTop);
+      ctx.lineTo(floorX,floorTop);
       ctx.lineTo(x,h);ctx.stroke();
     }
     // Step and floor edges recede toward the same vanishing point as the
