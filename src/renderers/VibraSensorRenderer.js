@@ -28,8 +28,8 @@ export class VibraSensorRenderer {
     // The rear lower corners sit directly below the upper plate corners.  Do
     // not extend these edges all the way to the back rim: that turns the
     // visible column side into an unrelated long perspective wedge.
-    const columnBackL={x:plate[0].x,y:breakY};
-    const columnBackR={x:plate[1].x,y:breakY};
+    const columnBackL={x:plate[0].x,y:this.#yAtX(baseFrontL,g.vanishing,plate[0].x)};
+    const columnBackR={x:plate[1].x,y:this.#yAtX(baseFrontR,g.vanishing,plate[1].x)};
     const columnFrontR={x:plate[2].x,y:baseFrontR.y};
     const columnFrontL={x:plate[3].x,y:baseFrontL.y};
     return{
@@ -105,6 +105,10 @@ export class VibraSensorRenderer {
   #projectToY(point,vanishing,y){
     const ratio=(y-vanishing.y)/(point.y-vanishing.y);
     return{x:vanishing.x+(point.x-vanishing.x)*ratio,y};
+  }
+  #yAtX(point,vanishing,x){
+    const ratio=(x-vanishing.x)/(point.x-vanishing.x);
+    return vanishing.y+(point.y-vanishing.y)*ratio;
   }
   #mix(a,b,t){return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};}
 }

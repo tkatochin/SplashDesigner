@@ -320,12 +320,13 @@ export class PoolRenderer {
     for(let x=0;x<=w;x+=w/3.25){
       const bottom={x,y:h};
       const rimX=this.#projectX(bottom,g.vanishing,top);
-      const riser2X=this.#projectX(bottom,g.vanishing,riser2Top);
+      const riser2X=this.#projectX({x:rimX,y:treadTop},g.vanishing,riser2Top);
+      const floorX=this.#projectX({x:riser2X,y:floorTop},g.vanishing,h);
       ctx.beginPath();
       ctx.moveTo(rimX,top);ctx.lineTo(rimX,treadTop);
       ctx.lineTo(riser2X,riser2Top);
       ctx.lineTo(riser2X,floorTop);
-      ctx.lineTo(x,h);ctx.stroke();
+      ctx.lineTo(floorX,h);ctx.stroke();
     }
     ctx.beginPath();
     for(const y of [top,treadTop,riser2Top,floorTop]){ctx.moveTo(0,y);ctx.lineTo(w,y);}
