@@ -327,9 +327,14 @@ export class PoolRenderer {
       ctx.lineTo(riser2X,floorTop);
       ctx.lineTo(x,h);ctx.stroke();
     }
-    ctx.beginPath();
-    for(const y of [top,treadTop,riser2Top,floorTop]){ctx.moveTo(0,y);ctx.lineTo(w,y);}
-    ctx.stroke();
+    // Step and floor edges recede toward the same vanishing point as the
+    // pool walls.  Full-width screen-horizontal strokes make the perspective
+    // visibly diverge when the viewport is widened.
+    for(const y of [top,treadTop,riser2Top,floorTop]){
+      const left=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,y);
+      const right=this.#pointAtY(g.sideWalls.rightCorner,g.sideWalls.rightNear,y);
+      ctx.beginPath();ctx.moveTo(left.x,y);ctx.lineTo(right.x,y);ctx.stroke();
+    }
 
   }
 

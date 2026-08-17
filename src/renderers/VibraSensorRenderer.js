@@ -25,8 +25,11 @@ export class VibraSensorRenderer {
     const plate=this.#insetOnSlope(slope,.17,.17,.18,.16);
     // Preserve the sensor center while rotating the former horizontal slot.
     const slit=this.#insetOnSlope(plate,.44,.10,.44,.08);
-    const columnBackL={x:plate[0].x,y:breakY};
-    const columnBackR={x:plate[1].x,y:breakY};
+    // The column's rear lower corners are the projected base corners.  Using
+    // the plate x-coordinate here made the bottom side edges vertical instead
+    // of receding toward the scene vanishing point.
+    const columnBackL=baseBackL;
+    const columnBackR=baseBackR;
     const columnFrontR={x:plate[2].x,y:baseFrontR.y};
     const columnFrontL={x:plate[3].x,y:baseFrontL.y};
     return{
