@@ -1,7 +1,8 @@
 /** Draws the sloped infrared sensor block on the right side of the back rim. */
 export class VibraSensorRenderer {
   geometry(g,width,height){
-    const madmaxSide=Math.max(20,Math.min(34,Math.min(width,height)*.055));
+    const madmaxRadius=Math.max(20,Math.min(34,Math.min(width,height)*.055));
+    const madmaxSide=madmaxRadius*2;
     const madmaxTile=Math.max(38,height*.075);
     const madmaxGrout=Math.floor((height*.52-.001)/madmaxTile)*madmaxTile;
     const madmaxTop=madmaxGrout-madmaxTile*2-madmaxSide*.5;
