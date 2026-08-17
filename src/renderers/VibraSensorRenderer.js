@@ -33,10 +33,12 @@ export class VibraSensorRenderer {
     // The rear lower corners sit directly below the upper plate corners.  Do
     // not extend these edges all the way to the back rim: that turns the
     // visible column side into an unrelated long perspective wedge.
-    const columnBackL={x:plate[0].x,y:this.#yAtX(baseFrontL,equipmentVanishing,plate[0].x)};
-    const columnBackR={x:plate[1].x,y:this.#yAtX(baseFrontR,equipmentVanishing,plate[1].x)};
     const columnFrontR={x:plate[2].x,y:baseFrontR.y};
     const columnFrontL={x:plate[3].x,y:baseFrontL.y};
+    // Use the actual visible lower side endpoints.  baseFrontL/R belong to
+    // the un-inset bath geometry and have a different X than the column edge.
+    const columnBackL={x:plate[0].x,y:this.#yAtX(columnFrontL,equipmentVanishing,plate[0].x)};
+    const columnBackR={x:plate[1].x,y:this.#yAtX(columnFrontR,equipmentVanishing,plate[1].x)};
     return{
       baseBackL,baseBackR,baseFrontL,baseFrontR,
       topBackL,topBackR,topBreakL,topBreakR,topFrontL,topFrontR,
