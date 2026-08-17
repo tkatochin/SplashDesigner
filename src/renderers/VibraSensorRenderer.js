@@ -1,12 +1,6 @@
 /** Draws the sloped infrared sensor block on the right side of the back rim. */
 export class VibraSensorRenderer {
   geometry(g,width,height){
-    const madmaxRadius=Math.max(20,Math.min(34,Math.min(width,height)*.055));
-    const madmaxSide=madmaxRadius*2;
-    const madmaxTile=Math.max(38,height*.075);
-    const madmaxGrout=Math.floor((height*.52-.001)/madmaxTile)*madmaxTile;
-    const madmaxTop=madmaxGrout-madmaxTile*2-madmaxSide*.5;
-    const equipmentVanishing={x:width*.5,y:madmaxTop};
     const center=.83,half=.07;
     const baseFrontL=this.#mix(g.water.backL,g.water.backR,center-half);
     const baseFrontR=this.#mix(g.water.backL,g.water.backR,center+half);
@@ -38,8 +32,8 @@ export class VibraSensorRenderer {
     const columnFrontL={x:plate[3].x,y:baseFrontL.y};
     // Use the actual visible lower side endpoints.  baseFrontL/R belong to
     // the un-inset bath geometry and have a different X than the column edge.
-    const columnBackL={x:plate[0].x,y:this.#yAtX(columnFrontL,equipmentVanishing,plate[0].x)};
-    const columnBackR={x:plate[1].x,y:this.#yAtX(columnFrontR,equipmentVanishing,plate[1].x)};
+    const columnBackL={x:plate[0].x,y:this.#yAtX(columnFrontL,g.vanishing,plate[0].x)};
+    const columnBackR={x:plate[1].x,y:this.#yAtX(columnFrontR,g.vanishing,plate[1].x)};
     return{
       baseBackL,baseBackR,baseFrontL,baseFrontR,
       topBackL,topBackR,topBreakL,topBreakR,topFrontL,topFrontR,
