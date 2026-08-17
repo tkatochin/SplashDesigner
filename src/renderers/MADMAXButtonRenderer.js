@@ -11,7 +11,9 @@ export class MADMAXButtonRenderer {
 
   hitTest(px,py,width,height){
     const g=this.geometry(width,height);
-    return Math.hypot(px-g.x,py-g.y)<=g.buttonRadius*1.28;
+    // Include the black bezel and a small margin beyond it so the physical
+    // button does not require pixel-perfect tapping.
+    return Math.hypot(px-g.x,py-g.y)<=g.buttonRadius*1.55;
   }
 
   render(ctx,width,height,pressed=false){
@@ -41,7 +43,7 @@ export class MADMAXButtonRenderer {
   }
 
   #letters(ctx,g){
-    const size=g.side*.24,targetWidth=g.side*.215;
+    const size=g.side*.27,targetWidth=g.side*.24;
     ctx.fillStyle="#121719";ctx.font=`900 ${size}px "Arial Black", "Helvetica Neue", sans-serif`;
     ctx.textAlign="center";ctx.textBaseline="middle";
     const positions={

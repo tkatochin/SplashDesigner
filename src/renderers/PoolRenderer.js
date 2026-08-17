@@ -4,10 +4,10 @@ import { OverflowRenderer } from "./OverflowRenderer.js?v=0017v";
 import { WaterReflectionRenderer } from "./WaterReflectionRenderer.js?v=0020d";
 import { DrainGrateRenderer } from "./DrainGrateRenderer.js?v=0023l";
 import { WaterTemperature } from "../devices/WaterTemperature.js?v=0010a";
-import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0010n";
+import { ThermometerRenderer } from "./ThermometerRenderer.js?v=0024c";
 import { SteamRenderer } from "./SteamRenderer.js?v=0010n";
 import { VibraSensor } from "../devices/VibraSensor.js?v=0011i";
-import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0011l";
+import { VibraSensorRenderer } from "./VibraSensorRenderer.js?v=0024c";
 import { VibraBubbleRenderer } from "./VibraBubbleRenderer.js?v=0011l";
 import { MADMAXDevice } from "../devices/MADMAXDevice.js?v=0012h";
 import { MADMAXOverflowEffect } from "../effects/MADMAXOverflowEffect.js?v=0012c";
@@ -99,19 +99,16 @@ export class PoolRenderer {
 
   render(ctx,width,height){
     const g=this.geometry(width,height);
-    const leftStructure=this.#leftStructure(g,width);
+    const leftStructure=this.#leftStructure(g);
     g.leftOpening={
       ...leftStructure,
       sillLeftY:this.#projectYAtX({x:leftStructure.pillarLeft,y:g.water.backL.y},g.vanishing,0)
     };
     this.#wall(ctx,width,height,g);
     this.madmaxButtonRenderer.render(ctx,width,height,this.madmax.pressed);
-    this.thermometerRenderer.render(ctx,width,height,this.temperature);
     this.#rimsBackAndSides(ctx,g);
     this.drainRenderer.renderBase(ctx,g);
     this.#water(ctx,g,width,height);
-    this.vibraBubbleRenderer.render(ctx,g,width);
-    this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
     this.#nearRim(ctx,g);
     this.#rimSurfaceLines(ctx,width,height,g);
     this.#steps(ctx,width,height,g);
@@ -120,6 +117,10 @@ export class PoolRenderer {
       this.overflowRenderer.render(ctx,g,width,height,overflow,time);
     }
     this.overflowRenderer.render(ctx,g,width,height,this.madmaxOverflow,time);
+    this.thermometerRenderer.render(ctx,width,height,this.temperature,g);
+    this.madmaxWaterRenderer.renderColumn(ctx,g,width,height,this.madmax,performance.now());
+    // Vibra bubbles must sit above overflow water when both effects overlap.
+    this.vibraBubbleRenderer.render(ctx,g,width);
     // The sensor is a solid object above the rim. Keep grout and overflowing
     // water behind it instead of letting either sheet cross its front faces.
     this.vibraSensorRenderer.render(ctx,g,width,height,this.vibraSensor.active,time);
@@ -319,12 +320,13 @@ export class PoolRenderer {
     for(let x=0;x<=w;x+=w/3.25){
       const bottom={x,y:h};
       const rimX=this.#projectX(bottom,g.vanishing,top);
-      const riser2X=this.#projectX(bottom,g.vanishing,riser2Top);
+      const riser2X=this.#projectX({x:rimX,y:treadTop},g.vanishing,riser2Top);
+      const floorX=this.#projectX({x:riser2X,y:floorTop},g.vanishing,h);
       ctx.beginPath();
       ctx.moveTo(rimX,top);ctx.lineTo(rimX,treadTop);
       ctx.lineTo(riser2X,riser2Top);
       ctx.lineTo(riser2X,floorTop);
-      ctx.lineTo(x,h);ctx.stroke();
+      ctx.lineTo(floorX,h);ctx.stroke();
     }
     ctx.beginPath();
     for(const y of [top,treadTop,riser2Top,floorTop]){ctx.moveTo(0,y);ctx.lineTo(w,y);}
@@ -333,28 +335,65 @@ export class PoolRenderer {
   }
 
   #handrail(ctx,w,h,g){
-    const frontBase={x:w*.87,y:h*.985};
-    const farBaseY=g.water.nearR.y;
+    const frontBase={x:w*.05,y:h*.985};
+    const farBaseY=g.water.nearL.y-h*.012;
     const farX=this.#projectX(frontBase,g.vanishing,farBaseY);
-    const path=new Path2D();
-    path.moveTo(farX,farBaseY);
-    path.lineTo(farX,h*.615);
-    path.bezierCurveTo(farX,h*.54,frontBase.x,h*.54,frontBase.x,h*.64);
-    path.lineTo(frontBase.x,frontBase.y);
+    // The rear post meets the lower end of a true upper semicircular bend;
+    // both horizon endpoints share the same height before the sloped rail joins.
+    const railStart={x:farX-w*.08,y:h*.635};
+    const farShoulder={x:farX,y:h*.545};
+    const nearJoin={x:frontBase.x,y:h*.81};
     const railWidth=Math.max(8,w*.010);
     ctx.save();
     ctx.fillStyle="rgba(35,44,46,.5)";
-    ctx.beginPath();ctx.ellipse(frontBase.x,frontBase.y,railWidth*1.45,railWidth*.42,0,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(2,railWidth*.22);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(frontBase.x,frontBase.y+2,railWidth*1.15,railWidth*.82,0,0,Math.PI*2);ctx.fill();
     ctx.restore();
-    this.#railStroke(ctx,path,w);
+    this.#railStroke(ctx,w,h,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart);
   }
 
-  #railStroke(ctx,path,w){
-    ctx.save();ctx.lineCap="butt";ctx.lineJoin="round";
-    ctx.strokeStyle="rgba(8,18,22,.5)";ctx.lineWidth=Math.max(12,w*.015);ctx.stroke(path);
-    ctx.strokeStyle="#aebec1";ctx.lineWidth=Math.max(8,w*.010);ctx.stroke(path);
-    ctx.strokeStyle="rgba(250,255,255,.88)";ctx.lineWidth=Math.max(1.5,w*.002);ctx.stroke(path);
+  #railStroke(ctx,w,h,railWidth,frontBase,nearJoin,farX,farBaseY,farShoulder,railStart){
+    ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+    const segments=[];
+    const a=new Path2D();a.moveTo(frontBase.x,frontBase.y);a.lineTo(nearJoin.x,nearJoin.y);segments.push({path:a,order:1,kind:"front"});
+    const slope=new Path2D();slope.moveTo(nearJoin.x,nearJoin.y);slope.lineTo(railStart.x,railStart.y);
+    segments.push({path:slope,order:2,kind:"slope"});
+    const c=new Path2D();c.moveTo(farX,farBaseY);c.lineTo(farShoulder.x,farShoulder.y);segments.push({path:c,order:0,kind:"rear"});
+    const d=new Path2D();d.moveTo(railStart.x,railStart.y);d.lineTo(farShoulder.x,farShoulder.y);
+    segments.push({path:d,order:3,kind:"horizon"});
+    segments.sort((left,right)=>left.order-right.order);
+    for(const segment of segments){
+      const path=segment.path;
+      let steel;
+      if(segment.kind==="horizon"){
+        const dx=railStart.x-farShoulder.x,dy=railStart.y-farShoulder.y;
+        const axis=Math.atan2(dy,dx);
+        const normal=axis-Math.PI/2;
+        const half=railWidth*.52;
+        const cx=(farShoulder.x+railStart.x)/2,cy=(farShoulder.y+railStart.y)/2;
+        steel=ctx.createLinearGradient(
+          cx-Math.cos(normal)*half,cy-Math.sin(normal)*half,
+          cx+Math.cos(normal)*half,cy+Math.sin(normal)*half
+        );
+      }else if(segment.kind==="slope"){
+        const dx=railStart.x-nearJoin.x,dy=railStart.y-nearJoin.y;
+        const axis=Math.atan2(dy,dx);
+        const normal=axis-Math.PI/2;
+        const half=railWidth*.52;
+        const cx=(nearJoin.x+railStart.x)/2,cy=(nearJoin.y+railStart.y)/2;
+        steel=ctx.createLinearGradient(
+          cx+Math.cos(normal)*half,cy+Math.sin(normal)*half,
+          cx-Math.cos(normal)*half,cy-Math.sin(normal)*half
+        );
+      }else{
+        const center=segment.kind==="front"?frontBase.x:farX,half=railWidth*.52;
+        steel=ctx.createLinearGradient(center-half,0,center+half,0);
+      }
+      steel.addColorStop(0,"#f8fbf8");steel.addColorStop(.08,"#d4ddda");
+      steel.addColorStop(.22,"#c1d0cf");steel.addColorStop(.38,"#eef3ef");
+      steel.addColorStop(.54,"#aab8b4");steel.addColorStop(.72,"#657371");
+      steel.addColorStop(.9,"#8b9692");steel.addColorStop(1,"#1f2929");
+      ctx.strokeStyle=steel;ctx.lineWidth=Math.max(8,w*.010);ctx.stroke(path);
+    }
     ctx.restore();
   }
 
@@ -396,7 +435,7 @@ export class PoolRenderer {
   #quad(ctx,a,b,c,d){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();}
   #mix(a,b,t){return{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};}
   #pointAtY(a,b,y){return this.#mix(a,b,(y-a.y)/(b.y-a.y));}
-  #leftStructure(g,w){
+  #leftStructure(g){
     const backY=g.water.backL.y;
     const drainLeft=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,backY);
     const pillarRight=drainLeft.x;
