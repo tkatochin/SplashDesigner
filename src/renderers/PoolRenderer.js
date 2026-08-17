@@ -319,24 +319,17 @@ export class PoolRenderer {
     ctx.strokeStyle="rgba(218,222,214,.27)";ctx.lineWidth=1;
     for(let x=0;x<=w;x+=w/3.25){
       const bottom={x,y:h};
-      const topX=this.#projectX(bottom,g.vanishing,top);
-      const treadX=this.#projectX(bottom,g.vanishing,treadTop);
+      const rimX=this.#projectX(bottom,g.vanishing,top);
       const riser2X=this.#projectX(bottom,g.vanishing,riser2Top);
-      const floorX=this.#projectX(bottom,g.vanishing,floorTop);
       ctx.beginPath();
-      ctx.moveTo(topX,top);ctx.lineTo(treadX,treadTop);
+      ctx.moveTo(rimX,top);ctx.lineTo(rimX,treadTop);
       ctx.lineTo(riser2X,riser2Top);
-      ctx.lineTo(floorX,floorTop);
+      ctx.lineTo(riser2X,floorTop);
       ctx.lineTo(x,h);ctx.stroke();
     }
-    // Step and floor edges recede toward the same vanishing point as the
-    // pool walls.  Full-width screen-horizontal strokes make the perspective
-    // visibly diverge when the viewport is widened.
-    for(const y of [top,treadTop,riser2Top,floorTop]){
-      const left=this.#pointAtY(g.sideWalls.leftCorner,g.sideWalls.leftNear,y);
-      const right=this.#pointAtY(g.sideWalls.rightCorner,g.sideWalls.rightNear,y);
-      ctx.beginPath();ctx.moveTo(left.x,y);ctx.lineTo(right.x,y);ctx.stroke();
-    }
+    ctx.beginPath();
+    for(const y of [top,treadTop,riser2Top,floorTop]){ctx.moveTo(0,y);ctx.lineTo(w,y);}
+    ctx.stroke();
 
   }
 
